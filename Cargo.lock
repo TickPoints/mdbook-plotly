@@ -229,6 +229,7 @@ dependencies = [
  "colog",
  "log",
  "mdbook-preprocessor",
+ "serde",
 ]
 
 [[package]]
