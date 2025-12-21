@@ -16,9 +16,13 @@ impl ReceivedArgs {
 
         let command = match matches.subcommand() {
             Some(("supports", sub_m)) => {
-                let renderer = sub_m.get_one::<String>("renderer").unwrap_or_else(|| {
-                    unreachable!("'renderer' is required and thus always present")
-                }).to_string();
+                let renderer = sub_m
+                    .get_one::<String>("renderer")
+                    .unwrap_or_else(|| {
+                        // Safety: `renderer` is required and thus always present
+                        unreachable!()
+                    })
+                    .to_string();
                 CommandKind::Supports { renderer }
             }
             _ => {
