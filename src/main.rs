@@ -1,4 +1,5 @@
 mod command;
+mod handler;
 mod macros;
 
 pub fn main() {
@@ -8,15 +9,15 @@ pub fn main() {
 
 fn start_up() {
     let args = command::ReceivedArgs::receive()
-        .unwrap_or_else(|e| fatal!("Parameter error: {:?}", e));
+        .unwrap_or_else(|e| fatal!("Parameter error.\nInterError: {:#?}", e));
 
     use command::CommandKind;
     match args.command {
         CommandKind::Supports { renderer } => {
             match renderer.as_str() {
-                // These two are built-in backends.
+                // HARDCODE: These two are built-in backends.
                 // Other backends are not currently supported.
-                "html" | "markdown" => todo!(),
+                "html" | "markdown" => handler::handle_book(),
                 _ => todo!(),
             }
         }
