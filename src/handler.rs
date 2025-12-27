@@ -1,89 +1,109 @@
+mod chapter_handler;
+
 use crate::fatal;
 use log::warn;
-use mdbook_preprocessor::book::BookItem;
+use mdbook_preprocessor::{
+    PreprocessorContext,
+    book::{Book, BookItem, Chapter},
+};
+use serde::{Deserialize, Serialize};
+use std::iter::Iterator;
 
-#[derive(Debug)]
+const SUPPORTED_MDBOOK_VERSION: &str = "0.5.2";
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default, rename_all = "kebab-case")]
+pub struct PreprocessorConfig {}
+// Todo: The above content is to prepare for the subsequent development.
+
 pub struct BookData {
-    preprocessor_config: PreprocessorConfig,
-    mdbook_version: String,
-    book_items: Vec<BookItem>,
+    ctx: PreprocessorContext,
+    book: Book,
+    config: PreprocessorConfig,
 }
 
 impl BookData {
-    fn new(
-        preprocessor_config: PreprocessorConfig,
-        mdbook_version: String,
-        book_items: Vec<BookItem>,
-    ) -> Self {
-        Self {
-            preprocessor_config,
-            mdbook_version,
-            book_items,
-        }
+    fn new(ctx: PreprocessorContext, book: Book, config: PreprocessorConfig) -> Self {
+        Self { ctx, book, config }
     }
 
-    pub fn check_version(&self) -> bool {
-        // HARDCODE: MDBOOK_VERSION: 0.5.2
-        self.mdbook_version == "0.5.2"
-    }
-
-    pub fn get_version(&self) -> &str {
-        &self.mdbook_version
-    }
-
-    // Alias: `get_version`
-    #[allow(dead_code)]
     pub fn version(&self) -> &str {
-        self.get_version()
+        &self.ctx.mdbook_version
     }
 
-    pub(crate) fn send_version_note(&self) {
-        if !self.check_version() {
+    pub fn is_compatible_version(&self) -> bool {
+        self.version() == SUPPORTED_MDBOOK_VERSION
+    }
+
+    pub fn emit_compatibility_warning(&self) {
+        if !self.is_compatible_version() {
             warn!(
-                // HARDCODE: MDBOOK_VERSION: 0.5.2
-                "This crate was developed using version: `0.5.2`, and {} may not work",
-                self.get_version()
+                "This preprocessor was developed for mdbook v{}, but found v{}. May not work as expected.",
+                SUPPORTED_MDBOOK_VERSION,
+                self.version()
             );
         }
     }
 
-    pub fn get_config(&self) -> &PreprocessorConfig {
-        &self.preprocessor_config
+    /// Note: This interface returns a cloned internal `PreprocessorConfig`.
+    pub fn get_config(&self) -> PreprocessorConfig {
+        self.config.clone()
     }
 
-    // Alias: `get_config`
-    #[allow(dead_code)]
-    pub fn config(&self) -> &PreprocessorConfig {
-        self.get_config()
+    pub fn chapter_iter_mut(&mut self) -> impl Iterator<Item = &mut Chapter> {
+        self.book.items.iter_mut().filter_map(|item| {
+            if let BookItem::Chapter(chapter) = item {
+                Some(chapter)
+            } else {
+                None
+            }
+        })
+    }
+
+    pub fn into_parts(self) -> (PreprocessorContext, Book) {
+        (self.ctx, self.book)
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct PreprocessorConfig {}
+fn get_book_data() -> BookData {
+    let (ctx, book) = match mdbook_preprocessor::parse_input(std::io::stdin()) {
+        Ok(parsed) => parsed,
+        Err(e) => fatal!("Input parsing failed.\nInterError: {:#?}", e),
+    };
 
-impl Default for PreprocessorConfig {
-    fn default() -> Self {
-        Self {}
-    }
-}
-
-fn get_bookdata() -> BookData {
-    let (ctx, book) = mdbook_preprocessor::parse_input(std::io::stdin())
-        .unwrap_or_else(|e| fatal!("Input parsing failed.\nInterError: {:#?}", e));
-    let raw_config = ctx
+    let config = match ctx
         .config
-        // HARDCODE: `preprocessor.mdbook-plotly` is a hard-coded config path.
-        // Considering that this version is only a feasibility test, no complex check is made.
         .get::<PreprocessorConfig>("preprocessor.mdbook-plotly")
-        .unwrap_or_else(|e| fatal!("Illegal Config.\nInterError: {:#?}", e))
-        .unwrap_or_else(|| {
-            warn!("Custom Config cannot be used, default has been substituted.");
+    {
+        Ok(Some(cfg)) => cfg,
+        Ok(None) => {
+            warn!("Custom config not found; using default configuration.");
             PreprocessorConfig::default()
-        });
-    BookData::new(raw_config, ctx.mdbook_version, book.items)
+        }
+        Err(e) => fatal!(
+            "Illegal config format for 'preprocessor.mdbook-plotly'.\nInterError: {:#?}",
+            e
+        ),
+    };
+
+    BookData::new(ctx, book, config)
 }
 
 pub(crate) fn handle_book() {
-    let bookdata = get_bookdata();
-    bookdata.send_version_note();
+    let mut book_data = get_book_data();
+
+    book_data.emit_compatibility_warning();
+
+    let config = book_data.get_config();
+    for chapter in book_data.chapter_iter_mut() {
+        if let Err(e) = chapter_handler::handle(chapter, &config) {
+            warn!("Error processing chapter '{}': {:?}", chapter.name, e);
+        }
+    }
+
+    let (ctx, book) = book_data.into_parts();
+
+    if let Err(e) = serde_json::to_writer(std::io::stdout(), &(ctx, book)) {
+        fatal!("Write bookdata failed.\nInterError: {:#?}", e);
+    }
 }
