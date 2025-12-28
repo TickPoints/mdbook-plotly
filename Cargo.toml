@@ -10,3 +10,16 @@ log = "0.4"
 mdbook-preprocessor = "0.5"
 serde = "1.0"
 serde_json = "1.0"
+pulldown-cmark = { version = "0.13", default-features = false }
+pulldown-cmark-to-cmark = { version = "22.0", default-features = false }
+tokio = { version = "1", optional = true }
+rquickjs = { version = "0.11", optional = true, features = [
+  "futures",
+  "bindgen",
+] }
+
+[features]
+default = []
+js-tool = ["dep:rquickjs", "dep:tokio"]
+full-handlers = ["ploty-svg-handler"]
+ploty-svg-handler = ["js-tool"]
