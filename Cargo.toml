@@ -20,7 +20,8 @@ rquickjs = { version = "0.11", optional = true, features = [
 ] }
 
 [features]
-default = ["full-handlers"]
-js-tools = ["dep:rquickjs", "dep:rayon", "dep:once_cell"]
+default = ["full-handlers", "sync"]
+js-tools = ["dep:rquickjs", "dep:once_cell"]
+sync = ["dep:rayon"]
 full-handlers = ["ploty-svg-handler"]
 ploty-svg-handler = ["js-tools"]
