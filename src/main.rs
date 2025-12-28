@@ -1,8 +1,6 @@
 mod command;
-mod handler;
 mod macros;
-#[cfg(feature = "js-tool")]
-mod js_tool;
+mod preprocessor;
 
 pub fn main() {
     set_logger();
@@ -18,7 +16,7 @@ pub fn main() {
             println!("{}", supported);
             std::process::exit(0);
         }
-        CommandKind::ProcessBook => handler::handle_book()
+        CommandKind::ProcessBook => preprocessor::preprocess_book(),
     }
 }
 
