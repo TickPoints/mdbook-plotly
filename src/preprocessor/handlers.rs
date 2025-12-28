@@ -1,3 +1,4 @@
+mod code_handler;
 #[cfg(feature = "ploty-svg-handler")]
 mod ploty_svg_handler;
 
@@ -11,9 +12,9 @@ const PULLDOWN_CMARK_OPTIONS: pulldown_cmark::Options = pulldown_cmark::Options:
 pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
     let events = Parser::new_ext(&chapter.content, PULLDOWN_CMARK_OPTIONS);
 
-    let mut code = String::new();
+    let mut code = String::with_capacity(10);
     let mut in_target_code = false;
-    let mut new_events = Vec::new();
+    let mut new_events = Vec::with_capacity(10);
 
     for event in events {
         match event {
@@ -69,5 +70,10 @@ pub fn handle_plotly(
     code: String,
     config: &PreprocessorConfig,
 ) -> Result<Event<'_>, Box<dyn std::error::Error>> {
-    todo!()
+    let ready_code = code_handler::handle(code, &config.input_type);
+    use crate::preprocessor::config::PlotyOutputType;
+    let result = match config.output_type {
+        PlotyOutputType::PlotySvg => ploty_svg_handler::handle(ready_code)?,
+    };
+    Ok(result)
 }
