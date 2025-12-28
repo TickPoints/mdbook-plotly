@@ -13,7 +13,7 @@ pub fn preprocess_book() {
     book_data.emit_compatibility_warning();
 
     let config = book_data.get_config();
-    #[cfg(feature = "js-tools")]
+    #[cfg(feature = "sync")]
     {
         use rayon::prelude::*;
 
@@ -22,7 +22,7 @@ pub fn preprocess_book() {
             .par_iter()
             .for_each(|chapter| handlers::handle(chapter, &config));
     }
-    #[cfg(not(feature = "js-tools"))]
+    #[cfg(not(feature = "sync"))]
     {
         book_data
             .chapter_iter_mut()
