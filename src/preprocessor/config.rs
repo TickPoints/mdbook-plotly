@@ -35,7 +35,7 @@ pub enum PlotyOutputType {
 #[serde(rename_all = "kebab-case")]
 pub enum PlotyInputType {
     /// Execute the script locally in a sandbox, either for preprocessing or to complete the compilation directly.
-    /// Once processed, follow the specific output type.
+    /// Once processed, follow the target output type.
     #[default]
     SandBoxScript,
 }
