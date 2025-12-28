@@ -1,5 +1,5 @@
-//! Used to send critical errors.
-//! Will exit directly with exit code `1`.
+/// Used to send critical errors.
+/// Will exit directly with exit code `1`.
 #[macro_export]
 macro_rules! fatal {
     ($($arg:tt)*) => {{
@@ -13,10 +13,10 @@ macro_rules! fatal {
     }};
 }
 
-//! Used to send critical errors in initiation.
-//! Will exit directly with exit code `1`.
-//!
-//! NOTE: This is done for something that was initialized earlier. They may be loaded before the log, so rely on the macro for output.
+/// Used to send critical errors in initiation.
+/// Will exit directly with exit code `1`.
+///
+/// NOTE: This is done for something that was initialized earlier. They may be loaded before the log, so rely on the macro for output.
 #[macro_export]
 macro_rules! fatal_in_init {
     ($($arg:tt)*) => {{
@@ -29,4 +29,3 @@ macro_rules! fatal_in_init {
         std::process::exit(1);
     }};
 }
-
