@@ -1,7 +1,7 @@
 use super::config::SUPPORTED_MDBOOK_VERSION;
 use crate::fatal;
 use crate::preprocessor::config::PreprocessorConfig;
-use log::warn;
+use log::{debug, warn};
 use mdbook_preprocessor::{
     PreprocessorContext,
     book::{Book, BookItem, Chapter},
@@ -69,7 +69,7 @@ pub fn get_book_data() -> BookData {
     {
         Ok(Some(cfg)) => cfg,
         Ok(None) => {
-            warn!("Custom config not found; using default configuration.");
+            debug!("Custom config not found; using default configuration.");
             PreprocessorConfig::default()
         }
         Err(e) => fatal!(
