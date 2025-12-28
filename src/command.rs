@@ -3,6 +3,7 @@ use clap::{Arg, Command, command, error::ErrorKind};
 #[derive(Debug)]
 pub enum CommandKind {
     Supports { renderer: String },
+    ProcessBook,
 }
 
 #[derive(Debug)]
@@ -19,16 +20,17 @@ impl ReceivedArgs {
                 let renderer = sub_m
                     .get_one::<String>("renderer")
                     .unwrap_or_else(|| {
-                        // Safety: `renderer` is required and thus always present
+                        // SAFETY: `renderer` is required and thus always present
                         unreachable!()
                     })
                     .to_string();
                 CommandKind::Supports { renderer }
             }
+            None => CommandKind::ProcessBook,
             _ => {
                 return Err(clap::Error::raw(
                     ErrorKind::InvalidSubcommand,
-                    "Unknown or missing subcommand",
+                    "Unknown subcommand",
                 ));
             }
         };

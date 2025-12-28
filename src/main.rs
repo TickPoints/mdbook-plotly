@@ -1,26 +1,24 @@
 mod command;
 mod handler;
 mod macros;
+#[cfg(feature = "js-tool")]
+mod js_tool;
 
 pub fn main() {
     set_logger();
-    start_up();
-}
-
-fn start_up() {
     let args = command::ReceivedArgs::receive()
         .unwrap_or_else(|e| fatal!("Parameter error.\nInterError: {:#?}", e));
 
     use command::CommandKind;
     match args.command {
         CommandKind::Supports { renderer } => {
-            match renderer.as_str() {
-                // HARDCODE: These two are built-in backends.
-                // Other backends are not currently supported.
-                "html" | "markdown" => handler::handle_book(),
-                _ => todo!(),
-            }
+            // HARDCODE: These two are built-in backends.
+            // Other backends are not currently supported.
+            let supported = matches!(renderer.as_str(), "html" | "markdown");
+            println!("{}", supported);
+            std::process::exit(0);
         }
+        CommandKind::ProcessBook => handler::handle_book()
     }
 }
 
@@ -30,5 +28,4 @@ fn set_logger() {
         builder.filter_level(log::LevelFilter::Debug);
     }
     builder.init();
-    log::debug!("The logger is configured.");
 }
