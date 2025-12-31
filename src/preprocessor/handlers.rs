@@ -73,7 +73,7 @@ pub fn handle_plotly(
     let ready_code = code_handler::handle(code, &config.input_type);
     use crate::preprocessor::config::PlotlyOutputType;
     let result = match config.output_type {
-        PlotlyOutputType::PlotlySvg => Plotly_svg_handler::handle(ready_code)?,
+        PlotlyOutputType::PlotlySvg => plotly_svg_handler::handle(ready_code)?,
     };
     Ok(result)
 }
