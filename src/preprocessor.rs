@@ -16,10 +16,8 @@ pub fn preprocess_book() {
     #[cfg(feature = "sync")]
     {
         use rayon::prelude::*;
-
         book_data
-            .chapter_iter_mut()
-            .par_iter()
+            .chapter_par_iter()
             .for_each(|chapter| handlers::handle(chapter, &config));
     }
     #[cfg(not(feature = "sync"))]
