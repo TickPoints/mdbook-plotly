@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
-use rquickjs::Runtime;
+pub use rquickjs::Error as QuickjsError;
+use rquickjs::{Context, Runtime};
 #[cfg(not(feature = "sync"))]
 use std::rc::Rc as SupportRc;
 #[cfg(feature = "sync")]
@@ -14,3 +15,15 @@ static GLOBAL_JS_RUNTIME: Lazy<SupportRc<Runtime>> = Lazy::new(|| {
     });
     SupportRc::new(rt)
 });
+
+pub fn with_js_runtime<F, R>(f: F) -> R
+where
+    F: FnOnce(&Runtime) -> R,
+{
+    f(GLOBAL_JS_RUNTIME.as_ref())
+}
+
+pub fn get_sandboxed_context(rt: &Runtime) -> Result<Context, QuickjsError> {
+    let context = Context::base(rt)?;
+    Ok(context)
+}
