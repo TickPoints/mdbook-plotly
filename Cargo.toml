@@ -15,13 +15,14 @@ pulldown-cmark-to-cmark = { version = "22.0", default-features = false }
 rayon = { version = "1.11", optional = true }
 once_cell = { version = "1.21", optional = true }
 rquickjs = { version = "0.11", optional = true, features = [
-  "futures",
   "bindgen",
+  # Experimental
+  "parallel",
 ] }
 
 [features]
 default = ["full-handlers", "sync"]
 js-tools = ["dep:rquickjs", "dep:once_cell"]
 sync = ["dep:rayon"]
-full-handlers = ["ploty-svg-handler"]
-ploty-svg-handler = ["js-tools"]
+full-handlers = ["plotly-svg-handler"]
+plotly-svg-handler = ["js-tools"]
