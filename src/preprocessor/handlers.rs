@@ -1,6 +1,6 @@
 mod code_handler;
-#[cfg(feature = "ploty-svg-handler")]
-mod ploty_svg_handler;
+#[cfg(feature = "plotly-svg-handler")]
+mod plotly_svg_handler;
 
 use crate::preprocessor::config::PreprocessorConfig;
 use log::{error, warn};
@@ -71,9 +71,9 @@ pub fn handle_plotly(
     config: &PreprocessorConfig,
 ) -> Result<Event<'_>, Box<dyn std::error::Error>> {
     let ready_code = code_handler::handle(code, &config.input_type);
-    use crate::preprocessor::config::PlotyOutputType;
+    use crate::preprocessor::config::PlotlyOutputType;
     let result = match config.output_type {
-        PlotyOutputType::PlotySvg => ploty_svg_handler::handle(ready_code)?,
+        PlotlyOutputType::PlotlySvg => Plotly_svg_handler::handle(ready_code)?,
     };
     Ok(result)
 }

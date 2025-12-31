@@ -1,7 +1,7 @@
-use crate::preprocessor::config::PlotyInputType;
+use crate::preprocessor::config::PlotlyInputType;
 
-pub fn handle(raw_code: String, input_type: &PlotyInputType) -> String {
+pub fn handle(raw_code: String, input_type: &PlotlyInputType) -> String {
     match input_type {
-        PlotyInputType::SandBoxScript => raw_code,
+        PlotlyInputType::SandBoxScript => raw_code,
     }
 }
