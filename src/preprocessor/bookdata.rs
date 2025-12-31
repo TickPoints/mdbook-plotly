@@ -6,6 +6,7 @@ use mdbook_preprocessor::{
     PreprocessorContext,
     book::{Book, BookItem, Chapter},
 };
+use rayon::prelude::*;
 use std::iter::Iterator;
 
 pub struct BookData {
@@ -44,6 +45,17 @@ impl BookData {
 
     pub fn chapter_iter_mut(&mut self) -> impl Iterator<Item = &mut Chapter> {
         self.book.items.iter_mut().filter_map(|item| {
+            if let BookItem::Chapter(chapter) = item {
+                Some(chapter)
+            } else {
+                None
+            }
+        })
+    }
+
+    #[cfg(feature = "sync")]
+    pub fn chapter_par_iter(&mut self) -> impl ParallelIterator<Item = &mut Chapter> {
+        self.book.items.par_iter_mut().filter_map(|item| {
             if let BookItem::Chapter(chapter) = item {
                 Some(chapter)
             } else {
