@@ -38,11 +38,13 @@ impl BookData {
         }
     }
 
-    /// Note: This interface returns a cloned internal `PreprocessorConfig`.
+    /// NOTE: This interface returns a cloned internal `PreprocessorConfig`.
     pub fn get_config(&self) -> PreprocessorConfig {
         self.config.clone()
     }
 
+    /// NOTE: This interface is actually used in non-sync situations. But it's always there.
+    #[allow(dead_code)]
     pub fn chapter_iter_mut(&mut self) -> impl Iterator<Item = &mut Chapter> {
         self.book.items.iter_mut().filter_map(|item| {
             if let BookItem::Chapter(chapter) = item {
@@ -64,8 +66,14 @@ impl BookData {
         })
     }
 
+    /// NOTE: Abandoned.
+    #[allow(dead_code)]
     pub fn into_parts(self) -> (PreprocessorContext, Book) {
         (self.ctx, self.book)
+    }
+
+    pub fn into_book(self) -> Book {
+        self.book
     }
 }
 

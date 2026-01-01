@@ -13,8 +13,11 @@ pub fn main() {
             // HARDCODE: These two are built-in backends.
             // Other backends are not currently supported.
             let supported = matches!(renderer.as_str(), "html" | "markdown");
-            println!("{}", supported);
-            std::process::exit(0);
+            if supported {
+                std::process::exit(0);
+            } else {
+                std::process::exit(1);
+            }
         }
         CommandKind::ProcessBook => preprocessor::preprocess_book(),
     }

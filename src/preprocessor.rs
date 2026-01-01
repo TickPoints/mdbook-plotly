@@ -27,9 +27,9 @@ pub fn preprocess_book() {
             .for_each(|chapter| handlers::handle(chapter, &config));
     }
 
-    let (ctx, book) = book_data.into_parts();
+    let preprocessed_book = book_data.into_book();
 
-    if let Err(e) = serde_json::to_writer(std::io::stdout(), &(ctx, book)) {
+    if let Err(e) = serde_json::to_writer(std::io::stdout(), &preprocessed_book) {
         fatal!("Write bookdata failed.\nInterError: {:#?}", e);
     }
 }
