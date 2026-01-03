@@ -16,6 +16,8 @@ rayon = { version = "1.11", optional = true }
 once_cell = { version = "1.21", optional = true }
 rquickjs = { version = "0.11", optional = true, features = [
   "bindgen",
+  # For #[function]
+  "macro",
   # Experimental
   "parallel",
 ] }
