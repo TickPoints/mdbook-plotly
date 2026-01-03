@@ -43,7 +43,7 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
                 match handle_plotly(ready_code, config) {
                     Ok(event) => new_events.push(event),
                     Err(message) => warn!(
-                        "An error occurred during processing in Chapter {}: {:?}.",
+                        "An error occurred during processing in Chapter {}:\n{}",
                         chapter.name, message
                     ),
                 }
@@ -58,7 +58,7 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
         pulldown_cmark_to_cmark::Options::default(),
     ) {
         error!(
-            "Processing failed during cmark.\n{} Chapter will use the original content.\nInterError: {:#?}",
+            "Processing failed during cmark. {} Chapter will use the original content. \nInterError: {:#?}",
             chapter.name, e
         );
     } else {
