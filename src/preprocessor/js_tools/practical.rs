@@ -1,6 +1,7 @@
 use super::{QuickjsError, basic::*};
 use once_cell::sync::Lazy;
 use rquickjs::{Context, Ctx, FromJs, Runtime};
+use super::bindings;
 
 #[cfg(not(feature = "sync"))]
 use std::rc::Rc as SupportRc;
@@ -36,7 +37,7 @@ pub fn get_sandboxed_context(rt: &Runtime) -> Result<Context, QuickjsError> {
     context.with(|ctx| -> Result<(), QuickjsError> {
         // Inject content
         let globals = ctx.globals();
-        use rquickjs::function::Func;
+        inject_function(&globals, "setTimeout", bindings::set_timeout)?;
         Ok(())
     })?;
     Ok(context)

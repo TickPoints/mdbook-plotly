@@ -1,5 +1,7 @@
+#![allow(dead_code)]
 use super::QuickjsError;
 use rquickjs::{IntoAtom, IntoJs, Object, object::Accessor};
+use rquickjs::function::{IntoJsFunc, FromParams, Func};
 
 #[derive(Debug)]
 pub enum ScriptError {
@@ -43,6 +45,7 @@ where
     value.into().unwrap_or_else(|| "undefined".to_string())
 }
 
+/// Used to inject read-only data into an object.
 pub fn inject_readonly<'a, 'js, K, V>(
     obj: &'a Object<'js>,
     key: K,
@@ -52,6 +55,19 @@ where
     K: IntoAtom<'js>,
     V: IntoJs<'js> + Clone + 'js,
 {
-    let value = v.clone();
-    obj.prop(key, Accessor::new_get(move || value.clone()))
+    obj.prop(key, Accessor::new_get(move || v.clone()))
+}
+
+/// Used to inject read-only function into an object.
+pub fn inject_function<'a, 'js, K, F, A>(
+    obj: &'a Object<'js>,
+    key: K,
+    f: F,
+) -> Result<(), QuickjsError>
+where
+    K: IntoAtom<'js>,
+    F: IntoJsFunc<'js, A> + Copy + 'js,
+    A: FromParams<'js> + 'js
+{
+    obj.prop(key, Accessor::new_get(move || Func::new(f)))
 }
