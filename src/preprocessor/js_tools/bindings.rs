@@ -21,9 +21,6 @@ pub fn set_timeout<'js>(callback: Function<'js>, delay: u64) -> Result<Value<'js
 pub fn log<'js>(_message: Value<'js>) {}
 
 #[into_js_function]
-pub fn info<'js>(_message: Value<'js>) {}
-
-#[into_js_function]
 pub fn debug<'js>(message: Value<'js>) {
     log::warn!(
         "Js Tools Error: Script Debug: {}",

@@ -1,5 +1,6 @@
+use super::basic::*;
 use super::bindings;
-use super::{QuickjsError, basic::*};
+use crate::fatal_in_init;
 use once_cell::sync::Lazy;
 use rquickjs::{Context, Ctx, FromJs, Runtime};
 
@@ -7,13 +8,21 @@ use rquickjs::{Context, Ctx, FromJs, Runtime};
 use std::rc::Rc as SupportRc;
 #[cfg(feature = "sync")]
 use std::sync::Arc as SupportRc;
+
+use rquickjs::loader::{BuiltinLoader, BuiltinResolver};
 static GLOBAL_JS_RUNTIME: Lazy<SupportRc<Runtime>> = Lazy::new(|| {
+    let resolver = BuiltinResolver::default();
+    let loader = BuiltinLoader::default().with_module(
+        "__inter_very_happy_dom__",
+        include_str!("__inter_very_happy_dom__.js"),
+    );
     let rt = Runtime::new().unwrap_or_else(|e| {
-        crate::fatal_in_init!(
+        fatal_in_init!(
             "Js Tools Error: Can't create runtime.\nInterError: {:#?}",
             e
         )
     });
+    rt.set_loader(resolver, loader);
     SupportRc::new(rt)
 });
 
@@ -27,20 +36,34 @@ where
     f(GLOBAL_JS_RUNTIME.as_ref())
 }
 
+macro_rules! inject_function {
+    ($ref_object:expr, $(($name:literal, $function:path)),* $(,)?) => {{
+        $(
+            inject_function($ref_object, $name, $function)?;
+        )*
+    }};
+}
+
 /// The interface allows a Runtime to be used to generate a sandboxed context.
 ///
 /// As other features are refined, the sandbox will also be tighter.
 /// Therefore, we do not recommend using JS features and global quantities that are not explicitly supported in other documents.
 /// Because they may be silently deleted in the minor version.
-pub fn get_sandboxed_context(rt: &Runtime) -> Result<Context, QuickjsError> {
+pub fn get_sandboxed_context(rt: &Runtime) -> Result<Context, ScriptError> {
     let context = Context::full(rt)?;
-    context.with(|ctx| -> Result<(), QuickjsError> {
+    context.with(|ctx| -> Result<(), ScriptError> {
         // Inject content
         let globals = ctx.globals();
-        inject_function(&globals, "setTimeout", bindings::set_timeout)?;
-        inject_function(&globals, "log", bindings::log)?;
-        inject_function(&globals, "warn", bindings::warn)?;
-        inject_function(&globals, "error", bindings::error)?;
+        inject_function! {
+            &globals,
+            ("setTimeout", bindings::set_timeout),
+            ("log", bindings::log),
+            ("info", bindings::log),
+            ("warn", bindings::warn),
+            ("error", bindings::error),
+            ("debug", bindings::debug)
+        };
+        eval_script::<(), _>(&ctx, include_str!("bindings.js"))?;
         Ok(())
     })?;
     Ok(context)
