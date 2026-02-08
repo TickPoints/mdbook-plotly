@@ -13,19 +13,10 @@ serde_json = "1.0"
 pulldown-cmark = { version = "0.13", default-features = false }
 pulldown-cmark-to-cmark = { version = "22.0", default-features = false }
 rayon = { version = "1.11", optional = true }
-once_cell = { version = "1.21", optional = true }
-rquickjs = { version = "0.11", optional = true, features = [
-  "bindgen",
-  "macro",
-  "loader",
-  # Experimental
-  "parallel",
-  "rust-alloc",
-] }
+plotly = { version = "0.14", features = ["static_export_default"] }
 
 [features]
 default = ["full-handlers", "sync"]
-js-tools = ["dep:rquickjs", "dep:once_cell"]
 sync = ["dep:rayon"]
 full-handlers = ["plotly-svg-handler"]
-plotly-svg-handler = ["js-tools"]
+plotly-svg-handler = []

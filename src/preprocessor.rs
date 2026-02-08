@@ -4,9 +4,6 @@ mod handlers;
 
 use crate::fatal;
 
-#[cfg(feature = "js-tools")]
-mod js_tools;
-
 pub fn preprocess_book() {
     let mut book_data = bookdata::get_book_data();
 
