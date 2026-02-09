@@ -1,7 +1,7 @@
 use super::config::SUPPORTED_MDBOOK_VERSION;
 use crate::fatal;
 use crate::preprocessor::config::PreprocessorConfig;
-use log::{debug, warn};
+use log::{error, warn};
 use mdbook_preprocessor::{
     PreprocessorContext,
     book::{Book, BookItem, Chapter},
@@ -85,17 +85,20 @@ pub fn get_book_data() -> BookData {
 
     let config = match ctx
         .config
-        .get::<PreprocessorConfig>("preprocessor.mdbook-plotly")
+        .get::<PreprocessorConfig>("preprocessor.plotly")
     {
         Ok(Some(cfg)) => cfg,
         Ok(None) => {
-            debug!("Custom config not found; using default configuration.");
+            warn!("Custom config not found; using default configuration.");
             PreprocessorConfig::default()
         }
-        Err(e) => fatal!(
-            "Illegal config format for 'preprocessor.mdbook-plotly'.\nInterError: {:#?}",
-            e
-        ),
+        Err(e) => {
+            error!(
+                "Illegal config format for 'preprocessor.mdbook-plotly': {}",
+                e.root_cause()
+            );
+            PreprocessorConfig::default()
+        }
     };
 
     BookData::new(ctx, book, config)
