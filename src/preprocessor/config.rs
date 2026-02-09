@@ -25,8 +25,11 @@ pub struct PreprocessorConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PlotlyOutputType {
-    /// After the code is executed, it is compiled into an SVG for display.
     #[default]
+    #[cfg(feature = "plotly-html-handler")]
+    PlotlyHtml,
+    /// After the code is executed, it is compiled into an SVG for display.
+    #[cfg(feature = "plotly-svg-handler")]
     PlotlySvg,
 }
 
@@ -34,8 +37,12 @@ pub enum PlotlyOutputType {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PlotlyInputType {
+    /// Translates the Json format into an actual plotly object.
+    /// NOTE: In the `PlotlyOutputType = PlotlySvg` state, this method may cause some performance loss due to multiple packaging.
+    #[default]
+    JSONInput,
+    /// NOTE: This entry is deprecated because the use of `rquickjs` was abandoned.
     /// Execute the script locally in a sandbox, either for preprocessing or to complete the compilation directly.
     /// Once processed, follow the target output type.
-    #[default]
     SandBoxScript,
 }

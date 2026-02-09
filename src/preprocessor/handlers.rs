@@ -1,4 +1,6 @@
 mod code_handler;
+#[cfg(feature = "plotly-html-handler")]
+mod plotly_html_handler;
 #[cfg(feature = "plotly-svg-handler")]
 mod plotly_svg_handler;
 
@@ -70,10 +72,13 @@ pub fn handle_plotly(
     code: String,
     config: &PreprocessorConfig,
 ) -> Result<Event<'_>, Box<dyn std::error::Error>> {
-    let ready_code = code_handler::handle(code, &config.input_type);
+    let plot = code_handler::handle(code, &config.input_type)?;
     use crate::preprocessor::config::PlotlyOutputType;
     let result = match config.output_type {
-        PlotlyOutputType::PlotlySvg => plotly_svg_handler::handle(ready_code)?,
+        #[cfg(feature = "plotly-html-handler")]
+        PlotlyOutputType::PlotlyHtml => plotly_html_handler::handle(plot),
+        #[cfg(feature = "plotly-svg-handler")]
+        PlotlyOutputType::PlotlySvg => plotly_svg_handler::handle(plot)?,
     };
     Ok(result)
 }
