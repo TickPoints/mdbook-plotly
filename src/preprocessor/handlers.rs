@@ -4,7 +4,7 @@ mod plotly_html_handler;
 #[cfg(feature = "plotly-svg-handler")]
 mod plotly_svg_handler;
 
-use crate::preprocessor::config::PreprocessorConfig;
+use crate::preprocessor::config::{PlotlyOutputType, PreprocessorConfig};
 use log::{error, warn};
 use mdbook_preprocessor::book::Chapter;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
@@ -17,6 +17,13 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
     let mut code = String::with_capacity(10);
     let mut in_target_code = false;
     let mut new_events = Vec::with_capacity(10);
+
+    if config.output_type == PlotlyOutputType::PlotlyHtml {
+        new_events.push(plotly_html_handler::inject_header(
+            config.offline_js_sources,
+        ));
+        new_events.push(Event::HardBreak);
+    }
 
     for event in events {
         match event {
@@ -43,7 +50,11 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
                 in_target_code = false;
                 let ready_code = std::mem::take(&mut code);
                 match handle_plotly(ready_code, config) {
-                    Ok(event) => new_events.push(event),
+                    Ok(event) => {
+                        new_events.push(Event::HardBreak);
+                        new_events.push(event);
+                        new_events.push(Event::HardBreak);
+                    }
                     Err(message) => warn!(
                         "An error occurred during processing in Chapter {}:\n{}",
                         chapter.name, message
@@ -73,7 +84,6 @@ pub fn handle_plotly(
     config: &PreprocessorConfig,
 ) -> Result<Event<'_>, Box<dyn std::error::Error>> {
     let plot = code_handler::handle(code, &config.input_type)?;
-    use crate::preprocessor::config::PlotlyOutputType;
     let result = match config.output_type {
         #[cfg(feature = "plotly-html-handler")]
         PlotlyOutputType::PlotlyHtml => plotly_html_handler::handle(plot),
