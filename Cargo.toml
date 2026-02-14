@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-plotly"
-version = "0.1.0-alpha"
+version = "0.1.1-alpha"
 authors = ["TickPoints <tickpoints@outlook.com>"]
 edition = "2024"
 keywords = ["markdown", "mdbook"]
