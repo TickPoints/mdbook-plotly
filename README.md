@@ -1,5 +1,4 @@
 # mdbook-plotly
-
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/ci.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
 [![License](https://img.shields.io/crates/l/mdbook-plotly?style=for-the-badge&logo=mit)](LICENSE)
