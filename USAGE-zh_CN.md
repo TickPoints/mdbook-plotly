@@ -224,6 +224,7 @@ String | bool
 
 #### 通用复杂类型
 - **Rgb**
+
 定义:
 ```json5
 Rgb: "rgb(usize, usize, usize)"
@@ -283,6 +284,7 @@ layout: {
 
 输出格式需要您在全局配置中进行操作，具体请见[配置](#配置)。
 
-|原始名称|格式化名称|效果|其他注意事项|
-|**PlotlyHtml**|`plotly-html`|输出一个`<div>`和对应控制的`<script>`|生成结果对于不支持html的markdown解析器可能造成一些影响|
-|**PlotlySvg**|`plotly-svg`|**TODO**|**未完成**|
+| 原始名称 | 格式化名称 | 效果 | 其他注意事项 |
+|--------|--------|--------|--------|
+| **PlotlyHtml** | `plotly-html`  | 输出一个 `<div>` 和配套控制逻辑的 `<script>` | 对不支持 HTML 的 Markdown 解析器可能产生兼容性问题，并且对客户端渲染不太友好 |
+| **PlotlySvg**  | `plotly-svg`   | **TODO** | 当前未实现；在本地完成大部分渲染，但构建时间可能较长 |
