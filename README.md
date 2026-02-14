@@ -19,7 +19,7 @@ It parses chart definitions structured in specific formats (currently supporting
 1. Using Cargo
 ```shell
 cargo install mdbook-plotly
-# 如果您使用binstall
+# If you use binstall:
 cargo binstall mdbook-plotly
 ```
 
