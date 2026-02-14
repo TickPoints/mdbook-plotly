@@ -29,3 +29,20 @@ macro_rules! fatal_in_init {
         std::process::exit(1);
     }};
 }
+
+/// Used to translate `serde_json::Value` into T.
+#[macro_export]
+macro_rules! translate {
+    ($target:expr, $value:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
+        let target = $target;
+        $(
+            let target = if let Some(v) = $value.get_mut(stringify!($method)) {
+                let data = serde_json::from_value::<$ty>(v.take())?;
+                target.$method(data)
+            } else {
+                target
+            };
+        )*
+        Ok::<_, serde_json::Error>(target)
+    }};
+}
