@@ -3,8 +3,10 @@ name = "mdbook-plotly"
 version = "0.1.0"
 authors = ["TickPoints <tickpoints@outlook.com>"]
 edition = "2024"
+keywords = ["markdown", "mdbook"]
 description = "An mdbook preprocessor that renders plot code blocks (e.g., ```plot) into interactive or static charts during book build."
 license = "MIT"
+repository = "https://github.com/TickPoints/mdbook-plotly"
 readme = "README.md"
 
 [dependencies]
