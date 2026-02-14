@@ -1,7 +1,7 @@
 # mdbook-plotly
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
-[![CI Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/ci.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
-[![License](https://img.shields.io/crates/l/mdbook-plotly?style=for-the-badge&logo=mit)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/release.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-mit)](LICENSE)
 
 **[English](README.md)**  **中文**
 
@@ -39,7 +39,7 @@ after = ["links"]
 ```
 ~~~
 
-更多内容可以查看[使用手册](USAGE-zh_CN.md)。
+更多内容可以查看[使用手册](docs/USAGE-zh_CN.md)。
 
 ## 许可证
 采用 `MIT` 开源许可，完整条款请参阅 [LICENSE](LICENSE) 文件。

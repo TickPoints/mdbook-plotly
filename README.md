@@ -1,7 +1,7 @@
 # mdbook-plotly
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
-[![CI Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/ci.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
-[![License](https://img.shields.io/crates/l/mdbook-plotly?style=for-the-badge&logo=mit)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/release.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 **English**  **[中文](README-zh_CN.md)**
 
@@ -39,7 +39,7 @@ Insert a code block where you want the chart to appear, like this:
 ```
 ~~~
 
-For more details, refer to the [User Guide](USAGE.md).  
+For more details, refer to the [User Guide](docs/USAGE.md).  
 
 ## License  
 This project is licensed under the **MIT License**. For full terms, see the [LICENSE](LICENSE) file.  
