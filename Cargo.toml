@@ -1,7 +1,11 @@
 [package]
 name = "mdbook-plotly"
 version = "0.1.0"
+authors = ["TickPoints <tickpoints@outlook.com>"]
 edition = "2024"
+description = "An mdbook preprocessor that renders plot code blocks (e.g., ```plot) into interactive or static charts during book build."
+license = "MIT"
+readme = "README.md"
 
 [dependencies]
 clap = { version = "4.5", features = ["cargo"] }
@@ -24,3 +28,7 @@ full-handlers = ["plotly-svg-handler", "plotly-html-handler"]
 plotly-backed = ["plotly/static_export_default"]
 plotly-svg-handler = ["plotly-backed"]
 plotly-html-handler = []
+
+[profile.release]
+opt-level = "z"
+lto = true
