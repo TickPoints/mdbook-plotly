@@ -43,6 +43,20 @@ fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration, Box<dyn Err
         config_obj,
         (static_plot, bool),
         (typeset_math, bool),
+        (editable, bool),
+        (autosizable, bool),
+        // NOTE:
+        // Although this method is still in place, it is no longer valid as far as the documentation is concerned.
+        // Subsequent versions may remove this method without warning.
+        (responsive, bool),
+        (fill_frame, bool),
+        (frame_margins, f64),
+        (scroll_zoom, bool),
+        (show_axis_drag_handles, bool),
+        (show_axis_range_entry_boxes, bool),
+        (show_tips, bool),
+        (show_link, bool),
+        (send_data, bool),
     }?;
 
     Ok(config)

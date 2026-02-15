@@ -12,6 +12,8 @@
         - [类型](#类型)
         - [图表主格式](#[图表主格式])
         - [Layout格式](#Layout格式)
+        - [Config格式](#Config格式)
+        - [Data-pie](#Data-pie)
     - [SandScript](#SandScript输入格式)
 - [输出格式](#输出格式)
 
@@ -241,8 +243,11 @@ Rgb: "rgb(usize, usize, usize)"
 ### 图表主格式
 ```json5
 {
+    // 图表的布局
     layout?: Layout,
+    // 图表的数据
     data?: [Data; usize],
+    // 图表的配置
     config?: Configuration,
 }
 ```
@@ -270,6 +275,80 @@ layout: {
     plot_background_color?: Rgb,
     // 分离器
     separators?: String,
+
+    // 说明器具体设置
+    legend?: {
+        // 此部分暂未添加注释
+        background_color?: Rgb,
+        border_color?: Rgb,
+        border_width?: usize,
+        x?: f64,
+        y?: f64,
+        trace_group_gap?: usize,
+        title?: String,
+    },
+
+    // 图表边缘具体设置
+    margin?: {     
+        // 此部分暂未添加注释
+        left?: usize,
+        right?: usize,
+        top?: usize,
+        bottom?: usize,
+        pad?: usize,
+        auto_expand?: bool
+    },
+}
+```
+
+### Config格式
+```json5
+// 此部分暂未添加注释
+config: {
+    static_plot?: bool,
+    typeset_math?: bool,
+    editable?: bool,
+    autosizable?: bool,
+    responsive?: bool,
+    fill_frame?: bool,
+    frame_margins?: f64,
+    scroll_zoom?: bool,
+    show_axis_drag_handles?: bool,
+    show_axis_range_entry_boxes?: bool,
+    show_tips?: bool,
+    show_link?: bool,
+    send_data?: bool,
+}
+```
+
+### Data-pie
+`pie`可以是一个`Data`。该`Data`将会被渲染为饼图。
+```json5
+// 此部分暂未添加注释
+{
+    type: "pie",
+
+    automargin?: bool,
+    dlabel?: f64,
+    hole?: f64,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    ids?: [String; usize],
+    label0?: f64,
+    labels?: [String; usize],
+    legend_group?: String,
+    legend_rank?: usize,
+    name?: String,
+    opacity?: f64,
+    meta?: String,
+    sort?: bool,
+    text_position_src?: String,
+    text_position_src_array?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_info?: String,
 }
 ```
 
