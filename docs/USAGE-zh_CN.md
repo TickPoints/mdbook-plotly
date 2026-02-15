@@ -19,50 +19,45 @@
 
 # 开始使用
 
-## 下载
-您可以从GitHub页面的[Releases](https://github.com/TickPoints/mdbook-plotly/releases)根据您的系统信息下载最新可用版本。
+### 安装
+1. 使用Cargo
+```shell
+cargo install mdbook-plotly
+# 如果您使用binstall
+cargo binstall mdbook-plotly
+```
 
-## 安装
-您需要把此应用程序所在路径添加到系统的 `Path` 环境变量下，或者您可以先记下此程序所在的绝对路径或对于您的书的相对路径，这在接下来可以使用。
+或者也可以从GitHub页面的[Releases](https://github.com/TickPoints/mdbook-plotly/releases)根据您的系统信息下载最新可用版本，然后把此应用程序所在路径添加到系统的 `Path` 环境变量下。
 
-然后，请在您书的 `book.toml` 添加如下内容:
+2. 请在您书的 `book.toml` 添加如下内容:
 ```toml
 [preprocessor.plotly]
 after = ["links"]
 ```
-如果您没有添加环境变量，而是使用路径的话，则可以:
-```toml
-[preprocessor.plotly]
-after = ["links"]
-# 添加`command`条目，其中填写路径，例如: `../mdbook-plotly/target/debug/mdbook-plotly`
-command = "<path>"
-```
-然后，您就可以愉快地使用`mdbook build`等操作。
-
-## 生成图表
-在您所需要的地方添加一个代码块，如下:
-~~~markdown
-```plot
-{}
-```
-~~~
 这是基本的输入形式(JSON)，其他输入格式可以参考[输入格式](#输入格式)。另外用`plot`和`plotly`两个名字的代码块均可以生成图表。
 
 > [!NOTE]
 > 我们使用了`json5`，它允许注释、尾随逗号、无引号的对象键、单引号字符串、十六进制数字、多行字符串等。在牺牲了一点效率的情况下，可以为用户提供更好的体验。(权衡利弊下，我们认为这点效率牺牲是值得的)
 
-在这种输入形式下，我们通常只需要用到两个条目——`data`和`layout`:
+在这种输入形式下，我们通常只需要用到三个条目——`data`，`layout`和`config`:
 
 ~~~markdown
 ```plot
 {
-    "layout": {
-        "title": "Test"
+    layout: {
+        title: "Test",
+    },
+    data: [{
+        type: "pie",
+        values: [10, 20, 30, 40],
+    }],
+    config: {
+        static_plot: true,
     }
 }
 ```
 ~~~
-该示例实现了为表格添加表头(标题为`Test`)。
+该示例实现了为图表添加表头(标题为`Test`)，添加`[10, 20, 30, 40]`到饼图，控制图表不可变。
 
 更多修改方式可以参照[JSON](#JSON输入格式)。
 
@@ -100,6 +95,10 @@ output-type = "plotly-html"
 # 输入格式，这代表着代码块内填充数据的格式
 # 此结果字符串对应的是一个enum(对应内容可在[输入格式](#输入格式)中看到)，因而不在此范围内的字符串将导致解析失败
 input_type = "json-input"
+
+# 使用本地js源
+# 应为true或false(默认)
+offline_js_sources = false
 ```
 
 # 输入格式
@@ -140,7 +139,7 @@ input_type = "json-input"
 #### 基本类型
 JSON提供了几种基本类型，其他所有的复合类型，都是由这几种基本类型延伸而来的。
 
-1. 对象
+##### 1. 对象
 ```json5
 // 大括号表示对象
 {}
@@ -163,7 +162,7 @@ JSON提供了几种基本类型，其他所有的复合类型，都是由这几�
 }
 ```
 
-2. 列表
+##### 2. 列表
 ```json5
 // 中括号表示列表
 []
@@ -177,7 +176,7 @@ JSON提供了几种基本类型，其他所有的复合类型，都是由这几�
 [String, usize, String | bool, bool]
 ```
 
-3. 数量
+##### 3. 数量
 ```json5
 // 不带引号的一个数字即为数量
 1
@@ -203,7 +202,7 @@ f64
 0..6usize | 10..1000f64
 ```
 
-4. 字符串
+##### 4. 字符串
 ```json5
 // 用引号引起来的一串内容即为字符串
 "str"
@@ -213,7 +212,7 @@ String
 "a" | "b" | c"
 ```
 
-5. 布尔值
+##### 5. 布尔值
 ```json5
 // 表示真或假的值，可以为不带引号的true或false
 true
@@ -227,11 +226,11 @@ String | bool
 #### 通用复杂类型
 - **Rgb**
 
-定义:
+_定义_:
 ```json5
 Rgb: "rgb(usize, usize, usize)"
 ```
-示例:
+_示例_:
 ```json5
 {
     layout: {
@@ -328,6 +327,7 @@ config: {
 {
     type: "pie",
 
+    values: [usize; usize],
     automargin?: bool,
     dlabel?: f64,
     hole?: f64,
