@@ -1,3 +1,4 @@
+mod bar_parser;
 mod pie_parser;
 mod plot_obj_parser;
 mod until;

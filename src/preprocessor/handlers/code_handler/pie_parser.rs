@@ -1,7 +1,7 @@
+use super::until::must_translate;
 use crate::translate;
 use anyhow::Result;
 use plotly::Pie;
-use super::until::must_translate;
 
 pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<u64>>> {
     let pie: Vec<u64> = must_translate(pie_obj, "values")?;

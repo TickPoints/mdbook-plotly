@@ -121,6 +121,7 @@ pub fn parse_data_obj(data_obj: &mut Value) -> Result<Box<dyn Trace>> {
         .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
+        "bar" => super::bar_parser::parse_bar_data(data_obj).map(|v| v as Box<dyn Trace>),
         "pie" => super::pie_parser::parse_pie_data(data_obj).map(|v| v as Box<dyn Trace>),
         unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
