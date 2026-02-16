@@ -320,6 +320,34 @@ config: {
 }
 ```
 
+### Data-bar
+`bar`可以是一个`Data`。该`Data`将被渲染为条形图。
+```json5
+// 此部分暂未添加注释
+{
+    type: "bar",
+
+    x: [usize; usize],
+    y: [usize; usize],
+
+    ids?: [String; usize],
+    offset?: f64,
+    offset_array?: [f64; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    x_axis?: String,
+    y_axis?: String,
+    alignment_group?: String,
+    offset_group?: String,
+    clip_on_axis?: bool,
+}
+```
+
 ### Data-pie
 `pie`可以是一个`Data`。该`Data`将会被渲染为饼图。
 ```json5
@@ -328,6 +356,7 @@ config: {
     type: "pie",
 
     values: [usize; usize],
+
     automargin?: bool,
     dlabel?: f64,
     hole?: f64,

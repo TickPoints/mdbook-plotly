@@ -343,35 +343,65 @@ config: {
 }
 ```
 
+### Data-bar
+`bar` may be a `Data`. This `Data` will be rendered as a bar chart.
+```json5
+// No comments have been added to this section.
+{
+    type: "bar",
+
+    x: [usize; usize],
+    y: [usize; usize],
+
+    ids?: [String; usize],
+    offset?: f64,
+    offset_array?: [f64; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    x_axis?: String,
+    y_axis?: String,
+    alignment_group?: String,
+    offset_group?: String,
+    clip_on_axis?: bool,
+}
+```
+
 ### Data-pie
 `pie` may be a `Data`. This `Data` will be rendered as a pie chart.
 ```json5
 // No comments have been added to this section.
-{  
-    type: "pie",  
-    values: [usize; usize],  
-    automargin?: bool,  
-    dlabel?: f64,  
-    hole?: f64,  
-    hover_template?: String,  
-    hover_template_array?: [String; usize],  
-    hover_text?: String,  
-    hover_text_array?: [String; usize],  
-    ids?: [String; usize],  
-    label0?: f64,  
-    labels?: [String; usize],  
-    legend_group?: String,  
-    legend_rank?: usize,  
-    name?: String,  
-    opacity?: f64,  
-    meta?: String,  
-    sort?: bool,  
-    text_position_src?: String,  
-    text_position_src_array?: [String; usize],  
-    text?: String,  
-    text_array?: [String; usize],  
-    text_info?: String  
-}  
+{
+    type: "pie",
+
+    values: [usize; usize],
+
+    automargin?: bool,
+    dlabel?: f64,
+    hole?: f64,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    ids?: [String; usize],
+    label0?: f64,
+    labels?: [String; usize],
+    legend_group?: String,
+    legend_rank?: usize,
+    name?: String,
+    opacity?: f64,
+    meta?: String,
+    sort?: bool,
+    text_position_src?: String,
+    text_position_src_array?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_info?: String
+}
 ```
 
 ## SandboxScript Input Format
