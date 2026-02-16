@@ -351,8 +351,8 @@ config: {
 {
     type: "bar",
 
-    x: [usize; usize],
-    y: [usize; usize],
+    x: [f64; usize],
+    y: [f64; usize],
 
     ids?: [String; usize],
     offset?: f64,
@@ -364,6 +364,8 @@ config: {
     hover_template_array?: [String; usize],
     hover_text?: String,
     hover_text_array?: [String; usize],
+    name?: String,
+    opacity?: f64,
     x_axis?: String,
     y_axis?: String,
     alignment_group?: String,
@@ -379,7 +381,7 @@ config: {
 {
     type: "pie",
 
-    values: [usize; usize],
+    values: [f64; usize],
 
     automargin?: bool,
     dlabel?: f64,
@@ -402,6 +404,43 @@ config: {
     text?: String,
     text_array?: [String; usize],
     text_info?: String
+}
+```
+
+### Data-scatter
+`scatter` may be a `Data`. This `Data` will be rendered as a scatter chart.
+```json5
+// No comments have been added to this section.
+{
+    type: "scatter",
+
+    x: [f64; usize],
+    y: [f64; usize],
+
+    web_gl_mode?: bool,
+    x0?: f64,
+    dx?: f64,
+    y0?: f64,
+    dy?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    name?: String,
+    opacity?: f64,
+    meta?: String,
+    x_axis?: String,
+    y_axis?: String,
+    stack_group?: String,
+    clip_on_axis?: bool,
+    connect_gaps?: bool,
+    fill_color?: Rgba,
+    fill?: "tozeroy" | "tozerox" | "tonexty" | "tonextx" | "toself" | "tonext" | "none",
+    mode?: "lines"| "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
 }
 ```
 
