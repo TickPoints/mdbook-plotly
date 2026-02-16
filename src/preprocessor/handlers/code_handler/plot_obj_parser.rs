@@ -1,13 +1,13 @@
 use crate::translate;
+use anyhow::{Result, anyhow};
 use plotly::{
     Configuration, Layout, Plot, Trace,
     common::color::Rgb,
     layout::{Legend, Margin},
 };
 use serde_json::Value;
-use std::error::Error;
 
-pub fn parse(plot_obj: &mut Value) -> Result<Plot, Box<dyn Error>> {
+pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     let mut plot = Plot::new();
 
     if let Some(layout_obj) = plot_obj.get_mut("layout")
@@ -37,7 +37,7 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot, Box<dyn Error>> {
     Ok(plot)
 }
 
-fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration, Box<dyn Error>> {
+fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration> {
     let config = translate! {
         Configuration::new(),
         config_obj,
@@ -62,7 +62,7 @@ fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration, Box<dyn Err
     Ok(config)
 }
 
-fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout, Box<dyn Error>> {
+fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout> {
     let layout = translate! {
         Layout::new(),
         layout_obj,
@@ -115,13 +115,13 @@ fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout, Box<dyn Error>> {
     Ok(layout)
 }
 
-pub fn parse_data_obj(data_obj: &mut Value) -> Result<Box<dyn Trace>, Box<dyn Error>> {
+pub fn parse_data_obj(data_obj: &mut Value) -> Result<Box<dyn Trace>> {
     let data_type = data_obj
         .get("type")
         .and_then(|v| v.as_str())
-        .ok_or_else::<String, _>(|| "`type` must be a string".into())?;
+        .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
         "pie" => super::pie_parser::parse_pie_data(data_obj).map(|v| v as Box<dyn Trace>),
-        unexpected => Err(format!("{unexpected} isn't a type").into()),
+        unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
 }

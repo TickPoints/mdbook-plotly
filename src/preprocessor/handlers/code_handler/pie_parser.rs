@@ -1,13 +1,11 @@
 use crate::translate;
+use anyhow::Result;
 use plotly::Pie;
-use serde_json::Value;
-use std::error::Error;
+use super::until::must_translate;
 
-pub fn parse_pie_data(pie_obj: &mut Value) -> Result<Box<Pie<u64>>, Box<dyn Error>> {
-    let pie = pie_obj
-        .get_mut("values")
-        .ok_or(String::from("missing `values` field"))?;
-    let pie = Pie::new(serde_json::from_value::<Vec<u64>>(pie.take())?);
+pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<u64>>> {
+    let pie: Vec<u64> = must_translate(pie_obj, "values")?;
+    let pie: Box<Pie<u64>> = Pie::new(pie);
     let pie = translate! {
         pie,
         pie_obj,
