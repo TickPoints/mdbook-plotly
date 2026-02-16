@@ -43,6 +43,11 @@ impl BookData {
         self.config.clone()
     }
 
+    /// NOTE: This interface returns a cloned internal `PathBuf`.
+    pub fn get_book_path(&self) -> std::path::PathBuf {
+        self.ctx.root.clone()
+    }
+
     /// NOTE: This interface is actually used in non-sync situations. But it's always there.
     #[allow(dead_code)]
     pub fn chapter_iter_mut(&mut self) -> impl Iterator<Item = &mut Chapter> {
@@ -64,12 +69,6 @@ impl BookData {
                 None
             }
         })
-    }
-
-    /// NOTE: Abandoned.
-    #[allow(dead_code)]
-    pub fn into_parts(self) -> (PreprocessorContext, Book) {
-        (self.ctx, self.book)
     }
 
     pub fn into_book(self) -> Book {
