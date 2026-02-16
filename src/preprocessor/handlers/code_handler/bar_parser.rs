@@ -20,6 +20,8 @@ pub fn parse_bar_data(bar_obj: &mut serde_json::Value) -> Result<Box<Bar<f64, f6
         (hover_template_array, Vec<String>),
         (hover_text, String),
         (hover_text_array, Vec<String>),
+        (name, String),
+        (opacity, f64),
         (x_axis, String),
         (y_axis, String),
         (alignment_group, String),
