@@ -14,7 +14,7 @@
         - [Layout格式](#Layout格式)
         - [Config格式](#Config格式)
         - [Data-pie](#Data-pie)
-    - [SandScript](#SandScript输入格式)
+    - [SandboxScript](#SandboxScript输入格式)
 - [输出格式](#输出格式)
 
 # 开始使用

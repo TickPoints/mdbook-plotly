@@ -4,18 +4,19 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
 > [!NOTE]
 > This user manual is available in multiple languages; however, not all language versions are guaranteed to reflect the latest application updates. In case of discrepancies among different language versions, the Chinese version shall prevail.
 
-- [Getting Started](#Getting Started)
+
+- [Getting Started](#getting-started)
 - [Configuration](#Configuration)
-- [Input Formats](#Input Formats)
+- [Input Formats](#input-formats)
     - [JSON](#JSON)
-        - [Important Notes for Document Understanding](#Important Notes for Document Understanding)
+        - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
         - [Types](#Types)
-        - [Main Chart Format](#Main Chart Format)
-        - [Layout Format](#Layout Format)
-        - [Config Format](#Config Format)
+        - [Main Chart Format](#main-chart-format)
+        - [Layout Format](#layout-format)
+        - [Config Format](#config-format)
         - [Data-pie](#Data-pie)
-    - [SandScript](#SandScript)
-- [Output Formats](#Output Formats)
+    - [SandboxScript](#SandboxScript)
+- [Output Formats](#output-formats)
 
 # Getting Started
 ### Installation
@@ -118,7 +119,7 @@ This format allows you to define and configure charts using JSON.
 
 We implement our own deserialization logic. In most cases, you can use the same JSON structure as that passed to `Plotly.newPlot()` in JavaScript—but compatibility is not guaranteed, and we may extend the schema beyond Plotly’s native specification. For reliable usage, always refer to the documented fields below. If you require a field not currently supported, please open an issue—we’ll consider adding it in a future release.
 
-### Important Notes for Understanding the Documentation
+### Important Notes for Document Understanding
 ```json5
 {
     // Comments like this are used throughout the documentation to clarify intent.
@@ -144,7 +145,7 @@ We implement our own deserialization logic. In most cases, you can use the same 
 }
 ```
 
-### Data Types
+### Types
 JSON provides several primitive types; all composite types are built from these fundamentals.
 
 #### 1. Objects
@@ -404,7 +405,7 @@ config: {
 }
 ```
 
-## SandboxScript Input Format
+## SandboxScript
 > [!WARNING]
 > **This format is deprecated**. Using it will emit a warning and a debug message, and fall back to rendering the default chart.
 
