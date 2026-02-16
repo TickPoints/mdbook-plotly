@@ -24,9 +24,15 @@ pub fn main() {
 }
 
 fn set_logger() {
-    let mut builder = colog::default_builder();
+    let mut builder = env_logger::builder();
     if cfg!(debug_assertions) {
         builder.filter_level(log::LevelFilter::Debug);
+    } else {
+        builder.filter_level(log::LevelFilter::Info);
     }
+    builder
+        .format_source_path(false)
+        .format_module_path(false)
+        .format_timestamp_secs();
     builder.init();
 }
