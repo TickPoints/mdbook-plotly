@@ -5,6 +5,7 @@ mod plotly_html_handler;
 mod plotly_svg_handler;
 
 use crate::preprocessor::config::{PlotlyOutputType, PreprocessorConfig};
+use anyhow::Result;
 use log::{error, warn};
 use mdbook_preprocessor::book::Chapter;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
@@ -79,10 +80,7 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig) {
     }
 }
 
-pub fn handle_plotly(
-    code: String,
-    config: &PreprocessorConfig,
-) -> Result<Event<'_>, Box<dyn std::error::Error>> {
+pub fn handle_plotly(code: String, config: &PreprocessorConfig) -> Result<Event<'_>> {
     let plot = code_handler::handle(code, &config.input_type)?;
     let result = match config.output_type {
         #[cfg(feature = "plotly-html-handler")]

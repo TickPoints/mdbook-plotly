@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.1.3-beta
+- Added interfaces
+    - Added `Data-bar`
+    - Used `usize` instead of `u64`
+- Adjusted deps
+    - Added `anyhow`
+    - Added `env_logger` instead of `chlog`
+- Used `anyhow` to optimize
+
 ## v0.1.3-alpha
 - Added interfaces
     - Added to `Config`
