@@ -15,7 +15,7 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
         - [Layout Format](#layout-format)
         - [Config Format](#config-format)
         - [Data-pie](#Data-pie)
-    - [SandScript](#SandScript)
+    - [SandboxScript](#SandboxScript)
 - [Output Formats](#output-formats)
 
 # Getting Started
