@@ -4,18 +4,18 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
 > [!NOTE]
 > This user manual is available in multiple languages; however, not all language versions are guaranteed to reflect the latest application updates. In case of discrepancies among different language versions, the Chinese version shall prevail.
 
-- [Getting Started](#Getting Started)
+- [Getting Started](#getting-started)
 - [Configuration](#Configuration)
-- [Input Formats](#Input Formats)
+- [Input Formats](#input-formats)
     - [JSON](#JSON)
-        - [Important Notes for Document Understanding](#Important Notes for Document Understanding)
+        - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
         - [Types](#Types)
-        - [Main Chart Format](#Main Chart Format)
-        - [Layout Format](#Layout Format)
-        - [Config Format](#Config Format)
+        - [Main Chart Format](#main-chart-format)
+        - [Layout Format](#layout-format)
+        - [Config Format](#config-format)
         - [Data-pie](#Data-pie)
     - [SandScript](#SandScript)
-- [Output Formats](#Output Formats)
+- [Output Formats](#output-formats)
 
 # Getting Started
 ### Installation
