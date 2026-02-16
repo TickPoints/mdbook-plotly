@@ -3,9 +3,9 @@ use crate::translate;
 use anyhow::Result;
 use plotly::Pie;
 
-pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<u64>>> {
-    let pie: Vec<u64> = must_translate(pie_obj, "values")?;
-    let pie: Box<Pie<u64>> = Pie::new(pie);
+pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<usize>>> {
+    let pie: Vec<usize> = must_translate(pie_obj, "values")?;
+    let pie: Box<Pie<usize>> = Pie::new(pie);
     let pie = translate! {
         pie,
         pie_obj,

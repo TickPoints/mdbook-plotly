@@ -3,9 +3,9 @@ use crate::translate;
 use anyhow::Result;
 use plotly::Bar;
 
-pub fn parse_bar_data(bar_obj: &mut serde_json::Value) -> Result<Box<Bar<u64, u64>>> {
-    let x: Vec<u64> = must_translate(bar_obj, "x")?;
-    let y: Vec<u64> = must_translate(bar_obj, "y")?;
+pub fn parse_bar_data(bar_obj: &mut serde_json::Value) -> Result<Box<Bar<usize, usize>>> {
+    let x: Vec<usize> = must_translate(bar_obj, "x")?;
+    let y: Vec<usize> = must_translate(bar_obj, "y")?;
     let bar = Bar::new(x, y);
     let bar = translate! {
         bar,
