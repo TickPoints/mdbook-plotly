@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.1.4-alpha
+> [!WARNING]
+> Although `plotly_svg_handler` is updated, it is not available.
+
+- Updated `plotly_svg_handler`
+- Adjusted interfaces
+    - Add Data-scatter
+    - Adjust Data-bar
+
 ## v0.1.3-beta
 - Added interfaces
     - Added `Data-bar`
