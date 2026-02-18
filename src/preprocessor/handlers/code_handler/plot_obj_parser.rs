@@ -1,3 +1,4 @@
+use super::until::Map;
 use crate::translate;
 use anyhow::{Result, anyhow};
 use plotly::{
@@ -20,8 +21,7 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     if let Some(data_list) = plot_obj.get_mut("data")
         && data_list.is_array()
     {
-        // Safety: This `unwrap` will never be reached.
-        for data in data_list.as_array_mut().unwrap() {
+        for data in data_list.as_array_mut().unwrap_or_else(|| unreachable!()) {
             let trace = parse_data_obj(data)?;
             plot.add_trace(trace);
         }
@@ -123,7 +123,9 @@ pub fn parse_data_obj(data_obj: &mut Value) -> Result<Box<dyn Trace>> {
     match data_type {
         "bar" => super::bar_parser::parse_bar_data(data_obj).map(|v| v as Box<dyn Trace>),
         "pie" => super::pie_parser::parse_pie_data(data_obj).map(|v| v as Box<dyn Trace>),
-        "scatter" => super::scatter_parser::parse_scatter_data(data_obj).map(|v| v as Box<dyn Trace>),
+        "scatter" => {
+            super::scatter_parser::parse_scatter_data(data_obj).map(|v| v as Box<dyn Trace>)
+        }
         unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
 }

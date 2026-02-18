@@ -1,7 +1,7 @@
 mod bar_parser;
 mod pie_parser;
-mod scatter_parser;
 mod plot_obj_parser;
+mod scatter_parser;
 mod until;
 
 use crate::preprocessor::config::PlotlyInputType;

@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::{Value, value::Index};
 use std::fmt::Display;
 

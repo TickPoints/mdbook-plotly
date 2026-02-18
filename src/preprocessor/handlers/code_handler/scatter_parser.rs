@@ -34,10 +34,10 @@ pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Sca
         (fill_color, Rgba),
     }?;
     let scatter = if let Some(fill) = scatter_obj.get_mut("fill")
-        && fill.is_string() {
-        // Safety: This `unwrap` will never be reached.
+        && fill.is_string()
+    {
         use plotly::common::Fill;
-        let fill = match fill.as_str().unwrap() {
+        let fill = match fill.as_str().unwrap_or_else(|| unreachable!()) {
             "tozeroy" => Fill::ToZeroY,
             "tozerox" => Fill::ToZeroX,
             "tonexty" => Fill::ToNextY,
@@ -52,10 +52,10 @@ pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Sca
         scatter
     };
     let scatter = if let Some(mode) = scatter_obj.get_mut("mode")
-        && mode.is_string() {
-        // Safety: This `unwrap` will never be reached.
+        && mode.is_string()
+    {
         use plotly::common::Mode;
-        let mode = match mode.as_str().unwrap() {
+        let mode = match mode.as_str().unwrap_or_else(|| unreachable!()) {
             "lines" => Mode::Lines,
             "markers" => Mode::Markers,
             "text" => Mode::Text,
