@@ -1,15 +1,16 @@
-use super::until::must_translate;
+use super::until::{Map, must_translate};
 use crate::translate;
 use anyhow::Result;
 use plotly::Bar;
 
-pub fn parse_bar_data(bar_obj: &mut serde_json::Value) -> Result<Box<Bar<f64, f64>>> {
+pub fn parse_bar_data(bar_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Bar<f64, f64>>> {
     let x: Vec<f64> = must_translate(bar_obj, "x")?;
     let y: Vec<f64> = must_translate(bar_obj, "y")?;
     let bar = Bar::new(x, y);
     let bar = translate! {
         bar,
         bar_obj,
+        map,
         (ids, Vec<String>),
         (offset, f64),
         (offset_array, Vec<f64>),

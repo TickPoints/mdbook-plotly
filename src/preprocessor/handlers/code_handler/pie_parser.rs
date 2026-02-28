@@ -1,14 +1,15 @@
-use super::until::must_translate;
+use super::until::{Map, must_translate};
 use crate::translate;
 use anyhow::Result;
 use plotly::Pie;
 
-pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<f64>>> {
+pub fn parse_pie_data(pie_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Pie<f64>>> {
     let pie: Vec<f64> = must_translate(pie_obj, "values")?;
     let pie: Box<Pie<f64>> = Pie::new(pie);
     let pie = translate! {
         pie,
         pie_obj,
+        map,
         (automargin, bool),
         (dlabel, f64),
         (hole, f64),

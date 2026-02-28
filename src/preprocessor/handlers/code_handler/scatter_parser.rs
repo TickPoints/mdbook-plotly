@@ -1,15 +1,19 @@
-use super::until::must_translate;
+use super::until::{Map, must_translate};
 use crate::translate;
 use anyhow::{Result, anyhow};
 use plotly::{Scatter, common::color::Rgba};
 
-pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Scatter<f64, f64>>> {
+pub fn parse_scatter_data(
+    scatter_obj: &mut serde_json::Value,
+    map: &Map,
+) -> Result<Box<Scatter<f64, f64>>> {
     let x: Vec<f64> = must_translate(scatter_obj, "x")?;
     let y: Vec<f64> = must_translate(scatter_obj, "y")?;
     let scatter = Scatter::new(x, y);
     let scatter = translate! {
         scatter,
         scatter_obj,
+        map,
         (web_gl_mode, bool),
         (x0, f64),
         (dx, f64),

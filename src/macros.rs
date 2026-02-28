@@ -13,32 +13,16 @@ macro_rules! fatal {
     }};
 }
 
-/// Used to send critical errors in initiation.
-/// Will exit directly with exit code `1`.
-///
-/// NOTE: This is done for something that was initialized earlier. They may be loaded before the log, so rely on the macro for output.
-#[macro_export]
-macro_rules! fatal_in_init {
-    ($($arg:tt)*) => {{
-        let msg = format_args!($($arg)*);
-        eprintln!("Critical error in init: {}", msg);
-        #[cfg(debug_assertions)]
-        {
-            eprintln!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
-        }
-        std::process::exit(1);
-    }};
-}
-
 /// Used to translate `serde_json::Value` into T.
 #[macro_export]
 macro_rules! translate {
-    ($target:expr, $value:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
+    ($target:expr, $value:expr, $map:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
+        use $crate::preprocessor::handlers::code_handler::until::DataPack;
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
-                let data = serde_json::from_value::<$ty>(v.take())?;
-                target.$method(data)
+                let data = serde_json::from_value::<DataPack<$ty>>(v.take())?;
+                target.$method(data.unwrap($map)?)
             } else {
                 target
             };

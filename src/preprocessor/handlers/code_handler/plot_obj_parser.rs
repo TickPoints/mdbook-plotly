@@ -11,10 +11,23 @@ use serde_json::Value;
 pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     let mut plot = Plot::new();
 
+    let map = if let Some(map_obj) = plot_obj.get_mut("map") {
+        serde_json::from_value::<Map>(map_obj.take())?
+    } else {
+        Map::new()
+    };
+
+    if let Some(config_obj) = plot_obj.get_mut("config")
+        && config_obj.is_object()
+    {
+        let config = parse_config_obj(config_obj, &map)?;
+        plot.set_configuration(config);
+    }
+
     if let Some(layout_obj) = plot_obj.get_mut("layout")
         && layout_obj.is_object()
     {
-        let layout = parse_layout_obj(layout_obj)?;
+        let layout = parse_layout_obj(layout_obj, &map)?;
         plot.set_layout(layout);
     }
 
@@ -22,25 +35,19 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
         && data_list.is_array()
     {
         for data in data_list.as_array_mut().unwrap_or_else(|| unreachable!()) {
-            let trace = parse_data_obj(data)?;
+            let trace = parse_data_obj(data, &map)?;
             plot.add_trace(trace);
         }
-    }
-
-    if let Some(config_obj) = plot_obj.get_mut("config")
-        && config_obj.is_object()
-    {
-        let config = parse_config_obj(config_obj)?;
-        plot.set_configuration(config);
     }
 
     Ok(plot)
 }
 
-fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration> {
+fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> {
     let config = translate! {
         Configuration::new(),
         config_obj,
+        map,
         (static_plot, bool),
         (typeset_math, bool),
         (editable, bool),
@@ -62,10 +69,11 @@ fn parse_config_obj(config_obj: &mut Value) -> Result<Configuration> {
     Ok(config)
 }
 
-fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout> {
+fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
     let layout = translate! {
         Layout::new(),
         layout_obj,
+        map,
         (title, String),
         (show_legend, bool),
         (height, usize),
@@ -81,6 +89,7 @@ fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout> {
         let legend = translate! {
             Legend::new(),
             legend_obj,
+            map,
             (background_color, Rgb),
             (border_color, Rgb),
             (border_width, usize),
@@ -100,6 +109,7 @@ fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout> {
         let margin = translate! {
             Margin::new(),
             margin_obj,
+            map,
             (left, usize),
             (right, usize),
             (top, usize),
@@ -115,16 +125,16 @@ fn parse_layout_obj(layout_obj: &mut Value) -> Result<Layout> {
     Ok(layout)
 }
 
-pub fn parse_data_obj(data_obj: &mut Value) -> Result<Box<dyn Trace>> {
+pub fn parse_data_obj(data_obj: &mut Value, map: &Map) -> Result<Box<dyn Trace>> {
     let data_type = data_obj
         .get("type")
         .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
-        "bar" => super::bar_parser::parse_bar_data(data_obj).map(|v| v as Box<dyn Trace>),
-        "pie" => super::pie_parser::parse_pie_data(data_obj).map(|v| v as Box<dyn Trace>),
+        "bar" => super::bar_parser::parse_bar_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "pie" => super::pie_parser::parse_pie_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         "scatter" => {
-            super::scatter_parser::parse_scatter_data(data_obj).map(|v| v as Box<dyn Trace>)
+            super::scatter_parser::parse_scatter_data(data_obj, map).map(|v| v as Box<dyn Trace>)
         }
         unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
