@@ -1,8 +1,8 @@
-mod code_handler;
+pub mod code_handler;
 #[cfg(feature = "plotly-html-handler")]
-mod plotly_html_handler;
+pub mod plotly_html_handler;
 #[cfg(feature = "plotly-svg-handler")]
-mod plotly_svg_handler;
+pub mod plotly_svg_handler;
 
 use crate::preprocessor::config::{PlotlyOutputType, PreprocessorConfig};
 use anyhow::Result;
