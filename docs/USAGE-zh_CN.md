@@ -323,100 +323,201 @@ config: {
 ### Data-bar
 `bar`可以是一个`Data`。该`Data`将被渲染为条形图。
 ```json5
-// 此部分暂未添加注释
 {
     type: "bar",
 
+    // x轴坐标数据
     x: [f64; usize],
+    // y轴坐标数据
     y: [f64; usize],
 
+    // 各数据点的唯一标识符
     ids?: [String; usize],
+    // 所有柱子相对于默认位置的统一偏移量
     offset?: f64,
+    // 为每个柱子单独设置偏移量
     offset_array?: [f64; usize],
+    // 显示在柱子上的统一文本
     text?: String,
+    // 为每个柱子单独设置显示文本
     text_array?: [String; usize],
+    // 文本模板，支持变量替换（如 "%{x}", "%{y}"）
     text_template?: String,
+    // 悬停标签模板
     hover_template?: String,
+    // 为每个数据点单独设置悬停模板
     hover_template_array?: [String; usize],
+    // 悬停时显示的统一文本
     hover_text?: String,
+    // 为每个数据点单独设置悬停文本
     hover_text_array?: [String; usize],
+    // trace 名称，显示在图例和悬停信息中
     name?: String,
+    // 不透明度，取值范围 0（完全透明）~ 1（完全不透明）
     opacity?: f64,
+    // 指定绑定的 x 轴（用于多轴图表，如 "x2"）
     x_axis?: String,
+    // 指定绑定的 y 轴（用于多轴图表，如 "y2"）
     y_axis?: String,
+    // 对齐分组标识，同组的柱子会在坐标轴方向上对齐
     alignment_group?: String,
+    // 偏移分组标识，同组的柱子共享偏移空间
     offset_group?: String,
+    // 是否裁剪超出坐标轴范围的部分
     clip_on_axis?: bool,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识，同组的 trace 在图例中归为一组
+    legend_group?: String,
+    // 柱子的宽度（数据坐标单位）
+    width?: f64,
+    // 柱子上文本的旋转角度（单位：度）
+    text_angle?: f64,
+    // 柱子方向："v" 为垂直柱状图，"h" 为水平条形图
+    orientation?: "v" | "h",
 }
 ```
 
 ### Data-pie
 `pie`可以是一个`Data`。该`Data`将会被渲染为饼图。
 ```json5
-// 此部分暂未添加注释
 {
     type: "pie",
 
+    // 各扇区的数值大小
     values: [f64; usize],
 
+    // 是否自动调整边距以防止文本被裁剪
     automargin?: bool,
+    // 相邻标签之间的增量值（与 label0 配合使用）
     dlabel?: f64,
+    // 中心空洞的比例，取值范围 0 ~ 1（0 为完整饼图，>0 为甜甜圈图）
     hole?: f64,
+    // 悬停标签模板
     hover_template?: String,
+    // 为每个扇区单独设置悬停模板
     hover_template_array?: [String; usize],
+    // 悬停时显示的统一文本
     hover_text?: String,
+    // 为每个扇区单独设置悬停文本
     hover_text_array?: [String; usize],
+    // 各扇区的唯一标识符
     ids?: [String; usize],
+    // 起始标签的数值（与 dlabel 配合自动生成标签）
     label0?: f64,
+    // 各扇区的标签文本
     labels?: [String; usize],
+    // 图例分组标识
     legend_group?: String,
+    // 图例排序优先级，数值越小越靠前
     legend_rank?: usize,
+    // trace 名称，显示在图例和悬停信息中
     name?: String,
+    // 不透明度，取值范围 0 ~ 1
     opacity?: f64,
+    // 元数据，可在模板中通过 %{meta} 引用
     meta?: String,
+    // 是否按数值大小对扇区排序
     sort?: bool,
+    // 文本位置来源标识
     text_position_src?: String,
+    // 为每个扇区单独设置文本位置来源标识
     text_position_src_array?: [String; usize],
+    // 扇区上显示的统一文本
     text?: String,
+    // 为每个扇区单独设置显示文本
     text_array?: [String; usize],
+    // 控制显示的信息内容（如 "percent"、"label"、"value" 或其组合）
     text_info?: String,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 饼图的起始旋转角度（单位：度，默认从 12 点钟方向开始）
+    rotation?: f64,
+    // 扇区拉出距离，取值范围 0 ~ 1（用于突出显示某个扇区）
+    pull?: f64,
+    // 扇区排列方向
+    direction?: "clockwise" | "counterclockwise",
 }
 ```
 
 ### Data-scatter
 `scatter`可以是一个`Data`。该`Data`将会被渲染为填充区域图。
 ```json5
-// No comments have been added to this section.
 {
     type: "scatter",
 
+    // x轴坐标数据
     x: [f64; usize],
+    // y轴坐标数据
     y: [f64; usize],
 
+    // 是否启用 WebGL 渲染（数据量较大时可显著提升性能）
     web_gl_mode?: bool,
+    // x 轴起始值（与 dx 配合使用，以线性间隔自动生成 x 坐标）
     x0?: f64,
+    // x 轴步长
     dx?: f64,
+    // y 轴起始值（与 dy 配合使用，以线性间隔自动生成 y 坐标）
     y0?: f64,
+    // y 轴步长
     dy?: f64,
+    // 各数据点的唯一标识符
     ids?: [String; usize],
+    // 数据点上显示的统一文本
     text?: String,
+    // 为每个数据点单独设置显示文本
     text_array?: [String; usize],
+    // 文本模板，支持变量替换（如 "%{x}", "%{y}"）
     text_template?: String,
+    // 悬停标签模板
     hover_template?: String,
+    // 为每个数据点单独设置悬停模板
     hover_template_array?: [String; usize],
+    // 悬停时显示的统一文本
     hover_text?: String,
+    // 为每个数据点单独设置悬停文本
     hover_text_array?: [String; usize],
+    // trace 名称，显示在图例和悬停信息中
     name?: String,
+    // 不透明度，取值范围 0 ~ 1
     opacity?: f64,
+    // 元数据，可在模板中通过 %{meta} 引用
     meta?: String,
+    // 指定绑定的 x 轴（用于多轴图表，如 "x2"）
     x_axis?: String,
+    // 指定绑定的 y 轴（用于多轴图表，如 "y2"）
     y_axis?: String,
+    // 堆叠分组标识，同组的 trace 将被堆叠在一起
     stack_group?: String,
+    // 是否裁剪超出坐标轴范围的部分
     clip_on_axis?: bool,
+    // 是否连接缺失数据点（NaN / null）之间的间隙
     connect_gaps?: bool,
+    // 填充区域的颜色（Rgba 格式，如 "rgba(255, 0, 0, 0.5)"）
     fill_color?: Rgba,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识，同组的 trace 在图例中归为一组
+    legend_group?: String,
+    // 填充区域类型
+    // "tozeroy": 填充到 y=0
+    // "tozerox": 填充到 x=0
+    // "tonexty": 填充到下一个 trace 的 y 值
+    // "tonextx": 填充到下一个 trace 的 x 值
+    // "toself": 填充封闭区域自身
+    // "tonext": 填充到下一个 trace
+    // "none": 不填充
     fill?: "tozeroy" | "tozerox" | "tonexty" | "tonextx" | "toself" | "tonext" | "none",
-    mode?: "lines"| "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // 绘制模式，决定如何呈现数据点
+    // "lines": 折线图
+    // "markers": 散点标记
+    // "text": 仅文本
+    // "linesmarkers": 折线 + 标记
+    // "linestext": 折线 + 文本
+    // "markerstext": 标记 + 文本
+    // "linemarkerstext": 折线 + 标记 + 文本
+    // "none": 不显示
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
 }
 ```
 
