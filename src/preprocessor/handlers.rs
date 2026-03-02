@@ -1,15 +1,15 @@
-mod code_handler;
+pub mod code_handler;
 #[cfg(feature = "plotly-html-handler")]
-mod plotly_html_handler;
+pub mod plotly_html_handler;
 #[cfg(feature = "plotly-svg-handler")]
-mod plotly_svg_handler;
+pub mod plotly_svg_handler;
 
-use std::path::Path;
 use crate::preprocessor::config::{PlotlyOutputType, PreprocessorConfig};
 use anyhow::Result;
 use log::{error, warn};
 use mdbook_preprocessor::book::Chapter;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
+use std::path::Path;
 
 const PULLDOWN_CMARK_OPTIONS: pulldown_cmark::Options = pulldown_cmark::Options::all();
 
@@ -82,7 +82,11 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig, book_path: &Pa
 }
 
 #[allow(unused)]
-pub fn handle_plotly<'a>(code: String, config: &'a PreprocessorConfig, book_path: &'a Path) -> Result<Event<'static>> {
+pub fn handle_plotly<'a>(
+    code: String,
+    config: &'a PreprocessorConfig,
+    book_path: &'a Path,
+) -> Result<Event<'static>> {
     let plot = code_handler::handle(code, &config.input_type)?;
     let result = match config.output_type {
         #[cfg(feature = "plotly-html-handler")]

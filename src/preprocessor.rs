@@ -1,6 +1,6 @@
-mod bookdata;
-mod config;
-mod handlers;
+pub mod bookdata;
+pub mod config;
+pub mod handlers;
 
 use crate::fatal;
 

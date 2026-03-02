@@ -1,14 +1,15 @@
-use super::until::must_translate;
+use super::until::{Map, must_translate};
 use crate::translate;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use plotly::Pie;
 
-pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<f64>>> {
+pub fn parse_pie_data(pie_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Pie<f64>>> {
     let pie: Vec<f64> = must_translate(pie_obj, "values")?;
     let pie: Box<Pie<f64>> = Pie::new(pie);
     let pie = translate! {
         pie,
         pie_obj,
+        map,
         (automargin, bool),
         (dlabel, f64),
         (hole, f64),
@@ -30,6 +31,22 @@ pub fn parse_pie_data(pie_obj: &mut serde_json::Value) -> Result<Box<Pie<f64>>> 
         (text, String),
         (text_array, Vec<String>),
         (text_info, String),
+        (show_legend, bool),
+        (rotation, f64),
+        (pull, f64),
     }?;
+    let pie = if let Some(direction) = pie_obj.get_mut("direction")
+        && direction.is_string()
+    {
+        use plotly::traces::pie::PieDirection;
+        let direction = match direction.as_str().unwrap_or_else(|| unreachable!()) {
+            "clockwise" => PieDirection::Clockwise,
+            "counterclockwise" => PieDirection::CounterClockwise,
+            unexpected => return Err(anyhow!("{unexpected} can't be direction")),
+        };
+        pie.direction(direction)
+    } else {
+        pie
+    };
     Ok(pie)
 }

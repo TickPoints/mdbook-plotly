@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.1.5-alpha
+- Adjusted interfaces
+    - Added Data-density_mapbox
+    - Added Data-histogram
+    - Added Data-image
+    - Added Data-scatter_geo
+    - Added Data-scatter_mapbox
+    - Adjusted other Datas
+- Updated docs
+- Updated some tests
+
 ## v0.1.4-alpha
 > [!WARNING]
 > Although `plotly_svg_handler` is updated, it is not available.

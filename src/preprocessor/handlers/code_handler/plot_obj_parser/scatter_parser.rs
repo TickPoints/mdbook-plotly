@@ -1,15 +1,19 @@
-use super::until::must_translate;
+use super::until::{Map, must_translate};
 use crate::translate;
 use anyhow::{Result, anyhow};
 use plotly::{Scatter, common::color::Rgba};
 
-pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Scatter<f64, f64>>> {
+pub fn parse_scatter_data(
+    scatter_obj: &mut serde_json::Value,
+    map: &Map,
+) -> Result<Box<Scatter<f64, f64>>> {
     let x: Vec<f64> = must_translate(scatter_obj, "x")?;
     let y: Vec<f64> = must_translate(scatter_obj, "y")?;
     let scatter = Scatter::new(x, y);
     let scatter = translate! {
         scatter,
         scatter_obj,
+        map,
         (web_gl_mode, bool),
         (x0, f64),
         (dx, f64),
@@ -32,12 +36,14 @@ pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Sca
         (clip_on_axis, bool),
         (connect_gaps, bool),
         (fill_color, Rgba),
+        (show_legend, bool),
+        (legend_group, String),
     }?;
     let scatter = if let Some(fill) = scatter_obj.get_mut("fill")
-        && fill.is_string() {
-        // Safety: This `unwrap` will never be reached.
+        && fill.is_string()
+    {
         use plotly::common::Fill;
-        let fill = match fill.as_str().unwrap() {
+        let fill = match fill.as_str().unwrap_or_else(|| unreachable!()) {
             "tozeroy" => Fill::ToZeroY,
             "tozerox" => Fill::ToZeroX,
             "tonexty" => Fill::ToNextY,
@@ -52,10 +58,10 @@ pub fn parse_scatter_data(scatter_obj: &mut serde_json::Value) -> Result<Box<Sca
         scatter
     };
     let scatter = if let Some(mode) = scatter_obj.get_mut("mode")
-        && mode.is_string() {
-        // Safety: This `unwrap` will never be reached.
+        && mode.is_string()
+    {
         use plotly::common::Mode;
-        let mode = match mode.as_str().unwrap() {
+        let mode = match mode.as_str().unwrap_or_else(|| unreachable!()) {
             "lines" => Mode::Lines,
             "markers" => Mode::Markers,
             "text" => Mode::Text,
