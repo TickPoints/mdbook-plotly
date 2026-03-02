@@ -1,9 +1,18 @@
 /// Used to send critical errors.
 /// Will exit directly with exit code `1`.
+/// NOTE: This macro is only useful after version `1.79`.
 #[macro_export]
 macro_rules! fatal {
     ($($arg:tt)*) => {{
+        // This line only compiles smoothly after version `1.79`.
+        // Compiling with older versions may result in temporary value errors.
+        //
+        // If you need some information, here it is:
+        // Issue: [#92698](https://github.com/rust-lang/rust/issues/92698)
+        // Tracing issues with RFC66: [#15023](https://github.com/rust-lang/rust/issues/15023)
+        // The std doc about `Arguments`: [`std::fmt::Arguments`](https://doc.rust-lang.org/stable/std/fmt/struct.Arguments.html)
         let msg = format_args!($($arg)*);
+
         log::error!("Critical error: {}", msg);
         #[cfg(debug_assertions)]
         {
