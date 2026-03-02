@@ -242,10 +242,16 @@ _示例_:
 ### 图表主格式
 ```json5
 {
+    // 构建映射表，用来在下面的内容中填充映射
+    // 暂不稳定，其结构可能在最近的几个版本中经常变更
+    map?: Map,
+
     // 图表的布局
     layout?: Layout,
+
     // 图表的数据
     data?: [Data; usize],
+
     // 图表的配置
     config?: Configuration,
 }
@@ -378,6 +384,173 @@ config: {
 }
 ```
 
+### Data-densitymapbox
+`densitymapbox`可以是一个`Data`。该`Data`将被渲染为地图密度热力图。
+
+> [!NOTE]
+> 使用此 `trace` 需要在 `Layout` 中配置对应的 `mapbox` 对象。
+
+```json5
+{
+    type: "densitymapbox",
+
+    // 各数据点的纬度
+    lat: [f64; usize],
+    // 各数据点的经度
+    lon: [f64; usize],
+    // 各数据点的权重值，决定密度强度
+    z: [f64; usize],
+
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 图例分组标识，同组的 trace 在图例中归为一组
+    legend_group?: String,
+    // 图例排序优先级，数值越小越靠前
+    legend_rank?: usize,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 每个数据点的影响半径（单位：像素，默认 30）
+    radius?: u8,
+    // 地图缩放级别
+    zoom?: u8,
+    // 是否根据数据自动计算 zmin 和 zmax
+    zauto?: bool,
+    // 颜色映射的下界
+    zmin?: f64,
+    // 颜色映射的中间值
+    zmid?: f64,
+    // 颜色映射的上界
+    zmax?: f64,
+    // 指定使用的 mapbox 子图（如 "mapbox"、"mapbox2"）
+    subplot?: String,
+}
+```
+### Data-histogram
+`histogram`可以是一个`Data`。该`Data`将被渲染为直方图。
+```json5
+{
+    type: "histogram",
+
+    // x 轴数据（x 和 y 至少需要提供一个）
+    // 仅提供 x 时创建水平方向直方图
+    x?: [f64; usize],
+    // y 轴数据（x 和 y 至少需要提供一个）
+    // 仅提供 y 时创建垂直方向直方图
+    // 同时提供 x 和 y 时创建双变量直方图
+    y?: [f64; usize],
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识
+    legend_group?: String,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 柱子上显示的统一文本
+    text?: String,
+    // 为每个柱子单独设置显示文本
+    text_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个柱子单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 悬停标签模板
+    hover_template?: String,
+    // 为每个柱子单独设置悬停模板
+    hover_template_array?: [String; usize],
+    // 是否自动确定 x 轴的分箱数量
+    auto_bin_x?: bool,
+    // x 轴的分箱数量（auto_bin_x 为 false 时生效）
+    n_bins_x?: usize,
+    // 是否自动确定 y 轴的分箱数量
+    auto_bin_y?: bool,
+    // y 轴的分箱数量（auto_bin_y 为 false 时生效）
+    n_bins_y?: usize,
+    // 对齐分组标识，同组的柱子在坐标轴方向上对齐
+    alignment_group?: String,
+    // 偏移分组标识，同组的柱子共享偏移空间
+    offset_group?: String,
+    // 分箱分组标识，同组的直方图共享分箱边界
+    bin_group?: String,
+    // 指定绑定的 x 轴（用于多轴图表，如 "x2"）
+    x_axis?: String,
+    // 指定绑定的 y 轴（用于多轴图表，如 "y2"）
+    y_axis?: String,
+    // 柱子方向："v" 为垂直，"h" 为水平
+    orientation?: "v" | "h",
+    // 直方图聚合函数，决定每个分箱内的计算方式
+    // "count": 计数（默认）
+    // "sum": 求和
+    // "avg": 平均值
+    // "min": 最小值
+    // "max": 最大值
+    hist_func?: "count" | "sum" | "avg" | "min" | "max",
+    // 直方图归一化方式
+    // "": 不归一化（默认）
+    // "percent": 以百分比表示
+    // "probability": 以概率表示（总和为 1）
+    // "density": 概率密度（面积积分为 1）
+    // "probability density": 概率密度（与 density 类似）
+    hist_norm?: "" | "percent" | "probability" | "density" | "probability density",
+}
+```
+
+### Data-image
+`image`可以是一个`Data`。该`Data`将被渲染为像素图像，支持在笛卡尔坐标系中通过二维像素数组直接显示图像。
+```json5
+{
+    type: "image",
+
+    // 图像像素数据
+    z: [[Rgb; unsize]; unsize],
+
+    // 不透明度，取值范围 0（完全透明）~ 1（完全不透明）
+    opacity?: f64,
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 图例排序优先级，数值越小越靠前
+    legend_rank?: usize,
+    // 图像上显示的统一文本
+    text?: String,
+    // 为每个像素单独设置显示文本
+    text_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个像素单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 悬停标签模板
+    hover_template?: String,
+    // 为每个像素单独设置悬停模板
+    hover_template_array?: [String; usize],
+    // 使用 data URI 指定图像源（如 "data:image/png;base64,..."）
+    // 设置后 z 数据将被忽略
+    source?: String,
+    // 图像左下角的 x 坐标（默认 0）
+    x0?: f64,
+    // 像素在 x 方向上的间距（默认 1）
+    dx?: f64,
+    // 图像左下角的 y 坐标（默认 0）
+    y0?: f64,
+    // 像素在 y 方向上的间距（默认 1）
+    dy?: f64,
+    // 指定绑定的 x 轴（用于多轴图表，如 "x2"）
+    x_axis?: String,
+    // 指定绑定的 y 轴（用于多轴图表，如 "y2"）
+    y_axis?: String,
+    // 各数据点的唯一标识符
+    ids?: [String; usize],
+    // 元数据，可在模板中通过 %{meta} 引用
+    meta?: String,
+    // 图像平滑算法
+    // "fast": 快速平滑
+    // "false": 不平滑（显示原始像素）
+    z_smooth?: "fast" | "false",
+}
+```
+
 ### Data-pie
 `pie`可以是一个`Data`。该`Data`将会被渲染为饼图。
 ```json5
@@ -437,6 +610,127 @@ config: {
     pull?: f64,
     // 扇区排列方向
     direction?: "clockwise" | "counterclockwise",
+}
+```
+
+### Data-scatter_geo
+`scatter_geo`可以是一个`Data`。该`Data`将被渲染为地理散点图，在地理坐标系上绘制。
+```json5
+{
+    type: "scatter_geo",
+
+    // 各数据点的纬度
+    lat: [f64; usize],
+    // 各数据点的经度
+    lon: [f64; usize],
+
+    // 各数据点的唯一标识符
+    ids?: [String; usize],
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 图例分组标识
+    legend_group?: String,
+    // 图例排序优先级，数值越小越靠前
+    legend_rank?: usize,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 数据点上显示的统一文本
+    text?: String,
+    // 为每个数据点单独设置显示文本
+    text_array?: [String; usize],
+    // 文本模板，支持变量替换（如 "%{lat}", "%{lon}"）
+    text_template?: String,
+    // 为每个数据点单独设置文本模板
+    text_template_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个数据点单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 悬停标签模板
+    hover_template?: String,
+    // 为每个数据点单独设置悬停模板
+    hover_template_array?: [String; usize],
+    // 是否连接缺失数据点之间的间隙
+    connect_gaps?: bool,
+    // 指定使用的 geo 子图（如 "geo"、"geo2"）
+    subplot?: String,
+    // 控制此 trace 的图层绘制顺序
+    below?: String,
+    // 绘制模式，决定如何呈现数据点
+    // "lines": 折线
+    // "markers": 散点标记
+    // "text": 仅文本
+    // "linesmarkers": 折线 + 标记
+    // "linestext": 折线 + 文本
+    // "markerstext": 标记 + 文本
+    // "linemarkerstext": 折线 + 标记 + 文本
+    // "none": 不显示
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+}
+```
+
+### Data-scatter_mapbox
+`scatter_mapbox`可以是一个`Data`。该`Data`将被渲染为 Mapbox 散点图。
+> [!NOTE]
+> 使用此 `trace` 需要在 `Layout` 中配置对应的 `mapbox` 对象。
+
+```json5
+{
+    type: "scatter_mapbox",
+
+    // 各数据点的纬度
+    lat: [f64; usize],
+    // 各数据点的经度
+    lon: [f64; usize],
+
+    // 各数据点的唯一标识符
+    ids?: [String; usize],
+    // 选中的数据点索引列表
+    selected_points?: [usize; usize],
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 图例分组标识
+    legend_group?: String,
+    // 图例排序优先级，数值越小越靠前
+    legend_rank?: usize,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 数据点上显示的统一文本
+    text?: String,
+    // 为每个数据点单独设置显示文本
+    text_array?: [String; usize],
+    // 文本模板，支持变量替换（如 "%{lat}", "%{lon}"）
+    text_template?: String,
+    // 为每个数据点单独设置文本模板
+    text_template_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个数据点单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 悬停标签模板
+    hover_template?: String,
+    // 为每个数据点单独设置悬停模板
+    hover_template_array?: [String; usize],
+    // 指定使用的 mapbox 子图（如 "mapbox"、"mapbox2"）
+    subplot?: String,
+    // 控制此 trace 的图层绘制顺序
+    below?: String,
+    // 元数据，可在模板中通过 %{meta} 引用
+    meta?: String,
+    // 绘制模式，决定如何呈现数据点
+    // "lines": 折线
+    // "markers": 散点标记
+    // "text": 仅文本
+    // "linesmarkers": 折线 + 标记
+    // "linestext": 折线 + 文本
+    // "markerstext": 标记 + 文本
+    // "linemarkerstext": 折线 + 标记 + 文本
+    // "none": 不显示
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
 }
 ```
 
