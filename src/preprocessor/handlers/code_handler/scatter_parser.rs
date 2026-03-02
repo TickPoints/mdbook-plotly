@@ -36,6 +36,8 @@ pub fn parse_scatter_data(
         (clip_on_axis, bool),
         (connect_gaps, bool),
         (fill_color, Rgba),
+        (show_legend, bool),
+        (legend_group, String),
     }?;
     let scatter = if let Some(fill) = scatter_obj.get_mut("fill")
         && fill.is_string()

@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
 use crate::translate;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use plotly::Pie;
 
 pub fn parse_pie_data(pie_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Pie<f64>>> {
@@ -31,6 +31,22 @@ pub fn parse_pie_data(pie_obj: &mut serde_json::Value, map: &Map) -> Result<Box<
         (text, String),
         (text_array, Vec<String>),
         (text_info, String),
+        (show_legend, bool),
+        (rotation, f64),
+        (pull, f64),
     }?;
+    let pie = if let Some(direction) = pie_obj.get_mut("direction")
+        && direction.is_string()
+    {
+        use plotly::traces::pie::PieDirection;
+        let direction = match direction.as_str().unwrap_or_else(|| unreachable!()) {
+            "clockwise" => PieDirection::Clockwise,
+            "counterclockwise" => PieDirection::CounterClockwise,
+            unexpected => return Err(anyhow!("{unexpected} can't be direction")),
+        };
+        pie.direction(direction)
+    } else {
+        pie
+    };
     Ok(pie)
 }
