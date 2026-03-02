@@ -384,7 +384,7 @@ config: {
 }
 ```
 
-### Data-densitymapbox
+### Data-density_mapbox
 `densitymapbox`可以是一个`Data`。该`Data`将被渲染为地图密度热力图。
 
 > [!NOTE]
@@ -392,7 +392,7 @@ config: {
 
 ```json5
 {
-    type: "densitymapbox",
+    type: "density_mapbox",
 
     // 各数据点的纬度
     lat: [f64; usize],
@@ -615,6 +615,7 @@ config: {
 
 ### Data-scatter_geo
 `scatter_geo`可以是一个`Data`。该`Data`将被渲染为地理散点图，在地理坐标系上绘制。
+
 ```json5
 {
     type: "scatter_geo",
