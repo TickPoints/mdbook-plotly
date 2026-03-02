@@ -1,3 +1,4 @@
+pub use super::until;
 use super::until::Map;
 use crate::translate;
 use anyhow::{Result, anyhow};
@@ -7,6 +8,15 @@ use plotly::{
     layout::{Legend, Margin},
 };
 use serde_json::Value;
+
+pub mod bar_parser;
+pub mod density_mapbox_parser;
+pub mod histogram_parser;
+pub mod image_parser;
+pub mod pie_parser;
+pub mod scatter_geo_parser;
+pub mod scatter_mapbox_parser;
+pub mod scatter_parser;
 
 pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     let mut plot = Plot::new();
@@ -131,11 +141,20 @@ pub fn parse_data_obj(data_obj: &mut Value, map: &Map) -> Result<Box<dyn Trace>>
         .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
-        "bar" => super::bar_parser::parse_bar_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "pie" => super::pie_parser::parse_pie_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "scatter" => {
-            super::scatter_parser::parse_scatter_data(data_obj, map).map(|v| v as Box<dyn Trace>)
+        "bar" => bar_parser::parse_bar_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "density_mapbox" => density_mapbox_parser::parse_density_mapbox_data(data_obj, map)
+            .map(|v| v as Box<dyn Trace>),
+        "histogram" => {
+            histogram_parser::parse_histogram_data(data_obj, map).map(|v| v as Box<dyn Trace>)
         }
+        "image" => image_parser::parse_image_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "pie" => pie_parser::parse_pie_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "scatter" => scatter_parser::parse_scatter_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "scatter_geo" => {
+            scatter_geo_parser::parse_scatter_geo_data(data_obj, map).map(|v| v as Box<dyn Trace>)
+        }
+        "scatter_mapbox" => scatter_mapbox_parser::parse_scatter_mapbox_data(data_obj, map)
+            .map(|v| v as Box<dyn Trace>),
         unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
 }
