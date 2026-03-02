@@ -1,10 +1,10 @@
 use super::until::{Map, must_translate};
 use crate::translate;
 use anyhow::{Result, anyhow};
-use plotly::{Image, common::color::Rgba};
+use plotly::{Image, common::color::Rgb};
 
 pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Image>> {
-    let z: Vec<Vec<Rgba>> = must_translate(image_obj, "z")?;
+    let z: Vec<Vec<Rgb>> = must_translate(image_obj, "z")?;
     let image = Image::new(z);
     let image = translate! {
         image,
