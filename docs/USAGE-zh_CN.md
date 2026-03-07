@@ -384,6 +384,53 @@ config: {
 }
 ```
 
+### Data-candlestick
+`candlestick`可以是一个`Data`。该`Data`将被渲染为蜡烛图，金融可视化中最常见的价格走势表现形式。
+```json5
+{
+    type: "candlestick",
+
+    // x 轴数据（通常为日期字符串，如 "2024-01-15"）
+    x: [String; usize],
+    // 开盘价
+    open: [f64; usize],
+    // 最高价
+    high: [f64; usize],
+    // 最低价
+    low: [f64; usize],
+    // 收盘价（close > open 时为阳线，反之为阴线）
+    close: [f64; usize],
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识
+    legend_group?: String,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 数据点上显示的统一文本
+    text?: String,
+    // 为每个数据点单独设置显示文本
+    text_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个数据点单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 影线（whisker）宽度，取值范围 0 ~ 1（0 为无影线横杠，1 为与实体等宽）
+    whisker_width?: f64,
+    // 指定绑定的 x 轴（用于多轴图表，如 "x2"）
+    x_axis?: String,
+    // 指定绑定的 y 轴（用于多轴图表，如 "y2"）
+    y_axis?: String,
+    // 可见性控制
+    // "true": 可见（默认）
+    // "false": 不可见
+    // "legendonly": 不绘制但可在图例中显示
+    visible?: "true" | "false" | "legendonly",
+}
+```
+
 ### Data-density_mapbox
 `densitymapbox`可以是一个`Data`。该`Data`将被渲染为地图密度热力图。
 
@@ -495,6 +542,45 @@ config: {
     // "density": 概率密度（面积积分为 1）
     // "probability density": 概率密度（与 density 类似）
     hist_norm?: "" | "percent" | "probability" | "density" | "probability density",
+}
+```
+
+### Data-ohlc
+`ohlc`可以是一个`Data`。该`Data`将被渲染为 OHLC 图，常用于金融股票走势分析。
+```json5
+{
+    type: "ohlc",
+
+    // x 轴数据（通常为日期字符串，如 "2024-01-15"）
+    x: [String; usize],
+    // 开盘价
+    open: [f64; usize],
+    // 最高价
+    high: [f64; usize],
+    // 最低价
+    low: [f64; usize],
+    // 收盘价（close > open 时视为上涨，反之为下跌）
+    close: [f64; usize],
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识
+    legend_group?: String,
+    // 不透明度，取值范围 0 ~ 1
+    opacity?: f64,
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个数据点单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 顶部和底部横线（tick）的宽度，取值范围 0 ~ 0.5
+    tick_width?: f64,
+    // 可见性控制
+    // "true": 可见（默认）
+    // "false": 不可见
+    // "legendonly": 不绘制但可在图例中显示
+    visible?: "true" | "false" | "legendonly",
 }
 ```
 
@@ -610,6 +696,41 @@ config: {
     pull?: f64,
     // 扇区排列方向
     direction?: "clockwise" | "counterclockwise",
+}
+```
+
+### Data-sandey
+`sankey`可以是一个`Data`。该`Data`将被渲染为桑基图，用于可视化节点之间的流量关系。
+```json5
+{
+    type: "sankey",
+
+    // 节点配置
+    node?: {
+        // 节点颜色
+        color?: [Rgb; usize],
+        // 节点之间的间距（像素）
+        pad?: f64,
+        // 节点的厚度（像素）
+        thickness?: f64,
+    },
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 是否可见
+    visible?: bool,
+    // 值的格式化字符串（d3-format 语法，如 ".3f" 保留 3 位小数）
+    value_format?: String,
+    // 值的后缀文本（单位，如 "TWh"、"元"）
+    value_suffix?: String,
+    // 图的方向："v" 为垂直，"h" 为水平
+    orientation?: "v" | "h",
+    // 节点排列方式
+    // "snap": 对齐到网格（默认）
+    // "perpendicular": 垂直排列
+    // "freeform": 自由布局（可拖拽）
+    // "fixed": 固定位置（不可拖拽）
+    arrangement?: "snap" | "perpendicular" | "freeform" | "fixed",
 }
 ```
 
@@ -813,6 +934,32 @@ config: {
     // "linemarkerstext": 折线 + 标记 + 文本
     // "none": 不显示
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+}
+```
+
+### Data-table
+`table`可以是一个`Data`。该`Data`将被渲染为表格。
+```json5
+{
+    type: "table",
+
+    // 表头数据，每个内层数组代表一列的表头值
+    header_values: [[String; usize]; usize],
+    // 单元格数据，每个内层数组代表一列的数据值
+    // 每列的值数量必须与表头一致
+    cells_values: [[String; usize]; usize],
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 列宽比例（按比例填充可用宽度）
+    column_width?: f64,
+    // 数据列的渲染顺序（例如 [2, 0, 1] 表示原第 0 列渲染为第 3 列）
+    column_order?: [usize; usize],
+    // 可见性控制
+    // "true": 可见（默认）
+    // "false": 不可见
+    // "legendonly": 不绘制但可在图例中显示
+    visible?: "true" | "false" | "legendonly",
 }
 ```
 
