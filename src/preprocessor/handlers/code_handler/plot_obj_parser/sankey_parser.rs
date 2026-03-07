@@ -1,8 +1,8 @@
 use super::until::Map;
 use crate::translate;
 use anyhow::{Result, anyhow};
-use plotly::sankey::{Node, Sankey};
 use plotly::common::color::Rgb;
+use plotly::sankey::{Node, Sankey};
 
 pub fn parse_sankey_data(
     sankey_obj: &mut serde_json::Value,
