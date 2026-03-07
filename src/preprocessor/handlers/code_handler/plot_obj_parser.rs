@@ -10,13 +10,18 @@ use plotly::{
 use serde_json::Value;
 
 pub mod bar_parser;
+pub mod candlestick_parser;
 pub mod density_mapbox_parser;
 pub mod histogram_parser;
 pub mod image_parser;
+pub mod ohlc_parser;
 pub mod pie_parser;
+pub mod sankey_parser;
 pub mod scatter_geo_parser;
 pub mod scatter_mapbox_parser;
 pub mod scatter_parser;
+pub mod scatter_polar_parser;
+pub mod table_parser;
 
 pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     let mut plot = Plot::new();
@@ -142,19 +147,27 @@ pub fn parse_data_obj(data_obj: &mut Value, map: &Map) -> Result<Box<dyn Trace>>
         .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
         "bar" => bar_parser::parse_bar_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "candlestick" => {
+            candlestick_parser::parse_candlestick_data(data_obj, map).map(|v| v as Box<dyn Trace>)
+        }
         "density_mapbox" => density_mapbox_parser::parse_density_mapbox_data(data_obj, map)
             .map(|v| v as Box<dyn Trace>),
         "histogram" => {
             histogram_parser::parse_histogram_data(data_obj, map).map(|v| v as Box<dyn Trace>)
         }
+        "ohlc" => ohlc_parser::parse_ohlc_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         "image" => image_parser::parse_image_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         "pie" => pie_parser::parse_pie_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "sankey" => sankey_parser::parse_sankey_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         "scatter" => scatter_parser::parse_scatter_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         "scatter_geo" => {
             scatter_geo_parser::parse_scatter_geo_data(data_obj, map).map(|v| v as Box<dyn Trace>)
         }
         "scatter_mapbox" => scatter_mapbox_parser::parse_scatter_mapbox_data(data_obj, map)
             .map(|v| v as Box<dyn Trace>),
+        "scatter_polar" => scatter_polar_parser::parse_scatter_polar_data(data_obj, map)
+            .map(|v| v as Box<dyn Trace>),
+        "table" => table_parser::parse_table_data(data_obj, map).map(|v| v as Box<dyn Trace>),
         unexpected => Err(anyhow!("{} isn't a type", unexpected)),
     }
 }
