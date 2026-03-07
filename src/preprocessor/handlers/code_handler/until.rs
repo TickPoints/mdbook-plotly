@@ -78,3 +78,18 @@ where
         }
     }
 }
+
+use plotly::color;
+
+// This is to make Json look clearer when it is written.
+#[allow(clippy::enum_variant_names)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "external")]
+#[serde(rename_all = "snake_case")]
+pub enum Color {
+    NamedColor(color::NamedColor),
+    RgbColor(color::Rgb),
+    RgbaColor(color::Rgba),
+}
+
+impl color::Color for Color {}

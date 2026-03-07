@@ -1,10 +1,9 @@
 pub use super::until;
-use super::until::Map;
+use super::until::{Color, Map};
 use crate::translate;
 use anyhow::{Result, anyhow};
 use plotly::{
     Configuration, Layout, Plot, Trace,
-    common::color::Rgb,
     layout::{Legend, Margin},
 };
 use serde_json::Value;
@@ -80,11 +79,7 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
         (show_link, bool),
         (send_data, bool),
         (double_click_delay, usize),
-        (plotly_server_url, &str),
-        (mapbox_access_token, &str),
         (queue_length, usize),
-        (locale, &str),
-        (topojson_url, &str),
         (display_logo, bool),
         (watermark, bool),
     }?;
@@ -101,8 +96,8 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
         (show_legend, bool),
         (height, usize),
         (width, usize),
-        (colorway, Vec<Rgb>),
-        (plot_background_color, Rgb),
+        (colorway, Vec<Color>),
+        (plot_background_color, Color),
         (separators, String),
     }?;
 
@@ -113,8 +108,8 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
             Legend::new(),
             legend_obj,
             map,
-            (background_color, Rgb),
-            (border_color, Rgb),
+            (background_color, Color),
+            (border_color, Color),
             (border_width, usize),
             (x, f64),
             (y, f64),
