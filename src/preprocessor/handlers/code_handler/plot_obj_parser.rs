@@ -79,6 +79,14 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
         (show_tips, bool),
         (show_link, bool),
         (send_data, bool),
+        (double_click_delay, usize),
+        (plotly_server_url, &str),
+        (mapbox_access_token, &str),
+        (queue_length, usize),
+        (locale, &str),
+        (topojson_url, &str),
+        (display_logo, bool),
+        (watermark, bool),
     }?;
 
     Ok(config)
