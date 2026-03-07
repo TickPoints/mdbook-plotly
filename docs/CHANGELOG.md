@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.1.6-alpha
+- Adjusted interfaces
+    - Added Data-candlestick
+    - Added Data-sankey
+    - Added Data-scatter_polar
+    - Added Data-table
+    - Added Data-ohlc
+- Updated docs
+
 ## v0.1.5-alpha
 - Adjusted interfaces
     - Added Data-density_mapbox

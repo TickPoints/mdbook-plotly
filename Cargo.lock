@@ -1655,7 +1655,7 @@ dependencies = [
 
 [[package]]
 name = "mdbook-plotly"
-version = "0.1.5-alpha"
+version = "0.1.6-alpha"
 dependencies = [
  "anyhow",
  "clap",
