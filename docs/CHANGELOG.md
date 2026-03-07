@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.1.6-beta
+- Adjusted interfaces
+    - Adjusted Config
+    - Adjusted other Datas
+    - Added Color enum
+- Updated docs
+- Updated tests
+
 ## v0.1.6-alpha
 - Adjusted interfaces
     - Added Data-candlestick

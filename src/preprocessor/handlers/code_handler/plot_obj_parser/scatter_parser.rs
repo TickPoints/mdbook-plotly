@@ -1,7 +1,7 @@
-use super::until::{Map, must_translate};
+use super::until::{Color, Map, must_translate};
 use crate::translate;
 use anyhow::{Result, anyhow};
-use plotly::{Scatter, common::color::Rgba};
+use plotly::Scatter;
 
 pub fn parse_scatter_data(
     scatter_obj: &mut serde_json::Value,
@@ -35,7 +35,7 @@ pub fn parse_scatter_data(
         (stack_group, String),
         (clip_on_axis, bool),
         (connect_gaps, bool),
-        (fill_color, Rgba),
+        (fill_color, Color),
         (show_legend, bool),
         (legend_group, String),
     }?;

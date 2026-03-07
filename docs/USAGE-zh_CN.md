@@ -109,7 +109,7 @@ offline_js_sources = false
 ## JSON输入格式
 该格式允许您通过JSON来控制图表。
 
-我们采用自己的反序列化逻辑。大部分情况下，你可以使用JavaScript中创建`Plot`提供的json那样的格式，但并不一定总是有效，并且我们也可能会比原始格式增多一些内容。最好的方法还是参照下面的可用条目，但如果您有比较需要的条目，可以提出一个issue，我们将尝试在新版本中添加此条目。
+我们采用自己的反序列化逻辑。最好的方法是参照下面的可用条目，但如果您有比较需要的条目，可以提出一个issue，我们将尝试在新版本中添加此条目。
 
 ### 文档理解须知
 ```json5
@@ -200,6 +200,11 @@ f64
 
 // 同时，文档中也会使用`|`
 0..6usize | 10..1000f64
+
+// 特别的，我们还有一类大小受限的数字
+
+// 范围在[0, 255]的整数
+u8
 ```
 
 ##### 4. 字符串
@@ -228,15 +233,55 @@ String | bool
 
 _定义_:
 ```json5
-Rgb: "rgb(usize, usize, usize)"
+// 一个特别格式的字符串，其中u8是可以更改的数字部分
+// NOTE: 如果字符串格式不合理，将会导致解析失败
+Rgb: "rgb(u8, u8, u8)"
 ```
 _示例_:
 ```json5
-{
-    layout: {
-        plot_background_color: "rgb(255, 255, 255)",
-    }
+"rgb(0, 0, 0)"
+```
+
+- **Rgba**
+
+_定义_:
+```json5
+// 一个特别格式的字符串，其中u8和f64是可以更改的数字部分
+// NOTE: 如果字符串格式不合理，将会导致解析失败
+Rgba: "rgba(u8, u8, u8, f64)"
+```
+_示例_:
+```json5
+"rgba(0, 0, 0, 0.0)"
+```
+
+- **Color**
+Color是一个特别复杂的通用类型，它由多个部分组合而成。
+
+_定义_:
+```json5
+// 以下各个可选选项，每次只能选择一个存在(多个存在将导致解析失败，并且至少需要一个存在)
+Color: {
+    // 一组特别命名的颜色
+    named_color?: NamedColor,
+    // 从 R、G 和 B 通道构建有效 RGB 颜色
+    rgb_color?: Rgb,
+    // 从 R、G、B 和 A 通道构建有效 RGBA 颜色
+    rgba_color?: Rgba,
 }
+
+// 跨浏览器兼容的预定义颜色(CSS的定义: https://www.w3schools.com/cssref/css_colors.php)
+// NOTE: 采用lowercase命名，如AliceBlue应当写作aliceblue
+// NOTE: 这是一个非常长的枚举，因而没有写出所有内容，但如果内容不存在，将会解析失败
+NamedColor: String
+```
+
+_示例_:
+```json5
+{ named_color: "aliceblue" }
+```
+```json5
+{ rgba: "rgba(0, 0, 0, 0)" }
 ```
 
 ### 图表主格式
@@ -258,7 +303,7 @@ _示例_:
 ```
 
 > [!WARNING]
-> 下面内容仍需补充。如果您有意愿，可以提出一个PR。
+> 下面内容仍需补充。(如果您有意愿，可以提出一个PR。)
 
 ### Layout格式
 ```json5
@@ -275,32 +320,45 @@ layout: {
     width?: usize,
     // 图表的色轨
     // 例如饼图中需要多种颜色的饼，程序就会按顺序从色轨中取颜色
-    colorway?: [Rgb; usize],
+    colorway?: [Color; usize],
     // 图表的背景颜色
-    plot_background_color?: Rgb,
+    plot_background_color?: Color,
     // 分离器
     separators?: String,
 
     // 说明器具体设置
     legend?: {
-        // 此部分暂未添加注释
-        background_color?: Rgb,
-        border_color?: Rgb,
+        // 背景色
+        background_color?: Color,
+        // 边框色
+        border_color?: Color,
+        // 边框宽度
         border_width?: usize,
+        // X轴长度
         x?: f64,
+        // Y轴长度
         y?: f64,
+        // 与Data间隙
         trace_group_gap?: usize,
+        // 标题
         title?: String,
     },
 
     // 图表边缘具体设置
     margin?: {     
-        // 此部分暂未添加注释
+        // 左边缘宽度
         left?: usize,
+        // 右边缘宽度
         right?: usize,
+        // 上边缘宽度
         top?: usize,
+        // 下边缘宽度
         bottom?: usize,
+        // 边缘宽度
+        // NOTE: 该选项会覆盖其他边缘宽度设置
+        // 不推荐与其他边缘宽度设置一起使用
         pad?: usize,
+        // 自动扩张
         auto_expand?: bool
     },
 }
@@ -308,21 +366,50 @@ layout: {
 
 ### Config格式
 ```json5
-// 此部分暂未添加注释
 config: {
+    // 静态图表
     static_plot?: bool,
+    // 数学排版
+    // 当页面存在MathJax时有效
     typeset_math?: bool,
+    // 决定是否可编辑
     editable?: bool,
+    // 决定是否进行自动大小设置
     autosizable?: bool,
+    // 决定在窗口大小调整时是否改变布局大小
+    // WARNING: 该选项现无实际用处
     responsive?: bool,
+    // 决定是否填充屏幕
+    // NOTE: 只有当autosizable为true时有效
     fill_frame?: bool,
+    // 边缘宽度
+    // NOTE: 只有当autosizable为true时有效
     frame_margins?: f64,
+    // 确定是否启用鼠标滚轮或双指滚动缩放
+    // NOTE: 对于笛卡尔子图默认禁用，其他则默认开启
     scroll_zoom?: bool,
+    // 显示笛卡尔坐标轴的平移/缩放拖动手柄
     show_axis_drag_handles?: bool,
+    // 显示平移/缩放时的范围输入
+    // NOTE: 只有当show_axis_drag_handles为true时有效
     show_axis_range_entry_boxes?: bool,
+    // 对于交互图表是否显示提示
     show_tips?: bool,
+    // 是否在图表右下角显示指向 Chart Studio Cloud 的链接
     show_link?: bool,
+    // 是否包含仅链接到 Chart Studio Cloud 文件的数据
+    // NOTE: 只有当show_link为true时有效
     send_data?: bool,
+    // 一些双击操作的可用间隔
+    double_click_delay?: usize,
+    // Mapbox 访问令牌
+    mapbox_access_token?: String,
+    // 设置撤销/重做队列的长度
+    queue_length?: usize,
+    // 确定 plotly 标志是否显示在模式栏的末尾
+    display_logo?: bool,
+    // 使用公司标志对图像进行水印处理
+    watermark?: bool,
 }
 ```
 
@@ -708,7 +795,7 @@ config: {
     // 节点配置
     node?: {
         // 节点颜色
-        color?: [Rgb; usize],
+        color?: [Color; usize],
         // 节点之间的间距（像素）
         pad?: f64,
         // 节点的厚度（像素）
@@ -909,7 +996,7 @@ config: {
     clip_on_axis?: bool,
     // 是否连接缺失数据点（NaN / null）之间的间隙
     connect_gaps?: bool,
-    // 填充区域的颜色（Rgba 格式，如 "rgba(255, 0, 0, 0.5)"）
+    // 填充区域的颜色
     fill_color?: Rgba,
     // 是否在图例中显示此 trace
     show_legend?: bool,
