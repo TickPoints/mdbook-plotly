@@ -8,10 +8,10 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
 - [Getting Started](#getting-started)
 - [Configuration](#Configuration)
 - [Input Formats](#input-formats)
-    - [JSON](#JSON Input Format)
+    - [JSON](#json-input-format)
         - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
         - [Types](#Types)
-        - [Main Chart Format](#main-chart-format)
+        - [Main Chart Format](#chart-main-format)
     - [SandboxScript](#SandboxScript)
 - [Output Formats](#output-formats)
 
