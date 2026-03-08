@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.1.6
+- Adjusted `Cargo.toml`
+    - Adjusted `[profile.release]`
+- Updated docs
+
 ## v0.1.6-beta
 - Adjusted interfaces
     - Adjusted Config
