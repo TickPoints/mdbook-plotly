@@ -1,6 +1,7 @@
 /// Used to send critical errors.
 /// Will exit directly with exit code `1`.
-/// NOTE: This macro is only useful after version `1.79`.
+///
+/// NOTE: This macro is only useful after Rust version `1.79`.
 #[macro_export]
 macro_rules! fatal {
     ($($arg:tt)*) => {{
@@ -22,7 +23,8 @@ macro_rules! fatal {
     }};
 }
 
-/// Used to translate `serde_json::Value` into T.
+/// Used to translate `serde_json::Value` into DataPack<T>.
+/// This macro avoids writing a lot of duplicate code.
 #[macro_export]
 macro_rules! translate {
     ($target:expr, $value:expr, $map:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
