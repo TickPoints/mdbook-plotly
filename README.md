@@ -6,8 +6,8 @@
 **English**  **[中文](README-zh_CN.md)**
 
 ## Project Overview
-> [!WARNING]
-> This project has not yet reached a stable release; only preview versions—still under active development—are currently available. It is not recommended for use in production projects.
+> [!TIP]
+> The project is now in its first stable release, with the main features stabilized and additional features still under construction.
 
 `mdbook-plotly` is a preprocessor for **mdbook**, which converts specially tagged code blocks (`plot` or `plotly`) into interactive charts before generating the final HTML documentation.
 
