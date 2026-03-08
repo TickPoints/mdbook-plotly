@@ -10,10 +10,7 @@
     - [JSON](#JSON输入格式)
         - [文档理解须知](#文档理解须知)
         - [类型](#类型)
-        - [图表主格式](#[图表主格式])
-        - [Layout格式](#Layout格式)
-        - [Config格式](#Config格式)
-        - [Data-pie](#Data-pie)
+        - [图表主格式](#图表主格式)
     - [SandboxScript](#SandboxScript输入格式)
 - [输出格式](#输出格式)
 

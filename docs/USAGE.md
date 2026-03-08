@@ -8,13 +8,10 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
 - [Getting Started](#getting-started)
 - [Configuration](#Configuration)
 - [Input Formats](#input-formats)
-    - [JSON](#JSON)
+    - [JSON](#JSON Input Format)
         - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
         - [Types](#Types)
         - [Main Chart Format](#main-chart-format)
-        - [Layout Format](#layout-format)
-        - [Config Format](#config-format)
-        - [Data-pie](#Data-pie)
     - [SandboxScript](#SandboxScript)
 - [Output Formats](#output-formats)
 
@@ -113,6 +110,130 @@ Input formats determine how you define and configure your charts. They are contr
 - `sandbox-script`
 
 Because input formats involve nuanced syntax and behavior, each is described in detail below.
+
+## JSON Input Format
+This format allows you to define and configure charts using JSON.
+
+We implement our own deserialization logic. In most cases, you can use the same JSON structure as that passed to `Plotly.newPlot()` in JavaScript—but compatibility is not guaranteed, and we may extend the schema beyond Plotly’s native specification. For reliable usage, always refer to the documented fields below. If you require a field not currently supported, please open an issue—we’ll consider adding it in a future release.
+
+### Important Notes for Document Understanding
+```json5
+{
+    // Comments like this are used throughout the documentation to clarify intent.
+    // (If you’d like support for comments in actual input files, please file an issue.)
+
+    data?: [
+        // The `?` symbol indicates that this field is *optional*.
+        {
+            type: "pie",  // No `?` → this field is *required*.
+            // In some cases, the presence of one field (e.g., `type: "pie"`)
+            // implies that certain other fields *must* be present.
+            // We will explicitly note such dependencies in the documentation.
+            values: [usize; usize]  // Required when `type` is `"pie"`.
+        }
+    ],
+
+    layout?: {
+        legend?: {
+            title?: String,
+            background_color?: Rgba
+        }
+    }
+}
+```
+
+### Types
+JSON provides several primitive types; all composite types are built from these fundamentals.
+
+#### 1. Objects
+```json5
+// Curly braces `{}` denote an object.
+{}
+
+// Keys may be quoted or unquoted (JSON5 supports both);
+// `:` separates the key from its value, forming a key-value pair.
+{
+    "example": "wiki",
+    // Trailing commas and unquoted keys are permitted in JSON5.
+    example2: true,
+}
+
+// In the documentation, a `?` after a key name means the field is optional.
+// The value following `:` specifies the *expected type*, not a literal value.
+{
+    "example"?: String
+}
+
+// Sometimes the value is a literal (not a type name), meaning the field is restricted to those exact values.
+// The `|` operator denotes a union: the field may be *any one* of the listed options.
+{
+    "example1"?: "a",
+    "example2"?: "a" | "b",
+    "example": String | bool
+}
+```
+
+#### 2. Arrays (Lists)
+```json5
+// Square brackets `[]` denote an array.
+[]
+
+// Elements are comma-separated.
+[1, 2, 3, 4]
+
+// In the documentation, arrays typically require all elements to be of the *same type*.
+// Syntax `[T; N]` means “an array of `N` elements, each of type `T`”.
+// The notation for `N` (the length) is explained below.
+[String; 6]
+
+// Occasionally, heterogeneous arrays are allowed—each position has a fixed, explicit type.
+[String, usize, String | bool, bool]
+```
+
+#### 3. Numeric Types
+```json5
+// An unquoted number (e.g., `1`) is a numeric literal.
+1
+
+// In the documentation, numeric types include:
+// - `usize`: Non-negative integer (e.g., `0`, `42`).
+// - `isize`: Signed integer (e.g., `-1`, `100`).
+// - `f64`: 64-bit floating-point number (e.g., `0.1`, `-3.14`).
+// All numeric types have theoretical upper/lower bounds; exceeding them may result in undefined behavior—
+// e.g., parsing failure or unpredictable numeric values.
+
+// Ranges are expressed as inclusive-exclusive intervals:
+// `0..6f64` means “any `f64` value ≥ 0.0 and < 6.0”.
+0..6f64
+
+// Unions of ranges (or types) are expressed with `|`:
+0..6usize | 10..1000f64
+```
+
+#### 4. Strings
+```json5
+// A sequence of characters enclosed in double quotes (`"..."`) is a string literal.
+"str"
+
+// In the documentation, `String` denotes the generic string type.
+String
+
+// Enum-like string literals are common and often defined via union (`|`):
+"a" | "b" | "c"
+```
+
+#### 5. Booleans
+```json5
+// Boolean literals are unquoted `true` or `false`.
+true
+false
+
+// In the documentation, `bool` denotes the boolean type.
+bool
+
+// Booleans may appear in unions with other types:
+String | bool
+```
 
 #### Common Complex Types
 
