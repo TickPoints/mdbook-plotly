@@ -171,6 +171,6 @@ pub fn parse_data_obj(data_obj: &mut Value, map: &Map) -> Result<Box<dyn Trace>>
         "scatter_polar" => scatter_polar_parser::parse_scatter_polar_data(data_obj, map)
             .map(|v| v as Box<dyn Trace>),
         "table" => table_parser::parse_table_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        unexpected => Err(anyhow!("{} isn't a type", unexpected)),
+        unexpected => Err(anyhow!("{} isn't a type in data", unexpected)),
     }
 }

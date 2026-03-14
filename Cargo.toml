@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-plotly"
-version = "0.1.6"
+version = "0.1.7-alpha"
 authors = ["TickPoints <tickpoints@outlook.com>"]
 edition = "2024"
 keywords = ["markdown", "mdbook"]
@@ -39,3 +39,5 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = true
+# Only on alpha or beta.
+debug = true

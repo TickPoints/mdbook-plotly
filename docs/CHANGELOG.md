@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.7-alpha
+- Adjusted `Cargo.toml`
+- The preview version would now provide the symbols.
+
 ## v0.1.6
 - Adjusted `Cargo.toml`
     - Adjusted `[profile.release]`
