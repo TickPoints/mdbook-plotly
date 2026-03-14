@@ -7,11 +7,11 @@ pub fn parse_ohlc_data(
     ohlc_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<Ohlc<String, f64>>> {
-    let x: Vec<String> = must_translate(ohlc_obj, "x")?;
-    let open: Vec<f64> = must_translate(ohlc_obj, "open")?;
-    let high: Vec<f64> = must_translate(ohlc_obj, "high")?;
-    let low: Vec<f64> = must_translate(ohlc_obj, "low")?;
-    let close: Vec<f64> = must_translate(ohlc_obj, "close")?;
+    let x: Vec<String> = must_translate(ohlc_obj, map, "x")?;
+    let open: Vec<f64> = must_translate(ohlc_obj, map, "open")?;
+    let high: Vec<f64> = must_translate(ohlc_obj, map, "high")?;
+    let low: Vec<f64> = must_translate(ohlc_obj, map, "low")?;
+    let close: Vec<f64> = must_translate(ohlc_obj, map, "close")?;
     let ohlc = Ohlc::new(x, open, high, low, close);
     let ohlc = translate! {
         *ohlc,

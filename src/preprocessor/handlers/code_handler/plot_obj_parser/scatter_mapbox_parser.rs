@@ -7,8 +7,8 @@ pub fn parse_scatter_mapbox_data(
     sm_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<ScatterMapbox<f64, f64>>> {
-    let lat: Vec<f64> = must_translate(sm_obj, "lat")?;
-    let lon: Vec<f64> = must_translate(sm_obj, "lon")?;
+    let lat: Vec<f64> = must_translate(sm_obj, map, "lat")?;
+    let lon: Vec<f64> = must_translate(sm_obj, map, "lon")?;
     let sm = ScatterMapbox::new(lat, lon);
     let sm = translate! {
         sm,

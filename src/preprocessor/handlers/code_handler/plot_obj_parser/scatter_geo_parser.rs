@@ -7,8 +7,8 @@ pub fn parse_scatter_geo_data(
     sg_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<ScatterGeo<f64, f64>>> {
-    let lat: Vec<f64> = must_translate(sg_obj, "lat")?;
-    let lon: Vec<f64> = must_translate(sg_obj, "lon")?;
+    let lat: Vec<f64> = must_translate(sg_obj, map, "lat")?;
+    let lon: Vec<f64> = must_translate(sg_obj, map, "lon")?;
     let sg = ScatterGeo::new(lat, lon);
     let sg = translate! {
         sg,

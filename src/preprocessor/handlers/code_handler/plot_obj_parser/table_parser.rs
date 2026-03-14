@@ -7,8 +7,8 @@ pub fn parse_table_data(
     table_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<Table<Vec<String>, String>>> {
-    let header_values: Vec<Vec<String>> = must_translate(table_obj, "header_values")?;
-    let cells_values: Vec<Vec<String>> = must_translate(table_obj, "cells_values")?;
+    let header_values: Vec<Vec<String>> = must_translate(table_obj, map, "header_values")?;
+    let cells_values: Vec<Vec<String>> = must_translate(table_obj, map, "cells_values")?;
     let header = Header::new(header_values);
     let cells = Cells::new(cells_values);
     let table = Table::new(header, cells);

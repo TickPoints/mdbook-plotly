@@ -4,7 +4,7 @@ use anyhow::{Result, anyhow};
 use plotly::Pie;
 
 pub fn parse_pie_data(pie_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Pie<f64>>> {
-    let pie: Vec<f64> = must_translate(pie_obj, "values")?;
+    let pie: Vec<f64> = must_translate(pie_obj, map, "values")?;
     let pie: Box<Pie<f64>> = Pie::new(pie);
     let pie = translate! {
         pie,

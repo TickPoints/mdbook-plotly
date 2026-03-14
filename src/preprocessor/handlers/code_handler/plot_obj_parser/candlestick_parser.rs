@@ -7,11 +7,11 @@ pub fn parse_candlestick_data(
     cs_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<Candlestick<String, f64>>> {
-    let x: Vec<String> = must_translate(cs_obj, "x")?;
-    let open: Vec<f64> = must_translate(cs_obj, "open")?;
-    let high: Vec<f64> = must_translate(cs_obj, "high")?;
-    let low: Vec<f64> = must_translate(cs_obj, "low")?;
-    let close: Vec<f64> = must_translate(cs_obj, "close")?;
+    let x: Vec<String> = must_translate(cs_obj, map, "x")?;
+    let open: Vec<f64> = must_translate(cs_obj, map, "open")?;
+    let high: Vec<f64> = must_translate(cs_obj, map, "high")?;
+    let low: Vec<f64> = must_translate(cs_obj, map, "low")?;
+    let close: Vec<f64> = must_translate(cs_obj, map, "close")?;
     let cs = Candlestick::new(x, open, high, low, close);
     let cs = translate! {
         // UNEXPECTED: The other methods of the `Ohlc` return only `self`, not boxed `self`.

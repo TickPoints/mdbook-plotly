@@ -11,16 +11,16 @@ pub fn parse_histogram_data(
     let has_y = hist_obj.get("y").is_some();
     let hist = match (has_x, has_y) {
         (true, true) => {
-            let x: Vec<f64> = must_translate(hist_obj, "x")?;
-            let y: Vec<f64> = must_translate(hist_obj, "y")?;
+            let x: Vec<f64> = must_translate(hist_obj, map, "x")?;
+            let y: Vec<f64> = must_translate(hist_obj, map, "y")?;
             Histogram::new_xy(x, y)
         }
         (true, false) => {
-            let x: Vec<f64> = must_translate(hist_obj, "x")?;
+            let x: Vec<f64> = must_translate(hist_obj, map, "x")?;
             Histogram::new(x)
         }
         (false, true) => {
-            let y: Vec<f64> = must_translate(hist_obj, "y")?;
+            let y: Vec<f64> = must_translate(hist_obj, map, "y")?;
             Histogram::new_vertical(y)
         }
         (false, false) => {

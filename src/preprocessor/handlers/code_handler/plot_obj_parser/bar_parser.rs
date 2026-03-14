@@ -4,8 +4,8 @@ use anyhow::{Result, anyhow};
 use plotly::Bar;
 
 pub fn parse_bar_data(bar_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Bar<f64, f64>>> {
-    let x: Vec<f64> = must_translate(bar_obj, "x")?;
-    let y: Vec<f64> = must_translate(bar_obj, "y")?;
+    let x: Vec<f64> = must_translate(bar_obj, map, "x")?;
+    let y: Vec<f64> = must_translate(bar_obj, map, "y")?;
     let bar = Bar::new(x, y);
     let bar = translate! {
         bar,

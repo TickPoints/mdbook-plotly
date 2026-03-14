@@ -3,24 +3,24 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwn
 use serde_json::{Map as JsonMap, Value, value::Index};
 use std::fmt::{Debug, Display};
 
-pub fn must_translate<T, N>(obj: &mut Value, name: N) -> Result<T>
+pub type Map = JsonMap<String, Value>;
+
+#[inline]
+pub fn must_translate<T, N>(obj: &mut Value, map: &Map, name: N) -> Result<T>
 where
-    T: DeserializeOwned,
+    T: DeserializeOwned + Serialize + Debug + Clone,
     N: Index + Display,
 {
     let result = obj
         .get_mut(&name)
         .ok_or(anyhow!("missing `{}` field", name))?;
-    let result = serde_json::from_value::<T>(result.take())?;
+    let result = serde_json::from_value::<DataPack<T>>(result.take())?
+        .unwrap(map)?;
     Ok(result)
 }
 
-pub type Map = JsonMap<String, Value>;
-
 #[derive(Clone, Debug)]
 pub enum DataPack<T>
-where
-    T: Debug + Clone,
 {
     Data(T),
     Index(String),

@@ -7,8 +7,8 @@ pub fn parse_scatter_polar_data(
     sp_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<ScatterPolar<f64, f64>>> {
-    let theta: Vec<f64> = must_translate(sp_obj, "theta")?;
-    let r: Vec<f64> = must_translate(sp_obj, "r")?;
+    let theta: Vec<f64> = must_translate(sp_obj, map, "theta")?;
+    let r: Vec<f64> = must_translate(sp_obj, map, "r")?;
     let sp = ScatterPolar::new(theta, r);
     let sp = translate! {
         sp,

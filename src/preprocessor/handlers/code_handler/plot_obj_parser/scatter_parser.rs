@@ -7,8 +7,8 @@ pub fn parse_scatter_data(
     scatter_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<Scatter<f64, f64>>> {
-    let x: Vec<f64> = must_translate(scatter_obj, "x")?;
-    let y: Vec<f64> = must_translate(scatter_obj, "y")?;
+    let x: Vec<f64> = must_translate(scatter_obj, map, "x")?;
+    let y: Vec<f64> = must_translate(scatter_obj, map, "y")?;
     let scatter = Scatter::new(x, y);
     let scatter = translate! {
         scatter,
