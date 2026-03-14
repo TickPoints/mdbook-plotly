@@ -39,3 +39,5 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = true
+# Only on alpha or beta.
+debug = true
