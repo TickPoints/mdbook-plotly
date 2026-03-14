@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::ScatterPolar;
 
 pub fn parse_scatter_polar_data(
@@ -31,56 +31,39 @@ pub fn parse_scatter_polar_data(
         (theta0, f64),
         (dtheta, f64),
     }?;
-    let sp = if let Some(visible) = sp_obj.get_mut("visible")
-        && visible.is_string()
-    {
-        use plotly::common::Visible;
-        let visible = match visible.as_str().unwrap_or_else(|| unreachable!()) {
-            "true" => Visible::True,
-            "false" => Visible::False,
-            "legendonly" => Visible::LegendOnly,
-            unexpected => return Err(anyhow!("{unexpected} can't be visible")),
-        };
-        sp.visible(visible)
-    } else {
-        sp
-    };
-    let sp = if let Some(mode) = sp_obj.get_mut("mode")
-        && mode.is_string()
-    {
-        use plotly::common::Mode;
-        let mode = match mode.as_str().unwrap_or_else(|| unreachable!()) {
-            "lines" => Mode::Lines,
-            "markers" => Mode::Markers,
-            "text" => Mode::Text,
-            "linesmarkers" => Mode::LinesMarkers,
-            "linestext" => Mode::LinesText,
-            "markerstext" => Mode::MarkersText,
-            "linemarkerstext" => Mode::LinesMarkersText,
-            "none" => Mode::None,
-            unexpected => return Err(anyhow!("{unexpected} can't be mode")),
-        };
-        sp.mode(mode)
-    } else {
-        sp
-    };
-    let sp = if let Some(fill) = sp_obj.get_mut("fill")
-        && fill.is_string()
-    {
-        use plotly::common::Fill;
-        let fill = match fill.as_str().unwrap_or_else(|| unreachable!()) {
+
+    use plotly::common::Fill;
+    use plotly::common::Mode;
+    use plotly::common::Visible;
+    let sp = translate_enum! {
+        sp,
+        sp_obj,
+        map,
+        (fill, {
             "tozeroy" => Fill::ToZeroY,
             "tozerox" => Fill::ToZeroX,
             "tonexty" => Fill::ToNextY,
             "tonextx" => Fill::ToNextX,
-            "toself" => Fill::ToSelf,
-            "tonext" => Fill::ToNext,
-            "none" => Fill::None,
-            unexpected => return Err(anyhow!("{unexpected} can't be fill")),
-        };
-        sp.fill(fill)
-    } else {
-        sp
-    };
+            "toself" =>  Fill::ToSelf,
+            "tonext" =>  Fill::ToNext,
+            "none" =>    Fill::None,
+        }),
+        (mode, {
+            "lines" =>          Mode::Lines,
+            "markers" =>        Mode::Markers,
+            "text" =>           Mode::Text,
+            "linesmarkers" =>   Mode::LinesMarkers,
+            "linestext" =>      Mode::LinesText,
+            "markerstext" =>    Mode::MarkersText,
+            "linemarkerstext" =>Mode::LinesMarkersText,
+            "none" =>           Mode::None,
+        }),
+        (visible, {
+            "true" =>       Visible::True,
+            "false" =>      Visible::False,
+            "legendonly" => Visible::LegendOnly,
+        }),
+    }?;
+
     Ok(sp)
 }

@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::Bar;
 
 pub fn parse_bar_data(bar_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Bar<f64, f64>>> {
@@ -33,18 +33,16 @@ pub fn parse_bar_data(bar_obj: &mut serde_json::Value, map: &Map) -> Result<Box<
         (width, f64),
         (text_angle, f64),
     }?;
-    let bar = if let Some(orientation) = bar_obj.get_mut("orientation")
-        && orientation.is_string()
-    {
-        use plotly::common::Orientation;
-        let orientation = match orientation.as_str().unwrap_or_else(|| unreachable!()) {
+
+    use plotly::common::Orientation;
+    let bar = translate_enum! {
+        bar,
+        bar_obj,
+        map,
+        (orientation, {
             "v" => Orientation::Vertical,
             "h" => Orientation::Horizontal,
-            unexpected => return Err(anyhow!("{unexpected} can't be orientation")),
-        };
-        bar.orientation(orientation)
-    } else {
-        bar
-    };
+        }),
+    }?;
     Ok(bar)
 }

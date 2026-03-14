@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::Candlestick;
 
 pub fn parse_candlestick_data(
@@ -30,20 +30,18 @@ pub fn parse_candlestick_data(
         (x_axis, String),
         (y_axis, String),
     }?;
-    let cs = if let Some(visible) = cs_obj.get_mut("visible")
-        && visible.is_string()
-    {
-        use plotly::common::Visible;
-        let visible = match visible.as_str().unwrap_or_else(|| unreachable!()) {
-            "true" => Visible::True,
-            "false" => Visible::False,
+
+    use plotly::common::Visible;
+    let cs = translate_enum! {
+        cs,
+        cs_obj,
+        map,
+        (visible, {
+            "true" =>       Visible::True,
+            "false" =>      Visible::False,
             "legendonly" => Visible::LegendOnly,
-            unexpected => return Err(anyhow!("{unexpected} can't be visible")),
-        };
-        cs.visible(visible)
-    } else {
-        cs
-    };
+        }),
+    }?;
 
     // UNEXPECTED: The other methods of the `Ohlc` return only `self`, not boxed `self`.
     Ok(Box::new(cs))

@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::traces::table::{Cells, Header, Table};
 
 pub fn parse_table_data(
@@ -20,19 +20,18 @@ pub fn parse_table_data(
         (column_width, f64),
         (column_order, Vec<usize>),
     }?;
-    let table = if let Some(visible) = table_obj.get_mut("visible")
-        && visible.is_string()
-    {
-        use plotly::common::Visible;
-        let visible = match visible.as_str().unwrap_or_else(|| unreachable!()) {
-            "true" => Visible::True,
-            "false" => Visible::False,
+
+    use plotly::common::Visible;
+    let table = translate_enum! {
+        table,
+        table_obj,
+        map,
+        (visible, {
+            "true" =>       Visible::True,
+            "false" =>      Visible::False,
             "legendonly" => Visible::LegendOnly,
-            unexpected => return Err(anyhow!("{unexpected} can't be visible")),
-        };
-        table.visible(visible)
-    } else {
-        table
-    };
+        }),
+    }?;
+
     Ok(table)
 }

@@ -1,6 +1,6 @@
 use super::until::{Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::{Image, color::Rgba};
 
 pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Image>> {
@@ -29,18 +29,17 @@ pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<
         (ids, Vec<String>),
         (meta, String),
     }?;
-    let image = if let Some(zs) = image_obj.get_mut("z_smooth")
-        && zs.is_string()
-    {
-        use plotly::image::ZSmooth;
-        let zs = match zs.as_str().unwrap_or_else(|| unreachable!()) {
-            "fast" => ZSmooth::Fast,
-            "false" => ZSmooth::False,
-            unexpected => return Err(anyhow!("{unexpected} can't be z_smooth")),
-        };
-        image.z_smooth(zs)
-    } else {
-        image
-    };
+
+    use plotly::image::ZSmooth;
+    let image = translate_enum! {
+        image,
+        image_obj,
+        map,
+        (z_smooth, {
+            "fast" =>   ZSmooth::Fast,
+            "false" =>  ZSmooth::False,
+        }),
+    }?;
+
     Ok(image)
 }

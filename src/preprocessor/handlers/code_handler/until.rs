@@ -14,14 +14,12 @@ where
     let result = obj
         .get_mut(&name)
         .ok_or(anyhow!("missing `{}` field", name))?;
-    let result = serde_json::from_value::<DataPack<T>>(result.take())?
-        .unwrap(map)?;
+    let result = serde_json::from_value::<DataPack<T>>(result.take())?.unwrap(map)?;
     Ok(result)
 }
 
 #[derive(Clone, Debug)]
-pub enum DataPack<T>
-{
+pub enum DataPack<T> {
     Data(T),
     Index(String),
 }
