@@ -814,7 +814,7 @@ config: {
 }
 ```
 
-### Data-sandey
+### Data-sankey
 `sankey`可以是一个`Data`。该`Data`将被渲染为桑基图，用于可视化节点之间的流量关系。
 ```json5
 {
