@@ -285,7 +285,6 @@ _示例_:
 ```json5
 {
     // 构建映射表，用来在下面的内容中填充映射
-    // 暂不稳定，其结构可能在最近的几个版本中经常变更
     map?: Map,
 
     // 图表的布局
@@ -296,6 +295,41 @@ _示例_:
 
     // 图表的配置
     config?: Configuration,
+}
+```
+
+### Map格式
+```json5
+map: {
+    // ...
+}
+```
+Map的形式相当自由，如:
+```json5
+map: {
+    a: "Hello",
+    b: 1,
+    c: false,
+    // 后出现的会覆盖前面的
+    c: true,
+}
+```
+可以通过 `key: any` 来轻松定义，其中 `any` 必须是非`Object`类型，否则会优先进行特殊处理。
+
+使用时必须`key`已被定义，然后使用 `"map.key"` 来读取，例如:
+```json5
+{
+    map: {
+        title: "Example",
+        show_legend: false,
+        height: 10,
+    },
+    layout: {
+        // String类型优先识别为Map，然后再识别为String
+        title: "map.title",
+        show_legend: "map.show_legend",
+        height: "map.height",
+    }
 }
 ```
 
