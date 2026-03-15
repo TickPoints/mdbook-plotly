@@ -7,9 +7,9 @@ pub fn parse_density_mapbox_data(
     dm_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<DensityMapbox<f64, f64, f64>>> {
-    let lat: Vec<f64> = must_translate(dm_obj, "lat")?;
-    let lon: Vec<f64> = must_translate(dm_obj, "lon")?;
-    let z: Vec<f64> = must_translate(dm_obj, "z")?;
+    let lat: Vec<f64> = must_translate(dm_obj, map, "lat")?;
+    let lon: Vec<f64> = must_translate(dm_obj, map, "lon")?;
+    let z: Vec<f64> = must_translate(dm_obj, map, "z")?;
     let dm = DensityMapbox::new(lat, lon, z);
     let dm = translate! {
         dm,

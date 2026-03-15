@@ -1,6 +1,6 @@
 use super::until::{Color, Map};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::sankey::{Node, Sankey};
 
 pub fn parse_sankey_data(
@@ -39,35 +39,23 @@ pub fn parse_sankey_data(
         (value_suffix, String),
     }?;
 
-    let sankey = if let Some(orientation) = sankey_obj.get_mut("orientation")
-        && orientation.is_string()
-    {
-        use plotly::common::Orientation;
-        let orientation = match orientation.as_str().unwrap_or_else(|| unreachable!()) {
+    use plotly::common::Orientation;
+    use plotly::sankey::Arrangement;
+    let sankey = translate_enum! {
+        sankey,
+        sankey_obj,
+        map,
+        (orientation, {
             "v" => Orientation::Vertical,
             "h" => Orientation::Horizontal,
-            unexpected => return Err(anyhow!("{unexpected} can't be orientation")),
-        };
-        sankey.orientation(orientation)
-    } else {
-        sankey
-    };
-
-    let sankey = if let Some(arrangement) = sankey_obj.get_mut("arrangement")
-        && arrangement.is_string()
-    {
-        use plotly::sankey::Arrangement;
-        let arrangement = match arrangement.as_str().unwrap_or_else(|| unreachable!()) {
-            "snap" => Arrangement::Snap,
-            "perpendicular" => Arrangement::Perpendicular,
-            "freeform" => Arrangement::Freeform,
-            "fixed" => Arrangement::Fixed,
-            unexpected => return Err(anyhow!("{unexpected} can't be arrangement")),
-        };
-        sankey.arrangement(arrangement)
-    } else {
-        sankey
-    };
+        }),
+        (arrangement, {
+            "snap" =>           Arrangement::Snap,
+            "perpendicular" =>  Arrangement::Perpendicular,
+            "freeform" =>       Arrangement::Freeform,
+            "fixed" =>          Arrangement::Fixed,
+        }),
+    }?;
 
     Ok(sankey)
 }

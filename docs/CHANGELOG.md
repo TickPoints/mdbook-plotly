@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.1.7-beta
+- Adjusted `code_handler`
+    - Adjusted `must_translate`
+    - Added `translate_enum`
+    - Made it all to support `DataPack`(Map)
+- Updated docs
+
 ## v0.1.7-alpha
 - Adjusted `Cargo.toml`
 - The preview version would now provide the symbols.

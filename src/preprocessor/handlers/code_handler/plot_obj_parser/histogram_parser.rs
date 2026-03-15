@@ -1,5 +1,5 @@
 use super::until::{Map, must_translate};
-use crate::translate;
+use crate::{translate, translate_enum};
 use anyhow::{Result, anyhow};
 use plotly::Histogram;
 
@@ -11,16 +11,16 @@ pub fn parse_histogram_data(
     let has_y = hist_obj.get("y").is_some();
     let hist = match (has_x, has_y) {
         (true, true) => {
-            let x: Vec<f64> = must_translate(hist_obj, "x")?;
-            let y: Vec<f64> = must_translate(hist_obj, "y")?;
+            let x: Vec<f64> = must_translate(hist_obj, map, "x")?;
+            let y: Vec<f64> = must_translate(hist_obj, map, "y")?;
             Histogram::new_xy(x, y)
         }
         (true, false) => {
-            let x: Vec<f64> = must_translate(hist_obj, "x")?;
+            let x: Vec<f64> = must_translate(hist_obj, map, "x")?;
             Histogram::new(x)
         }
         (false, true) => {
-            let y: Vec<f64> = must_translate(hist_obj, "y")?;
+            let y: Vec<f64> = must_translate(hist_obj, map, "y")?;
             Histogram::new_vertical(y)
         }
         (false, false) => {
@@ -51,50 +51,33 @@ pub fn parse_histogram_data(
         (x_axis, String),
         (y_axis, String),
     }?;
-    let hist = if let Some(orientation) = hist_obj.get_mut("orientation")
-        && orientation.is_string()
-    {
-        use plotly::common::Orientation;
-        let orientation = match orientation.as_str().unwrap_or_else(|| unreachable!()) {
+
+    use plotly::common::Orientation;
+    use plotly::histogram::{HistFunc, HistNorm};
+
+    let hist = translate_enum! {
+        hist,
+        hist_obj,
+        map,
+        (orientation, {
             "v" => Orientation::Vertical,
             "h" => Orientation::Horizontal,
-            unexpected => return Err(anyhow!("{unexpected} can't be orientation")),
-        };
-        hist.orientation(orientation)
-    } else {
-        hist
-    };
-    let hist = if let Some(hf) = hist_obj.get_mut("hist_func")
-        && hf.is_string()
-    {
-        use plotly::histogram::HistFunc;
-        let hf = match hf.as_str().unwrap_or_else(|| unreachable!()) {
+        }),
+        (hist_func, {
             "count" => HistFunc::Count,
-            "sum" => HistFunc::Sum,
-            "avg" => HistFunc::Average,
-            "min" => HistFunc::Minimum,
-            "max" => HistFunc::Maximum,
-            unexpected => return Err(anyhow!("{unexpected} can't be hist_func")),
-        };
-        hist.hist_func(hf)
-    } else {
-        hist
-    };
-    let hist = if let Some(hn) = hist_obj.get_mut("hist_norm")
-        && hn.is_string()
-    {
-        use plotly::histogram::HistNorm;
-        let hn = match hn.as_str().unwrap_or_else(|| unreachable!()) {
-            "percent" => HistNorm::Percent,
-            "probability" => HistNorm::Probability,
-            "density" => HistNorm::Density,
+            "sum"   => HistFunc::Sum,
+            "avg"   => HistFunc::Average,
+            "min"   => HistFunc::Minimum,
+            "max"   => HistFunc::Maximum,
+        }),
+        (hist_norm, {
+            "percent"             => HistNorm::Percent,
+            "probability"         => HistNorm::Probability,
+            "density"             => HistNorm::Density,
             "probability density" => HistNorm::ProbabilityDensity,
-            "" => HistNorm::Default,
-            unexpected => return Err(anyhow!("{unexpected} can't be hist_norm")),
-        };
-        hist.hist_norm(hn)
-    } else {
-        hist
-    };
+            ""                    => HistNorm::Default,
+        }),
+    }?;
+
     Ok(hist)
 }

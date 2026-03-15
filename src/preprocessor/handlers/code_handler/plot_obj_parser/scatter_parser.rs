@@ -1,18 +1,18 @@
 use super::until::{Color, Map, must_translate};
-use crate::translate;
-use anyhow::{Result, anyhow};
+use crate::{translate, translate_enum};
+use anyhow::Result;
 use plotly::Scatter;
 
 pub fn parse_scatter_data(
-    scatter_obj: &mut serde_json::Value,
+    sc_obj: &mut serde_json::Value,
     map: &Map,
 ) -> Result<Box<Scatter<f64, f64>>> {
-    let x: Vec<f64> = must_translate(scatter_obj, "x")?;
-    let y: Vec<f64> = must_translate(scatter_obj, "y")?;
-    let scatter = Scatter::new(x, y);
-    let scatter = translate! {
-        scatter,
-        scatter_obj,
+    let x: Vec<f64> = must_translate(sc_obj, map, "x")?;
+    let y: Vec<f64> = must_translate(sc_obj, map, "y")?;
+    let sc = Scatter::new(x, y);
+    let sc = translate! {
+        sc,
+        sc_obj,
         map,
         (web_gl_mode, bool),
         (x0, f64),
@@ -39,42 +39,33 @@ pub fn parse_scatter_data(
         (show_legend, bool),
         (legend_group, String),
     }?;
-    let scatter = if let Some(fill) = scatter_obj.get_mut("fill")
-        && fill.is_string()
-    {
-        use plotly::common::Fill;
-        let fill = match fill.as_str().unwrap_or_else(|| unreachable!()) {
+
+    use plotly::common::Fill;
+    use plotly::common::Mode;
+    let sc = translate_enum! {
+        sc,
+        sc_obj,
+        map,
+        (fill, {
             "tozeroy" => Fill::ToZeroY,
             "tozerox" => Fill::ToZeroX,
             "tonexty" => Fill::ToNextY,
             "tonextx" => Fill::ToNextX,
-            "toself" => Fill::ToSelf,
-            "tonext" => Fill::ToNext,
-            "none" => Fill::None,
-            unexpected => return Err(anyhow!("{unexpected} can't be fill")),
-        };
-        scatter.fill(fill)
-    } else {
-        scatter
-    };
-    let scatter = if let Some(mode) = scatter_obj.get_mut("mode")
-        && mode.is_string()
-    {
-        use plotly::common::Mode;
-        let mode = match mode.as_str().unwrap_or_else(|| unreachable!()) {
-            "lines" => Mode::Lines,
-            "markers" => Mode::Markers,
-            "text" => Mode::Text,
-            "linesmarkers" => Mode::LinesMarkers,
-            "linestext" => Mode::LinesText,
-            "markerstext" => Mode::MarkersText,
-            "linemarkerstext" => Mode::LinesMarkersText,
-            "none" => Mode::None,
-            unexpected => return Err(anyhow!("{unexpected} can't be mode")),
-        };
-        scatter.mode(mode)
-    } else {
-        scatter
-    };
-    Ok(scatter)
+            "toself" =>  Fill::ToSelf,
+            "tonext" =>  Fill::ToNext,
+            "none" =>    Fill::None,
+        }),
+        (mode, {
+            "lines" =>          Mode::Lines,
+            "markers" =>        Mode::Markers,
+            "text" =>           Mode::Text,
+            "linesmarkers" =>   Mode::LinesMarkers,
+            "linestext" =>      Mode::LinesText,
+            "markerstext" =>    Mode::MarkersText,
+            "linemarkerstext" =>Mode::LinesMarkersText,
+            "none" =>           Mode::None,
+        }),
+    }?;
+
+    Ok(sc)
 }

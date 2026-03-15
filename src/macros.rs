@@ -23,7 +23,7 @@ macro_rules! fatal {
     }};
 }
 
-/// Used to translate `serde_json::Value` into DataPack<T>.
+/// Used to translate `serde_json::Value` into `DataPack<T>`.
 /// This macro avoids writing a lot of duplicate code.
 #[macro_export]
 macro_rules! translate {
@@ -39,5 +39,36 @@ macro_rules! translate {
             };
         )*
         Ok::<_, serde_json::Error>(target)
+    }};
+}
+
+/// Used to translate string values in `serde_json::Value` into enum variants
+/// via `DataPack<String>`, avoiding a lot of duplicate match-and-build code.
+#[macro_export]
+macro_rules! translate_enum {
+    ($target:expr, $value:expr, $map:expr, $(
+        ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
+    ),* $(,)?) => {{
+        use $crate::preprocessor::handlers::code_handler::until::DataPack;
+        let target = $target;
+        $(
+            let target = if let Some(v) = $value.get_mut(stringify!($method)) {
+                let data = serde_json::from_value::<DataPack<String>>(v.take())?;
+                let s = data.unwrap($map)?;
+                match s.as_str() {
+                    $($str_val => target.$method($variant),)*
+                    unexpected => {
+                        return Err(::anyhow::anyhow!(
+                            "\"{}\" is not a valid value for `{}`",
+                            unexpected,
+                            stringify!($method),
+                        ))
+                    }
+                }
+            } else {
+                target
+            };
+        )*
+        Ok::<_, ::anyhow::Error>(target)
     }};
 }
