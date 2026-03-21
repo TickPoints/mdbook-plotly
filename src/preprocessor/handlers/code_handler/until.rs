@@ -28,7 +28,7 @@ impl<T> DataPack<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
-    fn parse_map(map: &Map, value: &Value) -> Result<T> {
+    fn parse_map(map: &Map, mut value: Value) -> Result<T> {
         if !value.is_object() {
             let direct_result = serde_json::from_value::<T>(value.clone())?;
             return Ok(direct_result);
@@ -37,10 +37,29 @@ where
         let value_type = if !value_type.is_string() {
             return Err(anyhow!("`type` must be a string"));
         } else {
-            value_type.as_str()
+            // SAFETY: `value_type` is a string
+            value_type.as_str().unwrap()
         };
 
-        todo!()
+        match value_type {
+            "raw" => {
+                let result = must_translate(&mut value, map, "data")?;
+                Ok(result)
+            }
+            // g- means generator
+
+            // TODO
+            "g-number-list" => {
+                let index_begin: u64 = must_translate(&mut value, map, "begin")?;
+                let index_end: u64 = must_translate(&mut value, map, "end")?;
+                let mut result = vec![];
+                for i in index_begin..index_end {
+                    result.push(i);
+                }
+                todo!()
+            }
+            _ => Err(anyhow!("unknown type `{}`", value_type)),
+        }
     }
 
     pub fn unwrap(self, map: &Map) -> Result<T> {
@@ -50,7 +69,7 @@ where
                 let value = map
                     .get(&index)
                     .ok_or_else(|| anyhow!("Invalid index: {}", &index))?;
-                Self::parse_map(map, value)?
+                Self::parse_map(map, value.clone())?
             }
         };
         Ok(result)
