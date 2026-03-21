@@ -28,6 +28,21 @@ impl<T> DataPack<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
+    fn parse_map(map: &Map, value: &Value) -> Result<T> {
+        if !value.is_object() {
+            let direct_result = serde_json::from_value::<T>(value.clone())?;
+            return Ok(direct_result);
+        }
+        let value_type = &value["type"];
+        let value_type = if !value_type.is_string() {
+            return Err(anyhow!("`type` must be a string"));
+        } else {
+            value_type.as_str()
+        };
+
+        todo!()
+    }
+
     pub fn unwrap(self, map: &Map) -> Result<T> {
         let result = match self {
             Self::Data(data) => data,
@@ -35,7 +50,7 @@ where
                 let value = map
                     .get(&index)
                     .ok_or_else(|| anyhow!("Invalid index: {}", &index))?;
-                serde_json::from_value::<T>(value.clone())?
+                Self::parse_map(map, value)?
             }
         };
         Ok(result)
