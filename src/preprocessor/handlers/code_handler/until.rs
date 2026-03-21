@@ -46,17 +46,15 @@ where
                 let result = must_translate(&mut value, map, "data")?;
                 Ok(result)
             }
-            // g- means generator
-
-            // TODO
+            // `g-` means generator
             "g-number-list" => {
                 let index_begin: u64 = must_translate(&mut value, map, "begin")?;
                 let index_end: u64 = must_translate(&mut value, map, "end")?;
                 let mut result = vec![];
                 for i in index_begin..index_end {
-                    result.push(i);
+                    result.push(Value::Number(i.into()));
                 }
-                todo!()
+                Ok(serde_json::from_value(value)?)
             }
             _ => Err(anyhow!("unknown type `{}`", value_type)),
         }
