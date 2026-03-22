@@ -28,6 +28,47 @@ impl<T> DataPack<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
+    fn parse_map(map: &Map, mut value: Value) -> Result<T> {
+        if !value.is_object() {
+            let direct_result = serde_json::from_value::<T>(value.clone())?;
+            return Ok(direct_result);
+        }
+        let value_type = &value["type"];
+        let value_type = if !value_type.is_string() {
+            return Err(anyhow!("`type` must be a string"));
+        } else {
+            // SAFETY: `value_type` is a string
+            value_type.as_str().unwrap()
+        };
+        use fasteval::ez_eval;
+        match value_type {
+            "raw" => {
+                let result = must_translate(&mut value, map, "data")?;
+                Ok(result)
+            }
+            // `g-` means generator
+            "g-number-list" => {
+                let index_begin: u64 = must_translate(&mut value, map, "begin")?;
+                let index_end: u64 = must_translate(&mut value, map, "end")?;
+                let expr: String = must_translate(&mut value, map, "expr")?;
+                let mut result = vec![];
+                let mut namespace = fasteval::StrToF64Namespace::new();
+                for i in index_begin..index_end {
+                    namespace.insert("i", i as f64);
+                    let data = ez_eval(&expr, &mut namespace)?;
+                    result.push(Value::from(data));
+                }
+                Ok(serde_json::from_value(result.into())?)
+            }
+            "g-number" => {
+                let expr: String = must_translate(&mut value, map, "expr")?;
+                let data = ez_eval(&expr, &mut fasteval::EmptyNamespace {})?;
+                Ok(serde_json::from_value(data.into())?)
+            }
+            _ => Err(anyhow!("unknown type `{}`", value_type)),
+        }
+    }
+
     pub fn unwrap(self, map: &Map) -> Result<T> {
         let result = match self {
             Self::Data(data) => data,
@@ -35,7 +76,7 @@ where
                 let value = map
                     .get(&index)
                     .ok_or_else(|| anyhow!("Invalid index: {}", &index))?;
-                serde_json::from_value::<T>(value.clone())?
+                Self::parse_map(map, value.clone())?
             }
         };
         Ok(result)

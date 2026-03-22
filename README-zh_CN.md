@@ -1,4 +1,5 @@
 # mdbook-plotly
+
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/release.yml?style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -6,6 +7,7 @@
 **[English](README.md)**  **中文**
 
 ## 项目概述
+
 > [!TIP]
 > 该项目现在有首个稳定版本，主体功能已经稳定，额外功能仍在构建中。
 
@@ -16,7 +18,9 @@
 ## 开始使用
 
 ### 安装
+
 1. 使用Cargo
+
 ```shell
 cargo install mdbook-plotly
 # 如果您使用binstall
@@ -26,13 +30,16 @@ cargo binstall mdbook-plotly
 或者也可以从GitHub页面的[Releases](https://github.com/TickPoints/mdbook-plotly/releases)根据您的系统信息下载最新可用版本，然后把此应用程序所在路径添加到系统的 `Path` 环境变量下。
 
 2. 请在您书的 `book.toml` 添加如下内容:
+
 ```toml
 [preprocessor.plotly]
 after = ["links"]
 ```
 
 ### 生成图表
+
 在您所需要的地方添加一个代码块，如下:
+
 ~~~markdown
 ```plot
 {}
@@ -42,10 +49,13 @@ after = ["links"]
 更多内容可以查看[使用手册](docs/USAGE-zh_CN.md)。
 
 ## 许可证
+
 采用 `MIT` 开源许可，完整条款请参阅 [LICENSE](LICENSE) 文件。
 
 ## 贡献指南
+
 我们欢迎任何形式的贡献！请：
+
 - 在提交 Pull Request 前，先通过 Issue 提出功能建议或问题讨论
 - 确保所有测试通过（`cargo test`）且代码已格式化（`cargo fmt`）
 - 使用清晰的提交信息

@@ -1,4 +1,7 @@
 # mdbook-plotly
+
+[![GitHub](https://img.shields.io/github/license/TickPoints/mdbook-plotly.svg?style=for-the-badge&logo=github)](https://github.com/TickPoints/mdbook-plotly/blob/master/LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/TickPoints/mdbook-plotly.svg?style=for-the-badge&logo=github)](https://github.com/TickPoints/mdbook-plotly/releases)
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/release.yml?style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -6,6 +9,7 @@
 **English**  **[中文](README-zh_CN.md)**
 
 ## Project Overview
+
 > [!TIP]
 > The project is now in its first stable release, with the main features stabilized and additional features still under construction.
 
@@ -16,7 +20,9 @@ It parses chart definitions structured in specific formats (currently supporting
 ## Getting Started
 
 ### Installation
+
 1. Using Cargo
+
 ```shell
 cargo install mdbook-plotly
 # If you use binstall:
@@ -26,13 +32,16 @@ cargo binstall mdbook-plotly
 Alternatively, download the latest available release for your system from the [Releases](https://github.com/TickPoints/mdbook-plotly/releases) page on GitHub, then add the application’s directory to your system’s PATH environment variable.
 
 2. Add the following to your `book.toml`:
+
 ```toml
 [preprocessor.plotly]
 after = ["links"]
 ```
 
 ### Generating Charts
+
 Insert a code block where you want the chart to appear, like this:
+
 ~~~markdown
 ```plot
 {}
@@ -41,12 +50,15 @@ Insert a code block where you want the chart to appear, like this:
 
 For more details, refer to the [User Guide](docs/USAGE.md).  
 
-## License  
-This project is licensed under the **MIT License**. For full terms, see the [LICENSE](LICENSE) file.  
+## License
 
-## Contributing  
-We welcome contributions of all kinds! Please follow these guidelines:  
-- Before submitting a Pull Request, open an Issue first to propose new features or discuss bugs.  
-- Ensure all tests pass (`cargo test`) and code is properly formatted (`cargo fmt`).  
-- Use clear, descriptive commit messages.  
+This project is licensed under the **MIT License**. For full terms, see the [LICENSE](LICENSE) file.
+
+## Contributing
+
+We welcome contributions of all kinds! Please follow these guidelines:
+
+- Before submitting a Pull Request, open an Issue first to propose new features or discuss bugs.
+- Ensure all tests pass (`cargo test`) and code is properly formatted (`cargo fmt`).
+- Use clear, descriptive commit messages.
 - Submit Pull Requests targeting the `dev` branch.

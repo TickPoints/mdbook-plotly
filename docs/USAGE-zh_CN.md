@@ -333,6 +333,106 @@ map: {
 }
 ```
 
+#### 更高级的Map
+> [!WARNING]
+> 本部分内容尚有待更新，原因: 未与当前版本相匹配。
+> 如果您有意愿，请提出一个Issue。
+
+Map的使用可能会造成一些性能损耗，每一次解析都需要克隆，但理论上并不会损耗太多，不过远远不推荐大量的使用Map。在与上面兼容的情况下，还有特殊处理:
+```json5
+map: {
+    value: true,
+    example: {
+        type: "raw",
+        data: "map.value"
+    },
+    example2: {
+        type: "raw",
+        data: {
+            title: "a"
+        }
+    }
+}
+```
+原始类型可以用来引用已经创造过的Map(`data`内部再嵌套`Object`的话，内部的`Object`无法引用)。
+```json5
+map: {
+    example: {
+        // g-开头的是一组生成器
+        // 下面这个会生成一组数字(f64)列表，但是它不会马上确定下来，相反，它是以类型擦除的形式直到调用时才被判定类型
+        type: "g-number-list",
+        // 这两者用来确定一个区间，i 将属于 begin..end (每个均为整数u64，并且包括begin不包括end)
+        begin: u64,
+        end: u64,
+
+        // 相关的表达式
+        expr: String,
+    }
+}
+```
+该表达式中唯一具有的变量是`i`用来确定循环的次数，表达式由`fasteval`支持，部分格式如下:
+```text
+NOTE: 下面部分内容直接由`fasteval`提供，不做翻译。
+  * print(...strings and values...) -- Prints to stderr.  Very useful to 'probe' an expression.
+                                       Evaluates to the last value.
+                                       Example: `print("x is", x, "and y is", y)`
+                                       Example: `x + print("y:", y) + z == x+y+z`
+
+  * log(base=10, val) -- Logarithm with optional 'base' as first argument.
+                         If not provided, 'base' defaults to '10'.
+                         Example: `log(100) + log(e(), 100)`
+
+  * e()  -- Euler's number (2.718281828459045)
+  * pi() -- π (3.141592653589793)
+
+  * int(val)
+  * ceil(val)
+  * floor(val)
+  * round(modulus=1, val) -- Round with optional 'modulus' as first argument.
+                             Example: `round(1.23456) == 1  &&  round(0.001, 1.23456) == 1.235`
+
+  * abs(val)
+  * sign(val)
+
+  * min(val, ...) -- Example: `min(1, -2, 3, -4) == -4`
+  * max(val, ...) -- Example: `max(1, -2, 3, -4) == 3`
+
+  * sin(radians)    * asin(val)
+  * cos(radians)    * acos(val)
+  * tan(radians)    * atan(val)
+  * sinh(val)       * asinh(val)
+  * cosh(val)       * acosh(val)
+  * tanh(val)       * atanh(val)
+Several numeric formats are supported:
+
+    Integers: 1, 2, 10, 100, 1001
+
+    Decimals: 1.0, 1.23456, 0.000001
+
+    Exponents: 1e3, 1E3, 1e-3, 1E-3, 1.2345e100
+
+    Suffix:
+            1.23p        = 0.00000000000123
+            1.23n        = 0.00000000123
+            1.23µ, 1.23u = 0.00000123
+            1.23m        = 0.00123
+            1.23K, 1.23k = 1230
+            1.23M        = 1230000
+            1.23G        = 1230000000
+            1.23T        = 1230000000000
+Listed in order of precedence:
+
+    (Highest Precedence) ^               Exponentiation
+                         %               Modulo
+                         /               Division
+                         *               Multiplication
+                         -               Subtraction
+                         +               Addition
+                         == != < <= >= > Comparisons (all have equal precedence)
+                         && and          Logical AND with short-circuit
+    (Lowest Precedence)  || or           Logical OR with short-circuit
+```
+
 ### Layout格式
 ```json5
 layout: {
@@ -814,7 +914,7 @@ config: {
 }
 ```
 
-### Data-sandey
+### Data-sankey
 `sankey`可以是一个`Data`。该`Data`将被渲染为桑基图，用于可视化节点之间的流量关系。
 ```json5
 {

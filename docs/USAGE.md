@@ -297,7 +297,6 @@ _Example_:
 ```json5
 {
     // Build a mapping table for populating mappings in the sections below.
-    // Currently unstable—its structure may change frequently in upcoming releases.
     map?: Map,
 
     // Chart layout configuration
@@ -310,6 +309,13 @@ _Example_:
     config?: Configuration,
 }
 ```
+
+### Map Format
+
+> [!WARNING]
+> This section has yet to be updated. Reason: It does not match the current version.
+> If you are willing, please raise a Question.
+#### More advanced Map
 
 ### Layout Format
 ```json5
