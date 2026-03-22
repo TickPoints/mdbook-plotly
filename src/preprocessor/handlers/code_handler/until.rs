@@ -40,7 +40,7 @@ where
             // SAFETY: `value_type` is a string
             value_type.as_str().unwrap()
         };
-
+        use fasteval::ez_eval;
         match value_type {
             "raw" => {
                 let result = must_translate(&mut value, map, "data")?;
@@ -50,11 +50,20 @@ where
             "g-number-list" => {
                 let index_begin: u64 = must_translate(&mut value, map, "begin")?;
                 let index_end: u64 = must_translate(&mut value, map, "end")?;
+                let expr: String = must_translate(&mut value, map, "expr")?;
                 let mut result = vec![];
+                let mut namespace = fasteval::StrToF64Namespace::new();
                 for i in index_begin..index_end {
-                    result.push(Value::Number(i.into()));
+                    namespace.insert("i", i as f64);
+                    let data = ez_eval(&expr, &mut namespace)?;
+                    result.push(Value::from(data));
                 }
-                Ok(serde_json::from_value(value)?)
+                Ok(serde_json::from_value(result.into())?)
+            }
+            "g-number" => {
+                let expr: String = must_translate(&mut value, map, "expr")?;
+                let data = ez_eval(&expr, &mut fasteval::EmptyNamespace {})?;
+                Ok(serde_json::from_value(data.into())?)
             }
             _ => Err(anyhow!("unknown type `{}`", value_type)),
         }
