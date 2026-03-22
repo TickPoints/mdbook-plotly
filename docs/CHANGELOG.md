@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.1.7-beta.2
+- Adjusted `code_handler`
+    - Updated `map`
+- Fixed docs
+- Adjusted `Cargo.toml`
+    - Added the `fasteval` crate
+
 ## v0.1.7-beta
 - Adjusted `code_handler`
     - Adjusted `must_translate`
