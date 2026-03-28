@@ -424,6 +424,15 @@ _Complete example:_
 }
 ```
 
+Since most of them are compatible with `DataPack<T>`, only the incompatible ones are given here:
+
+- Any `type` field (usually hard-coded in the code, so it is not recommended to change)
+- Primitive generators in Map
+
+Also note that the generator is lazily loaded each time it is processed, and the same generator does not share data between different fields, so it will be re-evaluated each time a Map is used.
+
+If you find that some items are not given above, but do not support Map, please submit an Issue, and we will solve it.
+
 ### Chart Main Format
 ```json5
 {
@@ -440,13 +449,6 @@ _Complete example:_
     config?: Configuration,
 }
 ```
-
-### Map Format
-
-> [!WARNING]
-> This section has yet to be updated. Reason: It does not match the current version.
-> If you are willing, please raise a Question.
-#### More advanced Map
 
 ### Layout Format
 ```json5
