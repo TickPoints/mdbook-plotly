@@ -194,8 +194,6 @@ The following notation is used throughout this reference to describe expected ty
 
 ### Map and Generators
 
-### Map and Generators
-
 The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
 
 Map values can be either raw data (any JSON value) or generator objects. Generator objects have a `type` field indicating the generation algorithm, plus additional parameters.
@@ -334,6 +332,7 @@ Also note that the generator is lazily loaded each time it is processed, and the
 If you find that some items are not given above, but do not support Map, please submit an Issue, and we will solve it.
 
 ### Chart Main Format
+
 ```json5
 {
     // Build a mapping table for populating mappings in the sections below.
@@ -351,6 +350,7 @@ If you find that some items are not given above, but do not support Map, please 
 ```
 
 ### Layout Format
+
 ```json5
 layout: {
     // The chart title
@@ -411,6 +411,7 @@ layout: {
 ```
 
 ### Config Format
+
 ```json5
 config: {
     // Static chart (disables interactivity)
@@ -460,6 +461,7 @@ config: {
 ```
 
 ### Data-bar
+
 `bar` can be a `Data` entry. This `Data` will be rendered as a bar chart.
 ```json5
 {
@@ -518,6 +520,7 @@ config: {
 ```
 
 ### Data-candlestick
+
 `candlestick` can be a `Data` entry. This `Data` will be rendered as a candlestick chart—the most common representation of price movements in financial visualization.
 ```json5
 {
@@ -565,6 +568,7 @@ config: {
 ```
 
 ### Data-density_mapbox
+
 `densitymapbox` can be a `Data` entry. This `Data` will be rendered as a density heatmap on a map.
 
 > [!NOTE]
@@ -609,6 +613,7 @@ config: {
 ```
 
 ### Data-histogram
+
 `histogram` can be a `Data` entry. This `Data` will be rendered as a histogram.
 ```json5
 {
@@ -680,6 +685,7 @@ config: {
 ```
 
 ### Data-ohlc
+
 `ohlc` can be a `Data` entry. This `Data` will be rendered as an OHLC chart, commonly used for financial stock trend analysis.
 ```json5
 {
@@ -719,6 +725,7 @@ config: {
 ```
 
 ### Data-image
+
 `image` can be a `Data` entry. This `Data` will be rendered as a pixel image, supporting direct image display via a 2D pixel array within a Cartesian coordinate system.
 ```json5
 {
@@ -772,6 +779,7 @@ config: {
 ```
 
 ### Data-pie
+
 `pie` can be a `Data` entry. This `Data` will be rendered as a pie chart.
 ```json5
 {
@@ -834,6 +842,7 @@ config: {
 ```
 
 ### Data-sankey
+
 `sankey` can be a `Data` entry. This `Data` will be rendered as a Sankey diagram, used for visualizing flow relationships between nodes.
 ```json5
 {
@@ -869,6 +878,7 @@ config: {
 ```
 
 ### Data-scatter_geo
+
 `scatter_geo` can be a `Data` entry. This `Data` will be rendered as a geographic scatter plot, drawn on a geographic coordinate system.
 
 ```json5
@@ -928,6 +938,7 @@ config: {
 ```
 
 ### Data-scatter_mapbox
+
 `scatter_mapbox` can be a `Data` entry. This `Data` will be rendered as a Mapbox scatter plot.
 > [!NOTE]
 > Using this `trace` requires configuring the corresponding `mapbox` object in `Layout`.
@@ -991,6 +1002,7 @@ config: {
 ```
 
 ### Data-scatter
+
 `scatter` can be a `Data` entry. This `Data` will be rendered as a filled area chart.
 ```json5
 {
@@ -1072,6 +1084,7 @@ config: {
 ```
 
 ### Data-table
+
 `table` can be a `Data` entry. This `Data` will be rendered as a table.
 ```json5
 {
@@ -1098,6 +1111,7 @@ config: {
 ```
 
 ## SandboxScript
+
 > [!WARNING]
 > **This format is deprecated**. Using it will emit a warning and a debug message, and fall back to rendering the default chart.
 
