@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.7
+- Adjusted `code_handler`
+    - Updated `map`
+- Fixed docs
+- Updated tests
+
 ## v0.1.7-beta.2
 - Adjusted `code_handler`
     - Updated `map`

@@ -10,6 +10,7 @@
     - [JSON](#JSON输入格式)
         - [文档理解须知](#文档理解须知)
         - [类型](#类型)
+        - [映射与生成器](#映射与生成器)
         - [图表主格式](#图表主格式)
     - [SandboxScript](#SandboxScript输入格式)
 - [输出格式](#输出格式)
@@ -281,6 +282,144 @@ _示例_:
 { rgba: "rgba(0, 0, 0, 0)" }
 ```
 
+### 映射与生成器
+
+`map` 字段提供了一个映射表，可以在图表定义的其他地方通过 `map.key` 语法引用。这允许重复使用数据并通过内置生成器生成复杂值。
+
+映射值可以是原始数据(任何 JSON 值)或生成器对象。生成器对象具有一个 `type` 字段表示生成算法，以及额外的参数。
+
+#### 生成器类型
+
+所有生成器对象必须包含 `type` 字段。支持以下生成器类型:
+
+- **`raw`** — 直接传递数据，不做更改。
+
+  _参数:_
+  ```json5
+  {
+      type: "raw",
+      data: T  // 任意可直接使用的值
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "raw", data: [1, 2, 3] }
+  ```
+
+- **`g-number-list`** — 通过对一个整数范围内的每个整数求值表达式来生成数字列表。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-number-list",
+      begin: usize,   // 起始索引(包含)
+      end: usize,     // 结束索引(不包含)
+      expr: String    // 使用变量 `i` 的算术表达式
+  }
+  ```
+  表达式使用 [fasteval](https://crates.io/crates/fasteval) 库求值；变量 `i`(作为 `f64`)在表达式中可用。
+
+  _示例:_
+  ```json5
+  { type: "g-number-list", begin: 0, end: 3, expr: "i * 2" }
+  // 得到 [0.0, 2.0, 4.0]
+  ```
+
+- **`g-number`** — 求值一个常数算术表达式。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-number",
+      expr: String    // 算术表达式(无变量)
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-number", expr: "2 + 3 * 4" }
+  // 得到 14.0
+  ```
+
+- **`g-range`** — 生成浮点数的算术级数。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-range",
+      begin: f64,     // 第一个值(包含)
+      end: f64,       // 上界(不包含)
+      step?: f64      // 步长(默认为 1.0，必须为正数)
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-range", begin: 0.0, end: 5.0, step: 1.0 }
+  // 得到 [0.0, 1.0, 2.0, 3.0, 4.0]
+  ```
+
+- **`g-repeat`** — 将给定值重复指定次数。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-repeat",
+      value: T,       // 任意 JSON 值
+      count: usize    // 重复次数
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-repeat", value: 42.0, count: 3 }
+  // 得到 [42.0, 42.0, 42.0]
+  ```
+
+- **`g-linear`** — 在 `begin` 和 `end` 之间(包含两端点)线性生成 `count` 个值。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-linear",
+      begin: f64,
+      end: f64,
+      count: usize    // 必须为正数
+  }
+  ```
+  如果 `count` 为 1，结果为 `[begin]`。否则步长为 `(end - begin) / (count - 1)`。
+
+  _示例:_
+  ```json5
+  { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
+  // 得到 [0.0, 0.25, 0.5, 0.75, 1.0]
+  ```
+
+#### 使用映射
+
+映射条目在其他地方通过前缀 `map.` 引用。例如，如果映射包含键 `myrange`，你可以在任何接受 `DataPack<T>` 的字段(在下面提供)中使用 `"map.myrange"`。
+
+_完整示例:_
+
+```json5
+{
+    map: {
+        xs: { type: "g-linear", begin: 0, end: 10, count: 5 },
+        ys: { type: "g-number-list", begin: 0, end: 5, expr: "i * i" }
+    },
+    data: [{
+        type: "scatter",
+        x: "map.xs",
+        y: "map.ys"
+    }]
+}
+```
+
+由于绝大部分都兼容 `DataPack<T>`，所以这里只给出不兼容的内容:
+
+- 任何`type`字段(通常是硬编码在代码中的，所以不建议更改)
+- Map 中的原始生成器
+
+另外要注意的是，生成器在每一次处理的时候都是懒加载的，并且相同的生成器在不同的字段之间不共享数据，因而每一次使用 Map 都将会重新求值。
+如果你发现有的条目没有在上面给出，却不支持Map，请提交一个Issue，我们将会解决。
+
 ### 图表主格式
 ```json5
 {
@@ -296,141 +435,6 @@ _示例_:
     // 图表的配置
     config?: Configuration,
 }
-```
-
-### Map格式
-```json5
-map: {
-    // ...
-}
-```
-Map的形式相当自由，如:
-```json5
-map: {
-    a: "Hello",
-    b: 1,
-    c: false,
-    // 后出现的会覆盖前面的
-    c: true,
-}
-```
-可以通过 `key: any` 来轻松定义，其中 `any` 必须是非`Object`类型，否则会优先进行特殊处理。
-
-使用时必须`key`已被定义，然后使用 `"map.key"` 来读取，例如:
-```json5
-{
-    map: {
-        title: "Example",
-        show_legend: false,
-        height: 10,
-    },
-    layout: {
-        // String类型优先识别为Map，然后再识别为String
-        title: "map.title",
-        show_legend: "map.show_legend",
-        height: "map.height",
-    }
-}
-```
-
-#### 更高级的Map
-> [!WARNING]
-> 本部分内容尚有待更新，原因: 未与当前版本相匹配。
-> 如果您有意愿，请提出一个Issue。
-
-Map的使用可能会造成一些性能损耗，每一次解析都需要克隆，但理论上并不会损耗太多，不过远远不推荐大量的使用Map。在与上面兼容的情况下，还有特殊处理:
-```json5
-map: {
-    value: true,
-    example: {
-        type: "raw",
-        data: "map.value"
-    },
-    example2: {
-        type: "raw",
-        data: {
-            title: "a"
-        }
-    }
-}
-```
-原始类型可以用来引用已经创造过的Map(`data`内部再嵌套`Object`的话，内部的`Object`无法引用)。
-```json5
-map: {
-    example: {
-        // g-开头的是一组生成器
-        // 下面这个会生成一组数字(f64)列表，但是它不会马上确定下来，相反，它是以类型擦除的形式直到调用时才被判定类型
-        type: "g-number-list",
-        // 这两者用来确定一个区间，i 将属于 begin..end (每个均为整数u64，并且包括begin不包括end)
-        begin: u64,
-        end: u64,
-
-        // 相关的表达式
-        expr: String,
-    }
-}
-```
-该表达式中唯一具有的变量是`i`用来确定循环的次数，表达式由`fasteval`支持，部分格式如下:
-```text
-NOTE: 下面部分内容直接由`fasteval`提供，不做翻译。
-  * print(...strings and values...) -- Prints to stderr.  Very useful to 'probe' an expression.
-                                       Evaluates to the last value.
-                                       Example: `print("x is", x, "and y is", y)`
-                                       Example: `x + print("y:", y) + z == x+y+z`
-
-  * log(base=10, val) -- Logarithm with optional 'base' as first argument.
-                         If not provided, 'base' defaults to '10'.
-                         Example: `log(100) + log(e(), 100)`
-
-  * e()  -- Euler's number (2.718281828459045)
-  * pi() -- π (3.141592653589793)
-
-  * int(val)
-  * ceil(val)
-  * floor(val)
-  * round(modulus=1, val) -- Round with optional 'modulus' as first argument.
-                             Example: `round(1.23456) == 1  &&  round(0.001, 1.23456) == 1.235`
-
-  * abs(val)
-  * sign(val)
-
-  * min(val, ...) -- Example: `min(1, -2, 3, -4) == -4`
-  * max(val, ...) -- Example: `max(1, -2, 3, -4) == 3`
-
-  * sin(radians)    * asin(val)
-  * cos(radians)    * acos(val)
-  * tan(radians)    * atan(val)
-  * sinh(val)       * asinh(val)
-  * cosh(val)       * acosh(val)
-  * tanh(val)       * atanh(val)
-Several numeric formats are supported:
-
-    Integers: 1, 2, 10, 100, 1001
-
-    Decimals: 1.0, 1.23456, 0.000001
-
-    Exponents: 1e3, 1E3, 1e-3, 1E-3, 1.2345e100
-
-    Suffix:
-            1.23p        = 0.00000000000123
-            1.23n        = 0.00000000123
-            1.23µ, 1.23u = 0.00000123
-            1.23m        = 0.00123
-            1.23K, 1.23k = 1230
-            1.23M        = 1230000
-            1.23G        = 1230000000
-            1.23T        = 1230000000000
-Listed in order of precedence:
-
-    (Highest Precedence) ^               Exponentiation
-                         %               Modulo
-                         /               Division
-                         *               Multiplication
-                         -               Subtraction
-                         +               Addition
-                         == != < <= >= > Comparisons (all have equal precedence)
-                         && and          Logical AND with short-circuit
-    (Lowest Precedence)  || or           Logical OR with short-circuit
 ```
 
 ### Layout格式
