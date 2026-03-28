@@ -10,6 +10,7 @@
     - [JSON](#JSON输入格式)
         - [文档理解须知](#文档理解须知)
         - [类型](#类型)
+        - [映射与生成器](#映射与生成器)
         - [图表主格式](#图表主格式)
     - [SandboxScript](#SandboxScript输入格式)
 - [输出格式](#输出格式)
@@ -279,6 +280,136 @@ _示例_:
 ```
 ```json5
 { rgba: "rgba(0, 0, 0, 0)" }
+```
+
+### 映射与生成器
+
+`map` 字段提供了一个映射表，可以在图表定义的其他地方通过 `map.key` 语法引用。这允许重复使用数据并通过内置生成器生成复杂值。
+
+映射值可以是原始数据(任何 JSON 值)或生成器对象。生成器对象具有一个 `type` 字段表示生成算法，以及额外的参数。
+
+#### 生成器类型
+
+所有生成器对象必须包含 `type` 字段。支持以下生成器类型:
+
+- **`raw`** — 直接传递数据，不做更改。
+
+  _参数:_
+  ```json5
+  {
+      type: "raw",
+      data: T  // 任意可直接使用的值
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "raw", data: [1, 2, 3] }
+  ```
+
+- **`g-number-list`** — 通过对一个整数范围内的每个整数求值表达式来生成数字列表。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-number-list",
+      begin: usize,   // 起始索引(包含)
+      end: usize,     // 结束索引(不包含)
+      expr: String    // 使用变量 `i` 的算术表达式
+  }
+  ```
+  表达式使用 [fasteval](https://crates.io/crates/fasteval) 库求值；变量 `i`(作为 `f64`)在表达式中可用。
+
+  _示例:_
+  ```json5
+  { type: "g-number-list", begin: 0, end: 3, expr: "i * 2" }
+  // 得到 [0.0, 2.0, 4.0]
+  ```
+
+- **`g-number`** — 求值一个常数算术表达式。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-number",
+      expr: String    // 算术表达式(无变量)
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-number", expr: "2 + 3 * 4" }
+  // 得到 14.0
+  ```
+
+- **`g-range`** — 生成浮点数的算术级数。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-range",
+      begin: f64,     // 第一个值(包含)
+      end: f64,       // 上界(不包含)
+      step?: f64      // 步长(默认为 1.0，必须为正数)
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-range", begin: 0.0, end: 5.0, step: 1.0 }
+  // 得到 [0.0, 1.0, 2.0, 3.0, 4.0]
+  ```
+
+- **`g-repeat`** — 将给定值重复指定次数。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-repeat",
+      value: T,       // 任意 JSON 值
+      count: usize    // 重复次数
+  }
+  ```
+  _示例:_
+  ```json5
+  { type: "g-repeat", value: 42.0, count: 3 }
+  // 得到 [42.0, 42.0, 42.0]
+  ```
+
+- **`g-linear`** — 在 `begin` 和 `end` 之间(包含两端点)线性生成 `count` 个值。
+
+  _参数:_
+  ```json5
+  {
+      type: "g-linear",
+      begin: f64,
+      end: f64,
+      count: usize    // 必须为正数
+  }
+  ```
+  如果 `count` 为 1，结果为 `[begin]`。否则步长为 `(end - begin) / (count - 1)`。
+
+  _示例:_
+  ```json5
+  { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
+  // 得到 [0.0, 0.25, 0.5, 0.75, 1.0]
+  ```
+
+#### 使用映射
+
+映射条目在其他地方通过前缀 `map.` 引用。例如，如果映射包含键 `myrange`，你可以在任何接受 `DataPack<T>` 的字段(大多数数组和数字字段)中使用 `"map.myrange"`。
+
+_完整示例:_
+
+```json5
+{
+    map: {
+        xs: { type: "g-linear", begin: 0, end: 10, count: 5 },
+        ys: { type: "g-number-list", begin: 0, end: 5, expr: "i * i" }
+    },
+    data: [{
+        type: "scatter",
+        x: "map.xs",
+        y: "map.ys"
+    }]
+}
 ```
 
 ### 图表主格式

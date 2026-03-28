@@ -11,6 +11,7 @@ This is the official user manual (English edition) for **mdbook-plotly** (herein
     - [JSON](#json-input-format)
         - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
         - [Types](#Types)
+        - [Map and Generators](#map-and-generators)
         - [Main Chart Format](#chart-main-format)
     - [SandboxScript](#SandboxScript)
 - [Output Formats](#output-formats)
@@ -291,6 +292,136 @@ _Example_:
 ```
 ```json5
 { rgba: "rgba(0, 0, 0, 0)" }
+```
+
+### Map and Generators
+
+The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
+
+Map values can be either raw data (any JSON value) or generator objects. Generator objects have a `type` field indicating the generation algorithm, plus additional parameters.
+
+#### Generator Types
+
+All generator objects must have a `type` field. The following generator types are supported:
+
+- **`raw`** — Passes through data unchanged.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "raw",
+      data: T  // Any value to be used directly
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "raw", data: [1, 2, 3] }
+  ```
+
+- **`g-number-list`** — Generates a list of numbers by evaluating an expression for each integer in a range.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-number-list",
+      begin: usize,   // inclusive start index
+      end: usize,     // exclusive end index
+      expr: String    // arithmetic expression in variable `i`
+  }
+  ```
+  The expression is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; the variable `i` (as `f64`) is available inside the expression.
+
+  _Example:_
+  ```json5
+  { type: "g-number-list", begin: 0, end: 3, expr: "i * 2" }
+  // yields [0.0, 2.0, 4.0]
+  ```
+
+- **`g-number`** — Evaluates a constant arithmetic expression.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-number",
+      expr: String    // arithmetic expression (no variables)
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "g-number", expr: "2 + 3 * 4" }
+  // yields 14.0
+  ```
+
+- **`g-range`** — Generates an arithmetic progression of floating‑point numbers.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-range",
+      begin: f64,     // first value (inclusive)
+      end: f64,       // upper bound (exclusive)
+      step?: f64      // step size (default 1.0, must be positive)
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "g-range", begin: 0.0, end: 5.0, step: 1.0 }
+  // yields [0.0, 1.0, 2.0, 3.0, 4.0]
+  ```
+
+- **`g-repeat`** — Repeats a given value a specified number of times.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-repeat",
+      value: T,       // any JSON value
+      count: usize    // number of repetitions
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "g-repeat", value: 42.0, count: 3 }
+  // yields [42.0, 42.0, 42.0]
+  ```
+
+- **`g-linear`** — Generates `count` values linearly spaced between `begin` and `end` (inclusive of both endpoints).
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-linear",
+      begin: f64,
+      end: f64,
+      count: usize    // must be positive
+  }
+  ```
+  If `count` is 1, the result is `[begin]`. Otherwise the step is `(end - begin) / (count - 1)`.
+
+  _Example:_
+  ```json5
+  { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
+  // yields [0.0, 0.25, 0.5, 0.75, 1.0]
+  ```
+
+#### Using the Map
+
+Map entries are referenced elsewhere by prefixing the key with `map.`. For example, if the map contains a key `myrange`, you can refer to it as `"map.myrange"` in any field that accepts a `DataPack<T>` (most array and numeric fields).
+
+_Complete example:_
+
+```json5
+{
+    map: {
+        xs: { type: "g-linear", begin: 0, end: 10, count: 5 },
+        ys: { type: "g-number-list", begin: 0, end: 5, expr: "i * i" }
+    },
+    data: [{
+        type: "scatter",
+        x: "map.xs",
+        y: "map.ys"
+    }]
+}
 ```
 
 ### Chart Main Format
