@@ -1,51 +1,86 @@
-# Table of Contents
-This is the official user manual (English edition) for **mdbook-plotly** (hereinafter referred to as “this project”). It provides detailed instructions on various usage methods. If you already know what you need, feel free to jump directly to the corresponding section using the table of contents below.
+# mdbook-plotly User Manual
+
+This is the official user manual (English edition) for **mdbook-plotly**, a preprocessor that renders interactive or static Plotly charts in mdbook documentation. The manual provides comprehensive reference and usage instructions.
 
 > [!NOTE]
 > This user manual is available in multiple languages; however, not all language versions are guaranteed to reflect the latest application updates. In case of discrepancies among different language versions, the Chinese version shall prevail.
 
+## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Configuration](#Configuration)
+- [Quick Start](#quick-start)
+    - [Installation](#installation)
+    - [Basic Configuration](#basic-configuration)
+    - [First Chart Example](#first-chart-example)
+- [Configuration Reference](#configuration-reference)
+    - [Configuration Syntax](#configuration-syntax)
+    - [Configuration Options](#configuration-options)
 - [Input Formats](#input-formats)
-    - [JSON](#json-input-format)
-        - [Important Notes for Document Understanding](#important-notes-for-document-understanding)
-        - [Types](#Types)
+    - [JSON5 Input Format](#json5-input-format)
+        - [JSON5 Syntax and Type System](#json5-syntax-and-type-system)
         - [Map and Generators](#map-and-generators)
-        - [Main Chart Format](#chart-main-format)
-    - [SandboxScript](#SandboxScript)
+        - [Chart Structure](#chart-structure)
+        - [Layout Reference](#layout-reference)
+        - [Config Reference](#config-reference)
+        - [Trace Types](#trace-types)
+            - [Bar Charts](#bar-charts)
+            - [Scatter Plots](#scatter-plots)
+            - [Pie Charts](#pie-charts)
+            - [Histograms](#histograms)
+            - [Candlestick Charts](#candlestick-charts)
+            - [OHLC Charts](#ohlc-charts)
+            - [Image Traces](#image-traces)
+            - [Sankey Diagrams](#sankey-diagrams)
+            - [Geographic Scatter Plots](#geographic-scatter-plots)
+            - [Mapbox Scatter Plots](#mapbox-scatter-plots)
+            - [Mapbox Density Heatmaps](#mapbox-density-heatmaps)
+            - [Tables](#tables)
+    - [SandboxScript (Deprecated)](#sandboxscript-deprecated)
 - [Output Formats](#output-formats)
+    - [Plotly HTML](#plotly-html)
+    - [Plotly SVG (Experimental)](#plotly-svg-experimental)
 
-# Getting Started
-### Installation
-1. Using Cargo
+# Quick Start
+
+This section guides you through installing mdbook-plotly, configuring your mdbook, and creating your first chart.
+
+## Installation
+
+### Using Cargo
 ```shell
 cargo install mdbook-plotly
-# Alternatively, if you use `binstall`:
-cargo binstall mdbook-plotly 
 ```
 
-Alternatively, you may download the latest available [Releases](https://github.com/TickPoints/mdbook-plotly/releases) compatible with your system from the Releases page on GitHub, then add the application’s installation directory to your system’s PATH environment variable.
+If you use `cargo-binstall`:
+```shell
+cargo binstall mdbook-plotly
+```
 
-2. Configure Your Book
-Add the following lines to your book’s `book.toml` file:
+### Manual Download
+Download the latest release for your platform from the [Releases](https://github.com/TickPoints/mdbook-plotly/releases) page and add the binary to your system's PATH.
+
+## Basic Configuration
+
+Add the following to your book's `book.toml` file:
+
 ```toml
 [preprocessor.plotly]
 after = ["links"]
 ```
 
-This configuration enables the basic JSON input format. For other supported input formats, refer to [Input Formats](#Input Formats). Note that code blocks labeled either `plot` or `plotly` will both render interactive Plotly charts.
+This configuration enables the default JSON5 input format. Code blocks with language `plot` or `plotly` will be processed into interactive Plotly charts.
 
 > [!NOTE]
-> We use **JSON5**, which supports comments, trailing commas, unquoted object keys, single-quoted strings, hexadecimal numbers, and multi-line strings. While this introduces a slight performance overhead, it significantly improves usability. After careful evaluation, we determined that this trade-off is well worth it.
+> mdbook-plotly uses **JSON5** syntax, which extends JSON with comments, trailing commas, unquoted object keys, single‑quoted strings, hexadecimal numbers, and multi‑line strings. This improves readability and maintainability of chart definitions.
 
-In this JSON-based input format, you typically only need threee top-level fields: `data`, `layout` and `config`:
+## First Chart Example
+
+A minimal chart definition requires three top‑level fields: `data`, `layout`, and `config`:
 
 ~~~markdown
 ```plot
 {
     layout: {
-        title: "Test",
+        title: "Test Chart",
     },
     data: [{
         type: "pie",
@@ -58,79 +93,77 @@ In this JSON-based input format, you typically only need threee top-level fields
 ```
 ~~~
 
-This example sets the chart title to "Test", renders a pie chart with the values `[10, 20, 30, 40]`, and disables interactivity (i.e., renders a static, non-interactive plot).
+This example:
+- Sets the chart title to "Test Chart"
+- Creates a pie chart with four slices
+- Disables interactivity (static plot)
 
-# Configuration
-Open your book’s `book.toml` file to add the configuration:
+For detailed information on available chart types, configuration options, and advanced features, refer to the sections below.
+
+# Configuration Reference
+
+Configuration options for mdbook-plotly are specified in the `[preprocessor.plotly]` section of your `book.toml`.
+
+## Configuration Syntax
+
+All configuration keys use `kebab-case`. The parser follows these rules:
+
+1. **Unknown keys are ignored** – unrecognized configuration keys are silently dropped.
+2. **Type‑sensitive validation** – a key with an invalid type (e.g., a string where a boolean is expected) causes the entire configuration to be rejected. All settings then revert to their defaults, and an error is logged.
+3. **Missing section warning** – if the `[preprocessor.plotly]` section is absent, a warning is issued and default values are used. If the section is present but the warning appears, please file a bug report.
+
+Example error when an invalid enum variant is supplied:
+
+```shell
+Illegal config format for 'preprocessor.mdbook-plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
+```
+
+## Configuration Options
 
 ```toml
 [preprocessor.plotly]
 after = ["links"]
-```
 
-Before adding custom configurations, please note the following parsing principles:
-
-1. All configuration keys follow `kebab-case` naming.
-2. Invalid or unrecognized configuration keys are silently ignored.
-3. A configuration key that is syntactically valid but has an incorrect type will cause the entire configuration parsing to fail. In such cases, all settings fall back to their default values, and an error message similar to the one below is displayed:
-```shell
-Illegal config format for 'preprocessor.mdbook-plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type` 
-``` 
-4. If no custom configuration is found (which usually occurs when the `[preprocessor.plotly]` section is missing from `book.toml`—since its presence implies configuration exists), a warning is issued:
-```shell
-Custom config not found; using default configuration.
-```
-If this warning appears unexpectedly (e.g., the `[preprocessor.plotly]` section is present), please file a bug report (issue) on GitHub.
-
-Below is a complete list of all available configuration options:
-
-```toml
-[preprocessor.plotly]
-after = ["links"]
-
-# The following values represent the default settings.
-
-# Output format — determines the final rendered output of the code block.
-# This string corresponds to an enum (see [Output Formats](#output-formats) for valid variants).
-# Any unrecognized value will cause configuration parsing to fail.
+# Output format – determines the rendered chart format.
+# Valid values: "plotly-html", "plotly-svg" (experimental)
 output-type = "plotly-html"
 
-# Input format — specifies the syntax and structure expected for data inside the code block.
-# This string also corresponds to an enum (see [Input Formats](#input-formats) for valid variants).
-# Any unrecognized value will cause configuration parsing to fail.
+# Input format – specifies the syntax of chart definitions.
+# Valid values: "json-input", "sandbox-script" (deprecated)
 input-type = "json-input"
 
-# Script source control.
-# This expected true or false (default).
+# Whether to use offline JavaScript sources (true/false).
 offline_js_sources = false
 ```
 
 # Input Formats
-Input formats determine how you define and configure your charts. They are controlled by the `input-type` configuration option, with the following currently supported values:
-- `json-input`
-- `sandbox-script`
 
-Because input formats involve nuanced syntax and behavior, each is described in detail below.
+The `input-type` configuration option determines the syntax used to define charts inside `plot`/`plotly` code blocks. Supported values:
 
-## JSON Input Format
-This format allows you to define and configure charts using JSON.
+- `json-input` – JSON5‑based chart definitions (recommended)
+- `sandbox-script` – deprecated script‑based format
 
-We implement our own deserialization logic. In most cases, you can use the same JSON structure as that passed to `Plotly.newPlot()` in JavaScript—but compatibility is not guaranteed, and we may extend the schema beyond Plotly’s native specification. For reliable usage, always refer to the documented fields below. If you require a field not currently supported, please open an issue—we’ll consider adding it in a future release.
+## JSON5 Input Format
 
-### Important Notes for Document Understanding
+This is the primary and recommended format. Charts are defined using JSON5 syntax, which extends standard JSON with comments, trailing commas, unquoted keys, and other conveniences.
+
+> [!NOTE]
+> mdbook‑plotly implements its own deserialization logic. While the structure generally follows Plotly’s native schema, compatibility is not guaranteed, and extensions (such as map references and generators) are available. Always refer to the documented fields below for reliable usage. Missing fields can be requested via GitHub issues.
+
+### JSON5 Syntax and Type System
+
+The following notation is used throughout this reference to describe expected types and optionality.
+
 ```json5
 {
-    // Comments like this are used throughout the documentation to clarify intent.
-    // (If you’d like support for comments in actual input files, please file an issue.)
-
+    // A `?` after a field name indicates the field is optional.
     data?: [
-        // The `?` symbol indicates that this field is *optional*.
         {
-            type: "pie",  // No `?` → this field is *required*.
-            // In some cases, the presence of one field (e.g., `type: "pie"`)
-            // implies that certain other fields *must* be present.
-            // We will explicitly note such dependencies in the documentation.
-            values: [usize; usize]  // Required when `type` is `"pie"`.
+            // No `?` means the field is required.
+            type: "pie",
+            // Some fields become required when another field has a specific value.
+            // Such dependencies are noted in the documentation.
+            values: [usize; usize]   // Required when `type` is `"pie"`.
         }
     ],
 
@@ -143,156 +176,23 @@ We implement our own deserialization logic. In most cases, you can use the same 
 }
 ```
 
-### Types
-JSON provides several primitive types; all composite types are built from these fundamentals.
+#### Basic Types
 
-#### 1. Objects
-```json5
-// Curly braces `{}` denote an object.
-{}
+- **Objects** – `{ "key": value }` or `{ key: value }` (JSON5 allows unquoted keys)
+- **Arrays** – `[value1, value2, ...]`; notation `[T; N]` means an array of `N` elements each of type `T`
+- **Strings** – `"text"` or `'text'`; `String` denotes any string
+- **Numbers** – `usize` (non‑negative integer), `isize` (signed integer), `f64` (floating‑point)
+- **Booleans** – `true` or `false`
+- **Unions** – `"a" | "b"` means the value can be either `"a"` or `"b"`
+- **Ranges** – `0..6f64` means any `f64` value ≥ 0.0 and < 6.0
 
-// Keys may be quoted or unquoted (JSON5 supports both);
-// `:` separates the key from its value, forming a key-value pair.
-{
-    "example": "wiki",
-    // Trailing commas and unquoted keys are permitted in JSON5.
-    example2: true,
-}
+#### Common Composite Types
 
-// In the documentation, a `?` after a key name means the field is optional.
-// The value following `:` specifies the *expected type*, not a literal value.
-{
-    "example"?: String
-}
+- **Rgb** – `"rgb(u8, u8, u8)"` (e.g., `"rgb(0, 0, 0)"`)
+- **Rgba** – `"rgba(u8, u8, u8, f64)"` (e.g., `"rgba(0, 0, 0, 0.0)"`)
+- **Color** – either a named CSS color (`{ named_color: "aliceblue" }`), an RGB string, or an RGBA string.
 
-// Sometimes the value is a literal (not a type name), meaning the field is restricted to those exact values.
-// The `|` operator denotes a union: the field may be *any one* of the listed options.
-{
-    "example1"?: "a",
-    "example2"?: "a" | "b",
-    "example": String | bool
-}
-```
-
-#### 2. Arrays (Lists)
-```json5
-// Square brackets `[]` denote an array.
-[]
-
-// Elements are comma-separated.
-[1, 2, 3, 4]
-
-// In the documentation, arrays typically require all elements to be of the *same type*.
-// Syntax `[T; N]` means “an array of `N` elements, each of type `T`”.
-// The notation for `N` (the length) is explained below.
-[String; 6]
-
-// Occasionally, heterogeneous arrays are allowed—each position has a fixed, explicit type.
-[String, usize, String | bool, bool]
-```
-
-#### 3. Numeric Types
-```json5
-// An unquoted number (e.g., `1`) is a numeric literal.
-1
-
-// In the documentation, numeric types include:
-// - `usize`: Non-negative integer (e.g., `0`, `42`).
-// - `isize`: Signed integer (e.g., `-1`, `100`).
-// - `f64`: 64-bit floating-point number (e.g., `0.1`, `-3.14`).
-// All numeric types have theoretical upper/lower bounds; exceeding them may result in undefined behavior—
-// e.g., parsing failure or unpredictable numeric values.
-
-// Ranges are expressed as inclusive-exclusive intervals:
-// `0..6f64` means “any `f64` value ≥ 0.0 and < 6.0”.
-0..6f64
-
-// Unions of ranges (or types) are expressed with `|`:
-0..6usize | 10..1000f64
-```
-
-#### 4. Strings
-```json5
-// A sequence of characters enclosed in double quotes (`"..."`) is a string literal.
-"str"
-
-// In the documentation, `String` denotes the generic string type.
-String
-
-// Enum-like string literals are common and often defined via union (`|`):
-"a" | "b" | "c"
-```
-
-#### 5. Booleans
-```json5
-// Boolean literals are unquoted `true` or `false`.
-true
-false
-
-// In the documentation, `bool` denotes the boolean type.
-bool
-
-// Booleans may appear in unions with other types:
-String | bool
-```
-
-#### Common Complex Types
-
-- **Rgb**
-
-_Definition_:
-```json5
-// A specially formatted string where the `u8` values are the customizable numeric parts.
-// NOTE: If the string format is invalid, parsing will fail.
-Rgb: "rgb(u8, u8, u8)"
-```
-_Example_:
-```json5
-"rgb(0, 0, 0)"
-```
-
-- **Rgba**
-
-_Definition_:
-```json5
-// A specially formatted string where the `u8` and `f64` values are the customizable numeric parts.
-// NOTE: If the string format is invalid, parsing will fail.
-Rgba: "rgba(u8, u8, u8, f64)"
-```
-_Example_:
-```json5
-"rgba(0, 0, 0, 0.0)"
-```
-
-- **Color**
-Color is a particularly complex composite type composed of multiple variants.
-
-_Definition_:
-```json5
-// Exactly one of the following options must be present.
-// (Having multiple or none will cause parsing failure.)
-Color: {
-    // A predefined named color
-    named_color?: NamedColor,
-    // Construct a valid RGB color from R, G, and B channels
-    rgb_color?: Rgb,
-    // Construct a valid RGBA color from R, G, B, and A channels
-    rgba_color?: Rgba,
-}
-
-// Cross-browser compatible predefined colors (CSS definition: https://www.w3schools.com/cssref/css_colors.php)
-// NOTE: Uses lowercase naming—e.g., AliceBlue should be written as "aliceblue".
-// NOTE: This is a very long enum; not all values are listed here, but an invalid value will cause parsing failure.
-NamedColor: String
-```
-
-_Example_:
-```json5
-{ named_color: "aliceblue" }
-```
-```json5
-{ rgba: "rgba(0, 0, 0, 0)" }
-```
+### Map and Generators
 
 ### Map and Generators
 
