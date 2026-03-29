@@ -188,7 +188,11 @@ The following notation is used throughout this reference to describe expected ty
 
 - **Rgb** – `"rgb(u8, u8, u8)"` (e.g., `"rgb(0, 0, 0)"`)
 - **Rgba** – `"rgba(u8, u8, u8, f64)"` (e.g., `"rgba(0, 0, 0, 0.0)"`)
-- **Color** – either a named CSS color (`{ named_color: "aliceblue" }`), an RGB string, or an RGBA string.
+- **Color** – can be one of the following:
+  - A named CSS color: `{ named_color: "aliceblue" }`
+  - An RGB color: `{ rgb_color: "rgb(255, 0, 0)" }`
+  - An RGBA color: `{ rgba_color: "rgba(255, 0, 0, 0.5)" }`
+  - Alternatively, for RGB and RGBA, you can use the plain string forms `"rgb(255,0,0)"` or `"rgba(255,0,0,0.5)"` directly.
 
 ### Map and Generators
 
@@ -298,6 +302,43 @@ All generator objects must have a `type` field. The following generator types ar
   ```json5
   { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
   // yields [0.0, 0.25, 0.5, 0.75, 1.0]
+  ```
+
+- **`if`** — Conditionally selects between two values based on an arithmetic expression.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "if",
+      condition: String,    // arithmetic expression that evaluates to a number
+      true: T,              // value used when condition ≠ 0.0
+      false: T              // value used when condition = 0.0
+  }
+  ```
+  The condition is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; no variables are available.
+
+  _Example:_
+  ```json5
+  { type: "if", condition: "2 > 1", true: [1,2,3], false: [4,5,6] }
+  // yields [1,2,3] because 2 > 1 evaluates to 1.0 (non‑zero)
+  ```
+
+- **`time`** — Generates a list of two time strings (start and end). Currently returns the provided start and end strings directly; interval and format are parsed but not yet used for generation.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "time",
+      start: String,        // start time string
+      end: String,          // end time string
+      interval: String,     // time interval (currently unused)
+      format?: String       // optional time format (currently unused)
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "time", start: "2026-01-01", end: "2026-01-02", interval: "1d" }
+  // yields ["2026-01-01", "2026-01-02"]
   ```
 
 #### Using the Map
