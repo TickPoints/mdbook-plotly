@@ -15,29 +15,27 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
     - [Configuration Syntax](#configuration-syntax)
     - [Configuration Options](#configuration-options)
 - [Input Formats](#input-formats)
-    - [JSON5 Input Format](#json5-input-format)
-        - [JSON5 Syntax and Type System](#json5-syntax-and-type-system)
+    - [JSON Input](#json-input)
+        - [JSON Syntax and Type System](#json-syntax-and-type-system)
         - [Map and Generators](#map-and-generators)
-        - [Chart Structure](#chart-structure)
-        - [Layout Reference](#layout-reference)
-        - [Config Reference](#config-reference)
-        - [Trace Types](#trace-types)
-            - [Bar Charts](#bar-charts)
-            - [Scatter Plots](#scatter-plots)
-            - [Pie Charts](#pie-charts)
-            - [Histograms](#histograms)
-            - [Candlestick Charts](#candlestick-charts)
-            - [OHLC Charts](#ohlc-charts)
-            - [Image Traces](#image-traces)
-            - [Sankey Diagrams](#sankey-diagrams)
-            - [Geographic Scatter Plots](#geographic-scatter-plots)
-            - [Mapbox Scatter Plots](#mapbox-scatter-plots)
-            - [Mapbox Density Heatmaps](#mapbox-density-heatmaps)
-            - [Tables](#tables)
-    - [SandboxScript (Deprecated)](#sandboxscript-deprecated)
+        - [Chart Main Format](#chart-main-format)
+        - [Layout Format](#layout-format)
+        - [Config Format](#config-format)
+        - Trace Types
+            - [Bar Charts](#data-bar)
+            - [Scatter Plots](#data-scatter)
+            - [Pie Charts](#data-pie)
+            - [Histograms](#data-histogram)
+            - [Candlestick Charts](#data-candlestick)
+            - [OHLC Charts](#data-ohlc)
+            - [Image Traces](#data-image)
+            - [Sankey Diagrams](#data-sankey)
+            - [Geographic Scatter Plots](#data-scatter_geo)
+            - [Mapbox Scatter Plots](#data-scatter_mapbox)
+            - [Mapbox Density Heatmaps](#data-density_mapbox)
+            - [Tables](#data-table)
+    - [SandBoxScript (Deprecated)](#sand-box-script)
 - [Output Formats](#output-formats)
-    - [Plotly HTML](#plotly-html)
-    - [Plotly SVG (Experimental)](#plotly-svg-experimental)
 
 # Quick Start
 
@@ -141,16 +139,16 @@ offline_js_sources = false
 The `input-type` configuration option determines the syntax used to define charts inside `plot`/`plotly` code blocks. Supported values:
 
 - `json-input` – JSON5‑based chart definitions (recommended)
-- `sandbox-script` – deprecated script‑based format
+- `sand-box-script` – deprecated script‑based format
 
-## JSON5 Input Format
+## JSON Input
 
 This is the primary and recommended format. Charts are defined using JSON5 syntax, which extends standard JSON with comments, trailing commas, unquoted keys, and other conveniences.
 
 > [!NOTE]
 > mdbook‑plotly implements its own deserialization logic. While the structure generally follows Plotly’s native schema, compatibility is not guaranteed, and extensions (such as map references and generators) are available. Always refer to the documented fields below for reliable usage. Missing fields can be requested via GitHub issues.
 
-### JSON5 Syntax and Type System
+### JSON Syntax and Type System
 
 The following notation is used throughout this reference to describe expected types and optionality.
 
@@ -1110,7 +1108,7 @@ config: {
 }
 ```
 
-## SandboxScript
+## Sand Box Script
 
 > [!WARNING]
 > **This format is deprecated**. Using it will emit a warning and a debug message, and fall back to rendering the default chart.
@@ -1120,7 +1118,7 @@ This format allows you to define a script that runs in a local sandboxed environ
 # Output Formats
 Output formats determine whether the final rendered result is HTML, SVG, or another format. Each format has its own advantages and trade-offs—we leave the choice to the user.
 
-Output format must be configured globally; for details, see [Configuration](#Configuration).
+Output format must be configured globally; for details, see [Configuration](#configuration-reference).
 
 | Raw Name | Formatted Name | Effect | Additional Notes |
 |--------|--------|--------|--------|
