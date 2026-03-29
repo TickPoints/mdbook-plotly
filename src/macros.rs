@@ -32,13 +32,15 @@ macro_rules! translate {
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
-                let data = serde_json::from_value::<DataPack<$ty>>(v.take())?;
-                target.$method(data.unwrap($map)?)
+                let data = serde_json::from_value::<DataPack<$ty>>(v.take())
+                    .map_err(|e| ::anyhow::anyhow!("Failed to deserialize field '{}': {}", stringify!($method), e))?;
+                target.$method(data.unwrap($map)
+                    .map_err(|e| ::anyhow::anyhow!("Failed to unwrap DataPack for field '{}': {}", stringify!($method), e))?)
             } else {
                 target
             };
         )*
-        Ok::<_, serde_json::Error>(target)
+        Ok::<_, ::anyhow::Error>(target)
     }};
 }
 
@@ -53,8 +55,10 @@ macro_rules! translate_enum {
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
-                let data = serde_json::from_value::<DataPack<String>>(v.take())?;
-                let s = data.unwrap($map)?;
+                let data = serde_json::from_value::<DataPack<String>>(v.take())
+                    .map_err(|e| ::anyhow::anyhow!("Failed to deserialize field '{}': {}", stringify!($method), e))?;
+                let s = data.unwrap($map)
+                    .map_err(|e| ::anyhow::anyhow!("Failed to unwrap DataPack for field '{}': {}", stringify!($method), e))?;
                 match s.as_str() {
                     $($str_val => target.$method($variant),)*
                     unexpected => {

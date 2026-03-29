@@ -188,7 +188,11 @@ offline_js_sources = false
 
 - **Rgb** – `"rgb(u8, u8, u8)"`（例如 `"rgb(0, 0, 0)"`）
 - **Rgba** – `"rgba(u8, u8, u8, f64)"`（例如 `"rgba(0, 0, 0, 0.0)"`）
-- **Color** – 可以是命名的 CSS 颜色（`{ named_color: "aliceblue" }`）、RGB 字符串或 RGBA 字符串。
+- **Color** – 可以是：
+  * 命名的 CSS 颜色：`{ named_color: "aliceblue" }`
+  * RGB 字符串：`"rgb(255, 0, 0)"`
+  * RGBA 字符串：`"rgba(255, 0, 0, 0.5)"`
+  * 或等效的对象形式：`{ rgb_color: "rgb(255,0,0)" }`、`{ rgba_color: "rgba(255,0,0,0.5)" }`
 
 ### 映射与生成器
 
@@ -298,6 +302,43 @@ offline_js_sources = false
   ```json5
   { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
   // 得到 [0.0, 0.25, 0.5, 0.75, 1.0]
+  ```
+
+- **`if`** — 根据算术表达式的结果在两个值之间进行条件选择。
+
+  _参数：_
+  ```json5
+  {
+      type: "if",
+      condition: String,    // 计算结果为 bool 的算术表达式
+      true: T,              // 当 condition = true 时使用的值
+      false: T              // 当 condition = false 时使用的值
+  }
+  ```
+  条件使用 [fasteval](https://crates.io/crates/fasteval) 库求值；表达式中没有可用变量。
+
+  _示例：_
+  ```json5
+  { type: "if", condition: "2 > 1", true: [1,2,3], false: [4,5,6] }
+  // 得到 [1,2,3]，因为 2 > 1 求值为 true
+  ```
+
+- **`time`** — 生成两个时间字符串（开始和结束）的列表。当前直接返回提供的开始和结束字符串；interval 和 format 会被解析但尚未用于生成。
+
+  _参数：_
+  ```json5
+  {
+      type: "time",
+      start: String,        // 开始时间字符串
+      end: String,          // 结束时间字符串
+      interval: String,     // 时间间隔（当前未使用）
+      format?: String       // 可选的时间格式（当前未使用）
+  }
+  ```
+  _示例：_
+  ```json5
+  { type: "time", start: "2026-01-01", end: "2026-01-02", interval: "1d" }
+  // 得到 ["2026-01-01", "2026-01-02"]
   ```
 
 #### 使用映射
@@ -452,6 +493,7 @@ config: {
     // 确定 plotly 标志是否显示在模式栏的末尾
     display_logo?: bool,
     // 使用公司标志对图像进行水印处理
+    watermark?: bool,
 }
 ```
 
