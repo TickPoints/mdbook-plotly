@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.1.8
+> [!NOTE]
+> Hotfix. Please don't use old versions.
+- Fixed `BookData`
+
 ## v0.1.8-alpha
 - Adjusted `code_handler`
     - Updated `map`
