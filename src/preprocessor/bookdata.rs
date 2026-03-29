@@ -6,8 +6,8 @@ use mdbook_preprocessor::{
     PreprocessorContext,
     book::{Book, BookItem, Chapter},
 };
+#[cfg(feature = "sync")]
 use rayon::prelude::*;
-use std::iter::Iterator;
 
 pub struct BookData {
     ctx: PreprocessorContext,
@@ -48,27 +48,36 @@ impl BookData {
         self.ctx.root.clone()
     }
 
-    /// NOTE: This interface is actually used in non-sync situations. But it's always there.
-    #[allow(dead_code)]
-    pub fn chapter_iter_mut(&mut self) -> impl Iterator<Item = &mut Chapter> {
-        self.book.items.iter_mut().filter_map(|item| {
-            if let BookItem::Chapter(chapter) = item {
-                Some(chapter)
-            } else {
-                None
+    #[allow(unused)]
+    pub fn for_each_chapter_mut<F>(&mut self, mut f: F)
+    where
+        F: FnMut(&mut Chapter),
+    {
+        fn walk<F: FnMut(&mut Chapter)>(items: &mut [BookItem], f: &mut F) {
+            for item in items.iter_mut() {
+                if let BookItem::Chapter(ch) = item {
+                    f(ch);
+                    walk(&mut ch.sub_items, f);
+                }
             }
-        })
+        }
+        walk(&mut self.book.items, &mut f);
     }
 
     #[cfg(feature = "sync")]
-    pub fn chapter_par_iter(&mut self) -> impl ParallelIterator<Item = &mut Chapter> {
-        self.book.items.par_iter_mut().filter_map(|item| {
-            if let BookItem::Chapter(chapter) = item {
-                Some(chapter)
-            } else {
-                None
-            }
-        })
+    pub fn for_each_chapter_par<F>(&mut self, f: F)
+    where
+        F: Fn(&mut Chapter) + Sync + Send,
+    {
+        fn walk_par<F: Fn(&mut Chapter) + Sync + Send>(items: &mut [BookItem], f: &F) {
+            items.par_iter_mut().for_each(|item| {
+                if let BookItem::Chapter(ch) = item {
+                    f(ch);
+                    walk_par(&mut ch.sub_items, f);
+                }
+            });
+        }
+        walk_par(&mut self.book.items, &f);
     }
 
     pub fn into_book(self) -> Book {

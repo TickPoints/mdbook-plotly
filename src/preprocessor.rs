@@ -13,16 +13,13 @@ pub fn preprocess_book() {
     let book_path = book_data.get_book_path();
     #[cfg(feature = "sync")]
     {
-        use rayon::prelude::*;
         book_data
-            .chapter_par_iter()
-            .for_each(|chapter| handlers::handle(chapter, &config, &book_path));
+            .for_each_chapter_par(|chapter| handlers::handle(chapter, &config, &book_path));
     }
     #[cfg(not(feature = "sync"))]
     {
         book_data
-            .chapter_iter_mut()
-            .for_each(|chapter| handlers::handle(chapter, &config, &book_path));
+            .for_each_chapter_mut(|chapter| handlers::handle(chapter, &config, &book_path));
     }
 
     let preprocessed_book = book_data.into_book();
