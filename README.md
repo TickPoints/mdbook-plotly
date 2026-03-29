@@ -9,9 +9,6 @@
 
 ## Project Overview
 
-> [!TIP]
-> The project is now in its first stable release, with the main features stabilized and additional features still under construction.
-
 `mdbook-plotly` is a preprocessor for **mdbook**, which converts specially tagged code blocks (`plot` or `plotly`) into interactive charts before generating the final HTML documentation.
 
 It parses chart definitions structured in specific formats (currently supporting JSON5) and renders them according to the configured output format (e.g., HTML). Designed specifically for technical documentation, it enables charts to coexist seamlessly with Markdown text while ensuring reproducibility.
