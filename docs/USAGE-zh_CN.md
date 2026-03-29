@@ -15,29 +15,27 @@
     - [配置语法](#配置语法)
     - [配置选项](#配置选项)
 - [输入格式](#输入格式)
-    - [JSON5 输入格式](#json5-输入格式)
-        - [JSON5 语法与类型系统](#json5-语法与类型系统)
+    - [JSON Input](#json-input)
+        - [JSON 语法与类型系统](#json-语法与类型系统)
         - [映射与生成器](#映射与生成器)
-        - [图表结构](#图表结构)
-        - [布局参考](#布局参考)
-        - [配置参考](#配置参考)
+        - [图表主格式](#图表主格式)
+        - [Layout格式](#layout格式)
+        - [Config格式](#config格式)
         - [轨迹类型](#轨迹类型)
-            - [条形图](#条形图)
-            - [散点图](#散点图)
-            - [饼图](#饼图)
-            - [直方图](#直方图)
-            - [蜡烛图](#蜡烛图)
-            - [OHLC 图](#ohlc-图)
-            - [图像轨迹](#图像轨迹)
-            - [桑基图](#桑基图)
-            - [地理散点图](#地理散点图)
-            - [Mapbox 散点图](#mapbox-散点图)
-            - [Mapbox 密度热力图](#mapbox-密度热力图)
-            - [表格](#表格)
-    - [SandboxScript（已弃用）](#sandboxscript已弃用)
+            - [条形图](#data-bar)
+            - [散点图](#data-scatter)
+            - [饼图](#data-pie)
+            - [直方图](#data-histogram)
+            - [蜡烛图](#data-candlestick)
+            - [OHLC 图](#data-ohlc)
+            - [图像轨迹](#data-image)
+            - [桑基图](#data-sankey)
+            - [地理散点图](#data-scatter_geo)
+            - [Mapbox 散点图](#data-scatter_mapbox)
+            - [Mapbox 密度热力图](#data-density_mapbox)
+            - [表格](#data-table)
+    - [SandBoxScript（已弃用）](#sand-box-script)
 - [输出格式](#输出格式)
-    - [Plotly HTML](#plotly-html)
-    - [Plotly SVG（实验性）](#plotly-svg实验性)
 
 # 快速开始
 
@@ -141,16 +139,16 @@ offline_js_sources = false
 `input-type` 配置选项决定在 `plot`/`plotly` 代码块内部定义图表所使用的语法。支持的值：
 
 - `json-input` – 基于 JSON5 的图表定义（推荐）
-- `sandbox-script` – 已弃用的基于脚本的格式
+- `sand-box-script` – 已弃用的基于脚本的格式
 
-## JSON5 输入格式
+## JSON Input
 
 这是主要且推荐的格式。图表使用 JSON5 语法定义，它在标准 JSON 基础上扩展了注释、尾随逗号、无引号键等便利功能。
 
 > [!NOTE]
 > mdbook‑plotly 实现了自己的反序列化逻辑。虽然结构通常遵循 Plotly 的原生模式，但不保证完全兼容，并且提供了扩展（例如映射引用和生成器）。请始终参考下面记录的字段以确保可靠使用。缺失的字段可以通过 GitHub issues 请求添加。
 
-### JSON5 语法与类型系统
+### JSON 语法与类型系统
 
 本参考中使用以下符号来描述预期的类型和可选性。
 
@@ -1095,7 +1093,7 @@ config: {
 ```
 
 
-## SandboxScript（已弃用）
+## Sand Box Script
 
 > [!WARNING]
 > **该格式已被弃用**。使用此格式将输出警告和调试信息，并回退到渲染默认图表。
@@ -1113,10 +1111,3 @@ config: {
 | **PlotlyHtml** | `plotly-html`  | 输出一个 `<div>` 元素和一个包含 Plotly 逻辑的配套 `<script>` | 可能导致与不支持原始 HTML 的 Markdown 解析器的兼容性问题；不太适合客户端渲染场景 |
 | **PlotlySvg**  | `plotly-svg`   | **TODO** | 尚未实现；旨在本地执行大部分渲染，但可能会增加构建时间 |
 
-### Plotly HTML
-
-这是默认的输出格式，生成交互式 HTML 图表。
-
-### Plotly SVG（实验性）
-
-此输出格式尚在实验阶段，生成静态 SVG 图像。
