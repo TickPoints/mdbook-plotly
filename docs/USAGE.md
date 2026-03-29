@@ -21,7 +21,7 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
         - [Chart Main Format](#chart-main-format)
         - [Layout Format](#layout-format)
         - [Config Format](#config-format)
-        - [Trace Types](#trace-types)
+        - Trace Types
             - [Bar Charts](#data-bar)
             - [Scatter Plots](#data-scatter)
             - [Pie Charts](#data-pie)

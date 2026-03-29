@@ -21,7 +21,7 @@
         - [图表主格式](#图表主格式)
         - [Layout格式](#layout格式)
         - [Config格式](#config格式)
-        - [轨迹类型](#轨迹类型)
+        - 轨迹类型
             - [条形图](#data-bar)
             - [散点图](#data-scatter)
             - [饼图](#data-pie)
