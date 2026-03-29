@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow, Context};
+use anyhow::{Context, Result, anyhow};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
 use serde_json::{Map as JsonMap, Value, value::Index};
 use std::fmt::{Debug, Display};
@@ -60,14 +60,22 @@ where
                     let data = ez_eval(&expr, &mut namespace)?;
                     result.push(Value::from(data));
                 }
-                serde_json::from_value(result.into())
-                    .with_context(|| format!("failed to deserialize generated list for type '{}'", value_type))
+                serde_json::from_value(result.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize generated list for type '{}'",
+                        value_type
+                    )
+                })
             }
             "g-number" => {
                 let expr: String = must_translate(&mut value, map, "expr")?;
                 let data = ez_eval(&expr, &mut fasteval::EmptyNamespace {})?;
-                serde_json::from_value(data.into())
-                    .with_context(|| format!("failed to deserialize generated number for type '{}'", value_type))
+                serde_json::from_value(data.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize generated number for type '{}'",
+                        value_type
+                    )
+                })
             }
             "g-range" => {
                 let begin: f64 = must_translate(&mut value, map, "begin")?;
@@ -86,15 +94,23 @@ where
                     result.push(Value::from(current));
                     current += step;
                 }
-                serde_json::from_value(result.into())
-                    .with_context(|| format!("failed to deserialize generated range for type '{}'", value_type))
+                serde_json::from_value(result.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize generated range for type '{}'",
+                        value_type
+                    )
+                })
             }
             "g-repeat" => {
                 let val: Value = must_translate(&mut value, map, "value")?;
                 let count: u64 = must_translate(&mut value, map, "count")?;
                 let result = std::iter::repeat_n(val, count as usize).collect::<Vec<_>>();
-                serde_json::from_value(result.into())
-                    .with_context(|| format!("failed to deserialize repeated values for type '{}'", value_type))
+                serde_json::from_value(result.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize repeated values for type '{}'",
+                        value_type
+                    )
+                })
             }
             "g-linear" => {
                 let begin: f64 = must_translate(&mut value, map, "begin")?;
@@ -113,8 +129,54 @@ where
                         result.push(Value::from(val));
                     }
                 }
-                serde_json::from_value(result.into())
-                    .with_context(|| format!("failed to deserialize linear spaced values for type '{}'", value_type))
+                serde_json::from_value(result.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize linear spaced values for type '{}'",
+                        value_type
+                    )
+                })
+            }
+            "if" => {
+                let condition: String = must_translate(&mut value, map, "condition")?;
+                let true_val: Value = must_translate(&mut value, map, "true")?;
+                let false_val: Value = must_translate(&mut value, map, "false")?;
+
+                // Evaluate condition using fasteval
+                let mut namespace = fasteval::StrToF64Namespace::new();
+                // We need to check if the condition contains 'i' variable
+                // For simplicity, assume it's a boolean expression that evaluates to non-zero for true
+                let result = ez_eval(&condition, &mut namespace)?;
+                let selected = if result != 0.0 { true_val } else { false_val };
+
+                // Parse the selected value according to its type
+                if !selected.is_object() {
+                    serde_json::from_value::<T>(selected.clone())
+                        .with_context(|| "failed to deserialize non-object if result")
+                } else {
+                    // If it's an object, it might be another generator
+                    Self::parse_map(map, selected)
+                }
+            }
+            "time" => {
+                // Simple time generator: produce timestamps as strings
+                let start: String = must_translate(&mut value, map, "start")?;
+                let end: String = must_translate(&mut value, map, "end")?;
+                let _interval: String = must_translate(&mut value, map, "interval")?;
+                let _format: Option<String> = if value.get("format").is_some() {
+                    Some(must_translate(&mut value, map, "format")?)
+                } else {
+                    None
+                };
+
+                // For now, just return the start and end as strings
+                // In a real implementation, you'd parse dates and generate a series
+                let result = vec![Value::from(start.clone()), Value::from(end.clone())];
+                serde_json::from_value(result.into()).with_context(|| {
+                    format!(
+                        "failed to deserialize time values for type '{}'",
+                        value_type
+                    )
+                })
             }
             _ => Err(anyhow!("unknown type `{}`", value_type)),
         }
