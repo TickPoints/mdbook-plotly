@@ -664,7 +664,7 @@ use plotly::color;
 
 // This is to make Json look clearer when it is written.
 #[allow(clippy::enum_variant_names)]
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Color {
     NamedColor(color::NamedColor),
@@ -673,3 +673,27 @@ pub enum Color {
 }
 
 impl color::Color for Color {}
+
+impl<'de> Deserialize<'de> for Color {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+
+        if let Some(s) = value.as_str() 
+            && let Ok(named) = serde_json::from_str::<color::NamedColor>(&format!("\"{s}\"")) {
+                return Ok(Self::NamedColor(named));
+        }
+
+        if let Ok(rgb) = serde_json::from_value::<color::Rgb>(value.clone()) {
+            return Ok(Self::RgbColor(rgb));
+        }
+
+        if let Ok(rgba) = serde_json::from_value::<color::Rgba>(value) {
+            return Ok(Self::RgbaColor(rgba));
+        }
+
+        Err(serde::de::Error::custom("invalid color format"))
+    }
+}
