@@ -32,6 +32,7 @@
             - [桑基图](#data-sankey)
             - [地理散点图](#data-scatter_geo)
             - [Mapbox 散点图](#data-scatter_mapbox)
+            - [极坐标散点图](#data-scatter_polar)
             - [Mapbox 密度热力图](#data-density_mapbox)
             - [表格](#data-table)
     - [SandBoxScript（已弃用）](#sand-box-script)
@@ -488,6 +489,10 @@ layout: {
     plot_background_color?: Color,
     // 分离器
     separators?: String,
+    // 是否启用自动尺寸调整（默认 true）
+    auto_size?: bool,
+    // 图纸背景色（区别于 plot_background_color）
+    paper_background_color?: Color,
 
     // 说明器具体设置
     legend?: {
@@ -505,6 +510,38 @@ layout: {
         trace_group_gap?: usize,
         // 标题
         title?: String,
+        // 图例项宽度（像素）
+        item_width?: usize,
+
+        // 图例中 trace 的显示顺序
+        // "normal": 正常顺序
+        // "reversed": 倒序
+        // "grouped": 按组显示
+        // "reversed+grouped": 倒序分组
+        trace_order?: "normal" | "reversed" | "grouped" | "reversed+grouped",
+
+        // 图例项尺寸模式
+        // "trace": 按 trace 宽度
+        // "constant": 恒定宽度
+        item_sizing?: "trace" | "constant",
+
+        // 单击图例项的效果
+        // "toggle": 切换该 trace
+        // "toggleothers": 切换其他 trace
+        // "false": 无操作
+        item_click?: "toggle" | "toggleothers" | "false",
+
+        // 双击图例项的效果（取值同 item_click）
+        item_double_click?: "toggle" | "toggleothers" | "false",
+
+        // 图例文本垂直对齐
+        // "top": 顶对齐 / "middle": 居中 / "bottom": 底对齐
+        valign?: "top" | "middle" | "bottom",
+
+        // 单击图例分组的效果
+        // "toggleitem": 切换组内所有项
+        // "togglegroup": 切换整个组
+        group_click?: "toggleitem" | "togglegroup",
     },
 
     // 图表边缘具体设置
@@ -574,6 +611,22 @@ config: {
     display_logo?: bool,
     // 使用公司标志对图像进行水印处理
     watermark?: bool,
+
+    // 控制模式栏的显示行为
+    // "hover": 仅悬停时显示
+    // "true": 始终显示（默认）
+    // "false": 不显示
+    display_mode_bar?: "hover" | "true" | "false",
+
+    // 双击图表的响应行为
+    // "false": 无操作
+    // "reset": 重置视图
+    // "autosize": 自动调整大小
+    // "reset+autosize": 重置并自动调整
+    double_click?: "false" | "reset" | "autosize" | "reset+autosize",
+
+    // 是否显示“在 Chart Studio 中编辑”链接（show_link 的别名）
+    show_edit_in_chart_studio?: bool,
 }
 ```
 
@@ -1104,6 +1157,76 @@ config: {
     // "linemarkerstext": 折线 + 标记 + 文本
     // "none": 不显示
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+}
+```
+
+### Data-scatter_polar
+`scatter_polar`可以是一个`Data`。该`Data`将被渲染为极坐标散点图。
+```json5
+{
+    type: "scatter_polar",
+
+    // 角度坐标（单位：度，除非布局中指定了其他单位）
+    theta: [f64; usize],
+    // 径向坐标
+    r: [f64; usize],
+
+    // trace 名称，显示在图例和悬停信息中
+    name?: String,
+    // 是否在图例中显示此 trace
+    show_legend?: bool,
+    // 图例分组标识
+    legend_group?: String,
+    // 不透明度，0（透明）~ 1（不透明）
+    opacity?: f64,
+    // 数据点上显示的统一文本
+    text?: String,
+    // 为每个数据点单独设置显示文本
+    text_array?: [String; usize],
+    // 悬停时显示的统一文本
+    hover_text?: String,
+    // 为每个数据点单独设置悬停文本
+    hover_text_array?: [String; usize],
+    // 悬停标签模板
+    hover_template?: String,
+    // 为每个数据点单独设置悬停模板
+    hover_template_array?: [String; usize],
+    // 指定使用的极坐标子图（如 "polar"、"polar2"）
+    subplot?: String,
+    // 是否连接缺失数据点之间的间隙
+    connect_gaps?: bool,
+    // 径向坐标的参考起始值（与 dr 配合，将数组索引映射为实际径向距离）
+    r0?: f64,
+    // 径向步长
+    dr?: f64,
+    // 角度坐标的参考起始值（度）
+    theta0?: f64,
+    // 角度步长（度）
+    dtheta?: f64,
+    // 填充类型
+    // "tozeroy": 填充到 r=0
+    // "tozerox": 填充到 theta=0
+    // "tonexty": 填充到下一个 trace 的 r 值
+    // "tonextx": 填充到下一个 trace 的 theta 值
+    // "toself": 填充封闭区域自身
+    // "tonext": 填充到下一个 trace
+    // "none": 不填充
+    fill?: "tozeroy" | "tozerox" | "tonexty" | "tonextx" | "toself" | "tonext" | "none",
+    // 绘制模式
+    // "lines": 折线
+    // "markers": 散点标记
+    // "text": 仅文本
+    // "linesmarkers": 折线 + 标记
+    // "linestext": 折线 + 文本
+    // "markerstext": 标记 + 文本
+    // "linemarkerstext": 折线 + 标记 + 文本
+    // "none": 不显示
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // 可见性控制
+    // "true": 可见（默认）
+    // "false": 不可见
+    // "legendonly": 不绘制但在图例中显示
+    visible?: "true" | "false" | "legendonly",
 }
 ```
 

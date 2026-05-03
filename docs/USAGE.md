@@ -32,6 +32,7 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
             - [Sankey Diagrams](#data-sankey)
             - [Geographic Scatter Plots](#data-scatter_geo)
             - [Mapbox Scatter Plots](#data-scatter_mapbox)
+            - [Polar Scatter Plots](#data-scatter_polar)
             - [Mapbox Density Heatmaps](#data-density_mapbox)
             - [Tables](#data-table)
     - [SandBoxScript (Deprecated)](#sand-box-script)
@@ -496,6 +497,10 @@ layout: {
     plot_background_color?: Color,
     // Separators
     separators?: String,
+    // Whether to enable automatic size adjustment (default true)
+    auto_size?: bool,
+    // Paper background colour (distinct from plot_background_color)
+    paper_background_color?: Color,
 
     // Legend configuration
     legend?: {
@@ -513,6 +518,38 @@ layout: {
         trace_group_gap?: usize,
         // Title
         title?: String,
+        // Width of each legend item (pixels)
+        item_width?: usize,
+
+        // Trace display order within the legend
+        // "normal": natural order
+        // "reversed": reversed order
+        // "grouped": grouped by trace group
+        // "reversed+grouped": reversed and grouped
+        trace_order?: "normal" | "reversed" | "grouped" | "reversed+grouped",
+
+        // Legend item sizing mode
+        // "trace": sized per trace
+        // "constant": constant width
+        item_sizing?: "trace" | "constant",
+
+        // Single-click behaviour on legend items
+        // "toggle": toggle the trace
+        // "toggleothers": toggle all other traces
+        // "false": no action
+        item_click?: "toggle" | "toggleothers" | "false",
+
+        // Double-click behaviour on legend items (same values as item_click)
+        item_double_click?: "toggle" | "toggleothers" | "false",
+
+        // Vertical alignment of legend text
+        // "top", "middle", "bottom"
+        valign?: "top" | "middle" | "bottom",
+
+        // Click behaviour on legend groups
+        // "toggleitem": toggle all items in the group
+        // "togglegroup": toggle the group
+        group_click?: "toggleitem" | "togglegroup",
     },
 
     // Chart margin configuration
@@ -548,9 +585,6 @@ config: {
     editable?: bool,
     // Whether auto-sizing is enabled
     autosizable?: bool,
-    // Whether to resize the layout when the window is resized
-    // WARNING: This option currently has no practical effect.
-    responsive?: bool,
     // Whether to fill the screen
     // NOTE: Only effective when `autosizable` is `true`.
     fill_frame?: bool,
@@ -582,6 +616,22 @@ config: {
     display_logo?: bool,
     // Watermark the image with a company logo
     watermark?: bool,
+
+    // Controls when the modebar appears
+    // "hover": only show on hover
+    // "true": always show (default)
+    // "false": never show
+    display_mode_bar?: "hover" | "true" | "false",
+
+    // Double-click behaviour
+    // "false": no action
+    // "reset": reset the chart view
+    // "autosize": autosize
+    // "reset+autosize": reset and autosize
+    double_click?: "false" | "reset" | "autosize" | "reset+autosize",
+
+    // Whether to show an "Edit in Chart Studio" link (alias for show_link)
+    show_edit_in_chart_studio?: bool,
 }
 ```
 
@@ -1123,6 +1173,78 @@ config: {
     // "linemarkerstext": lines + markers + text
     // "none": hidden
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+}
+```
+
+### Data-scatter_polar
+
+`scatter_polar` can be a `Data` entry. This `Data` will be rendered as a scatter plot in polar coordinates.
+
+```json5
+{
+    type: "scatter_polar",
+
+    // Angular coordinates (degrees unless layout.polar.angularaxis.thetaunit is overridden)
+    theta: [f64; usize],
+    // Radial coordinates
+    r: [f64; usize],
+
+    // Trace name, displayed in legend and hover info
+    name?: String,
+    // Whether to show this trace in the legend
+    show_legend?: bool,
+    // Legend group identifier
+    legend_group?: String,
+    // Opacity, from 0 (transparent) to 1 (opaque)
+    opacity?: f64,
+    // Uniform text displayed on data points
+    text?: String,
+    // Per-point text
+    text_array?: [String; usize],
+    // Uniform hover text
+    hover_text?: String,
+    // Per-point hover text
+    hover_text_array?: [String; usize],
+    // Hover label template
+    hover_template?: String,
+    // Per-point hover template
+    hover_template_array?: [String; usize],
+    // Polar subplot to use (e.g. "polar", "polar2")
+    subplot?: String,
+    // Whether to connect gaps between missing data points
+    connect_gaps?: bool,
+    // Reference start value for radial coordinates (used to map array indices to radial distance)
+    r0?: f64,
+    // Radial step (used with r0)
+    dr?: f64,
+    // Reference start value for angular coordinates (degrees)
+    theta0?: f64,
+    // Angular step (degrees)
+    dtheta?: f64,
+    // Fill style
+    // "tozeroy": fill to r=0
+    // "tozerox": fill to theta=0
+    // "tonexty": fill to next trace's r values
+    // "tonextx": fill to next trace's theta values
+    // "toself": fill enclosed area
+    // "tonext": fill to next trace
+    // "none": no fill
+    fill?: "tozeroy" | "tozerox" | "tonexty" | "tonextx" | "toself" | "tonext" | "none",
+    // Drawing mode
+    // "lines": lines only
+    // "markers": markers only
+    // "text": text only
+    // "linesmarkers": lines + markers
+    // "linestext": lines + text
+    // "markerstext": markers + text
+    // "linemarkerstext": lines + markers + text
+    // "none": hidden
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // Visibility control
+    // "true": visible (default)
+    // "false": hidden
+    // "legendonly": not drawn but shown in legend
+    visible?: "true" | "false" | "legendonly",
 }
 ```
 
