@@ -202,6 +202,12 @@ Map values can be either raw data (any JSON value) or generator objects. Generat
 
 #### Generator Types
 
+The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
+
+Map values can be either raw data (any JSON value) or generator objects. Generator objects have a `type` field indicating the generation algorithm, plus additional parameters.
+
+### Generator Types
+
 All generator objects must have a `type` field. The following generator types are supported:
 
 - **`raw`** — Passes through data unchanged.
@@ -304,6 +310,79 @@ All generator objects must have a `type` field. The following generator types ar
   // yields [0.0, 0.25, 0.5, 0.75, 1.0]
   ```
 
+- **`g-random`** — Generates random numbers. Can produce a single value or an array; supports integers or floats; an optional seed ensures reproducibility.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-random",
+      min: f64,           // minimum value (inclusive)
+      max: f64,           // maximum value (exclusive)
+      integer?: bool,     // generate integers (default false)
+      seed?: u64,         // random seed (optional; same seed → same sequence)
+      count?: u64         // number of values to generate (omit for a single value)
+  }
+  ```
+  _Example:_
+  ```json5
+  // Generate a single floating‑point number between 0 and 100
+  { type: "g-random", min: 0, max: 100 }
+
+  // Generate 5 integers between 1 and 10 (fixed seed)
+  { type: "g-random", min: 1, max: 11, integer: true, seed: 42, count: 5 }
+  ```
+
+- **`g-choose`** — Randomly picks from a list of options. Can pick a single value or an array; optional seed.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-choose",
+      options: [T; usize],  // candidates (must not be empty)
+      seed?: u64,           // random seed (optional)
+      count?: u64           // number of picks (omit for a single pick)
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "g-choose", options: ["red", "green", "blue", "yellow"], seed: 1, count: 3 }
+  // might yield ["blue", "red", "yellow"]
+  ```
+
+- **`g-env`** — Reads the value of an environment variable. Useful for injecting build‑time configuration; an optional default can be provided.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-env",
+      name: String,         // environment variable name
+      default?: String      // fallback when the variable is not set
+  }
+  ```
+  If the variable is not set and no `default` is given, an error is raised.
+
+  _Example:_
+  ```json5
+  { type: "g-env", name: "MAPBOX_TOKEN", default: "" }
+  // reads $MAPBOX_TOKEN, returns "" if not set
+  ```
+
+- **`g-join`** — Joins an array of strings into a single string using a separator.
+
+  _Parameters:_
+  ```json5
+  {
+      type: "g-join",
+      values: [String; usize],  // strings to join
+      separator?: String        // separator (default: empty string)
+  }
+  ```
+  _Example:_
+  ```json5
+  { type: "g-join", values: ["a", "b", "c"], separator: ", " }
+  // yields "a, b, c"
+  ```
+
 - **`if`** — Conditionally selects between two values based on an arithmetic expression.
 
   _Parameters:_
@@ -315,7 +394,7 @@ All generator objects must have a `type` field. The following generator types ar
       false: T              // value used when condition = 0.0
   }
   ```
-  The condition is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; no variables are available.
+  The condition is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; no variables are available. Comparison operators (e.g., `2 > 1`) yield `1.0` (true) or `0.0` (false).
 
   _Example:_
   ```json5
@@ -323,7 +402,7 @@ All generator objects must have a `type` field. The following generator types ar
   // yields [1,2,3] because 2 > 1 evaluates to 1.0 (non‑zero)
   ```
 
-- **`time`** — Generates a list of two time strings (start and end). Currently returns the provided start and end strings directly; interval and format are parsed but not yet used for generation.
+- **`time`** — Generates a sequence of timestamps between two time points at a specified interval.
 
   _Parameters:_
   ```json5
@@ -331,14 +410,22 @@ All generator objects must have a `type` field. The following generator types ar
       type: "time",
       start: String,        // start time string
       end: String,          // end time string
-      interval: String,     // time interval (currently unused)
-      format?: String       // optional time format (currently unused)
+      interval: String,     // interval (e.g., "1d", "2h", "30m")
+      format?: String       // optional output format (strftime syntax, default RFC 3339)
   }
   ```
+  Supported time string formats: RFC 3339, `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD`.
+  Relative times are also supported: `now`, `now+1d`, `now-2h`, etc.
+
+  Supported interval units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks). Units can be combined, e.g., `"1d12h30m"`.
+
   _Example:_
   ```json5
-  { type: "time", start: "2026-01-01", end: "2026-01-02", interval: "1d" }
-  // yields ["2026-01-01", "2026-01-02"]
+  { type: "time", start: "2026-01-01", end: "2026-01-03", interval: "1d" }
+  // yields ["2026-01-01T00:00:00+00:00", "2026-01-02T00:00:00+00:00", "2026-01-03T00:00:00+00:00"]
+
+  { type: "time", start: "now", end: "now+3d", interval: "1d", format: "%Y-%m-%d" }
+  // yields [today, tomorrow, day after tomorrow, 3 days from now] formatted as "YYYY-MM-DD"
   ```
 
 #### Using the Map

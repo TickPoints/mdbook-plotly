@@ -200,7 +200,7 @@ offline_js_sources = false
 
 映射值可以是原始数据（任何 JSON 值）或生成器对象。生成器对象具有一个 `type` 字段表示生成算法，以及额外的参数。
 
-#### 生成器类型
+### 生成器类型
 
 所有生成器对象必须具有 `type` 字段。支持以下生成器类型：
 
@@ -304,41 +304,122 @@ offline_js_sources = false
   // 得到 [0.0, 0.25, 0.5, 0.75, 1.0]
   ```
 
+- **`g-random`** — 生成随机数。可以生成单个值或数组，支持整数或浮点数，可选种子以确保可复现。
+
+  _参数：_
+  ```json5
+  {
+      type: "g-random",
+      min: f64,           // 最小值（包含）
+      max: f64,           // 最大值（不包含）
+      integer?: bool,     // 是否生成整数（默认 false）
+      seed?: u64,         // 随机种子（可选，相同种子产生相同序列）
+      count?: u64         // 生成数量（省略则生成单个值）
+  }
+  ```
+  _示例：_
+  ```json5
+  // 生成单个 0~100 之间的浮点数
+  { type: "g-random", min: 0, max: 100 }
+
+  // 生成 5 个 1~10 之间的整数（固定种子）
+  { type: "g-random", min: 1, max: 11, integer: true, seed: 42, count: 5 }
+  ```
+
+- **`g-choose`** — 从给定的选项列表中随机选取。可以选取单个值或数组，可选种子。
+
+  _参数：_
+  ```json5
+  {
+      type: "g-choose",
+      options: [T; usize],  // 候选值列表（不能为空）
+      seed?: u64,           // 随机种子（可选）
+      count?: u64           // 选取数量（省略则选取单个值）
+  }
+  ```
+  _示例：_
+  ```json5
+  { type: "g-choose", options: ["red", "green", "blue", "yellow"], seed: 1, count: 3 }
+  // 可能得到 ["blue", "red", "yellow"]
+  ```
+
+- **`g-env`** — 读取环境变量的值。可在构建时注入配置，可选默认值。
+
+  _参数：_
+  ```json5
+  {
+      type: "g-env",
+      name: String,         // 环境变量名称
+      default?: String      // 环境变量不存在时的默认值
+  }
+  ```
+  如果环境变量未设置且没有 `default`，将报错。
+
+  _示例：_
+  ```json5
+  { type: "g-env", name: "MAPBOX_TOKEN", default: "" }
+  // 读取 $MAPBOX_TOKEN，不存在则返回 ""
+  ```
+
+- **`g-join`** — 将字符串数组用指定的分隔符拼接成单个字符串。
+
+  _参数：_
+  ```json5
+  {
+      type: "g-join",
+      values: [String; usize],  // 要拼接的字符串数组
+      separator?: String        // 分隔符（默认为空字符串）
+  }
+  ```
+  _示例：_
+  ```json5
+  { type: "g-join", values: ["a", "b", "c"], separator: ", " }
+  // 得到 "a, b, c"
+  ```
+
 - **`if`** — 根据算术表达式的结果在两个值之间进行条件选择。
 
   _参数：_
   ```json5
   {
       type: "if",
-      condition: String,    // 计算结果为 bool 的算术表达式
-      true: T,              // 当 condition = true 时使用的值
-      false: T              // 当 condition = false 时使用的值
+      condition: String,    // 算术表达式，求值为数字
+      true: T,              // 当 condition ≠ 0.0 时使用的值
+      false: T              // 当 condition = 0.0 时使用的值
   }
   ```
-  条件使用 [fasteval](https://crates.io/crates/fasteval) 库求值；表达式中没有可用变量。
+  条件使用 [fasteval](https://crates.io/crates/fasteval) 库求值；表达式中没有可用变量。比较运算（如 `2 > 1`）结果为 `1.0`（真）或 `0.0`（假）。
 
   _示例：_
   ```json5
   { type: "if", condition: "2 > 1", true: [1,2,3], false: [4,5,6] }
-  // 得到 [1,2,3]，因为 2 > 1 求值为 true
+  // 得到 [1,2,3]，因为 2 > 1 求值为 1.0（非零）
   ```
 
-- **`time`** — 生成两个时间字符串（开始和结束）的列表。当前直接返回提供的开始和结束字符串；interval 和 format 会被解析但尚未用于生成。
+- **`time`** — 在两个时间点之间按指定的时间间隔生成时间序列。
 
   _参数：_
   ```json5
   {
       type: "time",
-      start: String,        // 开始时间字符串
+      start: String,        // 起始时间字符串
       end: String,          // 结束时间字符串
-      interval: String,     // 时间间隔（当前未使用）
-      format?: String       // 可选的时间格式（当前未使用）
+      interval: String,     // 时间间隔（如 "1d", "2h", "30m"）
+      format?: String       // 可选的输出格式（strftime 语法，默认 RFC 3339）
   }
   ```
+  支持的时间字符串格式：RFC 3339、`YYYY-MM-DDTHH:MM:SS`、`YYYY-MM-DD HH:MM:SS`、`YYYY-MM-DD`。
+  还支持相对时间：`now`、`now+1d`、`now-2h` 等。
+
+  支持的间隔单位：`s`（秒）、`m`（分钟）、`h`（小时）、`d`（天）、`w`（周）。可以组合使用，如 `"1d12h30m"`。
+
   _示例：_
   ```json5
-  { type: "time", start: "2026-01-01", end: "2026-01-02", interval: "1d" }
-  // 得到 ["2026-01-01", "2026-01-02"]
+  { type: "time", start: "2026-01-01", end: "2026-01-03", interval: "1d" }
+  // 得到 ["2026-01-01T00:00:00+00:00", "2026-01-02T00:00:00+00:00", "2026-01-03T00:00:00+00:00"]
+
+  { type: "time", start: "now", end: "now+3d", interval: "1d", format: "%Y-%m-%d" }
+  // 得到 [今天, 明天, 后天, 大后天]，格式为 "YYYY-MM-DD"
   ```
 
 #### 使用映射
