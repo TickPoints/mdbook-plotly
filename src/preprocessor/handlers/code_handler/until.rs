@@ -1,3 +1,6 @@
+// Tmp fix
+#![allow(unexpected_cfgs)]
+
 use anyhow::{Context, Result, anyhow};
 use fasteval::{Compiler, EvalNamespace, Evaler, Parser, Slab};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
@@ -391,7 +394,7 @@ where
     let seed: Option<u64> = take_optional(value, map, &"seed")?;
     let count: Option<u64> = take_optional(value, map, &"count")?;
 
-    let mut gen_value = |rng: &mut dyn Rng| -> Result<Value> {
+    let gen_value = |rng: &mut dyn Rng| -> Result<Value> {
         if integer {
             if min.fract() != 0.0 || max.fract() != 0.0 {
                 return Err(anyhow!("integer random bounds must be whole numbers"));
