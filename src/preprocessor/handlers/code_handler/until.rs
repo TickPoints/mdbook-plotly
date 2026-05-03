@@ -1,13 +1,13 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use fasteval::{Compiler, EvalNamespace, Evaler, Parser, Slab};
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::{value::Index, Map as JsonMap, Value};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
+use serde_json::{Map as JsonMap, Value, value::Index};
 use std::{collections::BTreeMap, fmt::Debug, fmt::Display};
 
 #[cfg(feature = "map-parser-extensions")]
 use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeDelta, Utc};
 #[cfg(feature = "map-parser-extensions")]
-use rand::{rngs::StdRng, Rng, RngCore, SeedableRng};
+use rand::{Rng, RngExt, SeedableRng, rngs::StdRng};
 
 pub type Map = JsonMap<String, Value>;
 
@@ -142,8 +142,6 @@ impl EvalContext {
             .eval(&self.slab, &mut namespace)
             .with_context(|| format!("failed to evaluate expression `{}`", expr))
     }
-
-
 }
 
 impl<T> DataPack<T>
@@ -205,7 +203,10 @@ where
     T: DeserializeOwned,
 {
     let expr: String = must_translate(value, map, "expr")?;
-    try_deser(json_number(eval.eval(&expr, map, vars)?)?, "failed to deserialize generated number")
+    try_deser(
+        json_number(eval.eval(&expr, map, vars)?)?,
+        "failed to deserialize generated number",
+    )
 }
 
 fn parse_g_number_list<T>(map: &Map, value: &mut Value, eval: &mut EvalContext) -> Result<T>
@@ -268,7 +269,10 @@ where
         current += step;
     }
 
-    try_deser(Value::Array(result), "failed to deserialize generated range")
+    try_deser(
+        Value::Array(result),
+        "failed to deserialize generated range",
+    )
 }
 
 fn parse_g_repeat<T>(map: &Map, value: &mut Value) -> Result<T>
@@ -279,7 +283,10 @@ where
     let count: u64 = must_translate(value, map, "count")?;
     let count = usize_count(count, "count")?;
     let result = vec![val; count];
-    try_deser(Value::Array(result), "failed to deserialize repeated values")
+    try_deser(
+        Value::Array(result),
+        "failed to deserialize repeated values",
+    )
 }
 
 fn parse_g_linear<T>(map: &Map, value: &mut Value) -> Result<T>
@@ -306,7 +313,10 @@ where
         }
     }
 
-    try_deser(Value::Array(result), "failed to deserialize linear spaced values")
+    try_deser(
+        Value::Array(result),
+        "failed to deserialize linear spaced values",
+    )
 }
 
 fn parse_if<T>(map: &Map, value: &mut Value, eval: &mut EvalContext, vars: &Vars) -> Result<T>
@@ -347,9 +357,10 @@ where
     let mut current = start_dt;
 
     while current <= end_dt {
-        let ts = format
-            .as_ref()
-            .map_or_else(|| current.to_rfc3339(), |fmt| current.format(fmt).to_string());
+        let ts = format.as_ref().map_or_else(
+            || current.to_rfc3339(),
+            |fmt| current.format(fmt).to_string(),
+        );
         result.push(Value::String(ts));
 
         let Some(next) = current.checked_add_signed(step) else {
@@ -373,18 +384,21 @@ where
         return Err(anyhow!("min ({}) must be less than max ({})", min, max));
     }
 
-    let integer = value.get("integer").and_then(Value::as_bool).unwrap_or(false);
+    let integer = value
+        .get("integer")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
     let seed: Option<u64> = take_optional(value, map, &"seed")?;
     let count: Option<u64> = take_optional(value, map, &"count")?;
 
-    let mut gen_value = |rng: &mut dyn RngCore| -> Result<Value> {
+    let mut gen_value = |rng: &mut dyn Rng| -> Result<Value> {
         if integer {
             if min.fract() != 0.0 || max.fract() != 0.0 {
                 return Err(anyhow!("integer random bounds must be whole numbers"));
             }
-            Ok(Value::from(rng.gen_range(min as i64..max as i64)))
+            Ok(Value::from(rng.random_range(min as i64..max as i64)))
         } else {
-            json_number(rng.gen_range(min..max))
+            json_number(rng.random_range(min..max))
         }
     };
 
@@ -393,7 +407,9 @@ where
         Some(count) => {
             let count = usize_count(count, "count")?;
             let values = with_rng(seed, |rng| {
-                (0..count).map(|_| gen_value(rng)).collect::<Result<Vec<_>>>()
+                (0..count)
+                    .map(|_| gen_value(rng))
+                    .collect::<Result<Vec<_>>>()
             })?;
             try_deser(Value::Array(values), "failed to deserialize g-random array")
         }
@@ -423,13 +439,18 @@ where
             let count = usize_count(count, "count")?;
             let selected = with_rng(seed, |rng| {
                 (0..count)
-                    .map(|_| options[rng.gen_range(0..options.len())].clone())
+                    .map(|_| options[rng.random_range(0..options.len())].clone())
                     .collect::<Vec<_>>()
             });
-            try_deser(Value::Array(selected), "failed to deserialize g-choose array")
+            try_deser(
+                Value::Array(selected),
+                "failed to deserialize g-choose array",
+            )
         }
         None => {
-            let picked = with_rng(seed, |rng| options[rng.gen_range(0..options.len())].clone());
+            let picked = with_rng(seed, |rng| {
+                options[rng.random_range(0..options.len())].clone()
+            });
             try_deser(picked, "failed to deserialize g-choose single value")
         }
     }
@@ -457,7 +478,10 @@ where
 {
     let values: Vec<String> = must_translate(value, map, "values")?;
     let separator: String = take_optional(value, map, &"separator")?.unwrap_or_default();
-    try_deser(Value::String(values.join(&separator)), "failed to deserialize joined string")
+    try_deser(
+        Value::String(values.join(&separator)),
+        "failed to deserialize joined string",
+    )
 }
 
 #[cfg(feature = "map-parser-extensions")]
@@ -572,7 +596,7 @@ fn parse_time_str(s: &str) -> Result<DateTime<Utc>> {
     if let Ok(date) = NaiveDate::parse_from_str(s, "%Y-%m-%d") {
         return date
             .and_hms_opt(0, 0, 0)
-            .map(NaiveDateTime::and_utc)
+            .map(|s| s.and_utc())
             .ok_or_else(|| anyhow!("invalid date: '{}'", s));
     }
 
@@ -587,13 +611,13 @@ fn parse_time_str(s: &str) -> Result<DateTime<Utc>> {
 #[cfg(feature = "map-parser-extensions")]
 fn with_rng<F, R>(seed: Option<u64>, f: F) -> R
 where
-    F: FnOnce(&mut dyn RngCore) -> R,
+    F: FnOnce(&mut dyn Rng) -> R,
 {
     if let Some(seed) = seed {
         let mut rng = StdRng::seed_from_u64(seed);
         f(&mut rng)
     } else {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         f(&mut rng)
     }
 }
