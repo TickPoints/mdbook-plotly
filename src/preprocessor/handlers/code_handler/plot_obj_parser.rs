@@ -65,7 +65,6 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
         (typeset_math, bool),
         (editable, bool),
         (autosizable, bool),
-        (responsive, bool),
         (fill_frame, bool),
         (frame_margins, f64),
         (scroll_zoom, bool),
