@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.1.9-beta
+- Updated interfaces
+    - Updated layout
+    - Updated config
+    - Updated legend
+    - Updated the `Color`
+- Fixed docs
+
 ## v0.1.9-alpha
 - Updated Cargo.toml
     - Adjusted deps
