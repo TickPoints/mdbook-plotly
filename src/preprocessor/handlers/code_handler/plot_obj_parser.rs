@@ -2,10 +2,7 @@ pub use super::until;
 use super::until::{Color, Map};
 use crate::translate;
 use anyhow::{Result, anyhow};
-use plotly::{
-    Configuration, Layout, Plot, Trace,
-    layout::{Legend, Margin},
-};
+use plotly::{Configuration, Layout, Plot, Trace};
 use serde_json::Value;
 
 pub mod bar_parser;
@@ -58,6 +55,8 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
 }
 
 fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> {
+    use plotly::configuration::{DisplayModeBar, DoubleClick};
+
     let config = translate! {
         Configuration::new(),
         config_obj,
@@ -66,9 +65,6 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
         (typeset_math, bool),
         (editable, bool),
         (autosizable, bool),
-        // NOTE:
-        // Although this method is still in place, it is no longer valid as far as the documentation is concerned.
-        // Subsequent versions may remove this method without warning.
         (responsive, bool),
         (fill_frame, bool),
         (frame_margins, f64),
@@ -78,26 +74,48 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
         (show_tips, bool),
         (show_link, bool),
         (send_data, bool),
+        (show_edit_in_chart_studio, bool),
         (double_click_delay, usize),
         (queue_length, usize),
         (display_logo, bool),
         (watermark, bool),
     }?;
 
+    let config = translate_enum! {
+        config,
+        config_obj,
+        map,
+        (display_mode_bar, {
+            "hover"  => DisplayModeBar::Hover,
+            "true"   => DisplayModeBar::True,
+            "false"  => DisplayModeBar::False,
+        }),
+        (double_click, {
+            "false"         => DoubleClick::False,
+            "reset"         => DoubleClick::Reset,
+            "autosize"      => DoubleClick::AutoSize,
+            "reset+autosize"=> DoubleClick::ResetAutoSize,
+        }),
+    }?;
+
     Ok(config)
 }
 
 fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
+    use plotly::layout::{GroupClick, ItemClick, ItemSizing, Legend, Margin, TraceOrder, VAlign};
+
     let layout = translate! {
         Layout::new(),
         layout_obj,
         map,
         (title, String),
         (show_legend, bool),
+        (auto_size, bool),
         (height, usize),
         (width, usize),
         (colorway, Vec<Color>),
         (plot_background_color, Color),
+        (paper_background_color, Color),
         (separators, String),
     }?;
 
@@ -114,8 +132,45 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
             (x, f64),
             (y, f64),
             (trace_group_gap, usize),
+            (item_width, usize),
             (title, String),
         }?;
+
+        let legend = translate_enum! {
+            legend,
+            legend_obj,
+            map,
+            (trace_order, {
+                "reversed"        => TraceOrder::Reversed,
+                "grouped"         => TraceOrder::Grouped,
+                "reversed+grouped"=> TraceOrder::ReversedGrouped,
+                "normal"          => TraceOrder::Normal,
+            }),
+            (item_sizing, {
+                "trace"    => ItemSizing::Trace,
+                "constant" => ItemSizing::Constant,
+            }),
+            (item_click, {
+                "toggle"       => ItemClick::Toggle,
+                "toggleothers" => ItemClick::ToggleOthers,
+                "false"        => ItemClick::False,
+            }),
+            (item_double_click, {
+                "toggle"       => ItemClick::Toggle,
+                "toggleothers" => ItemClick::ToggleOthers,
+                "false"        => ItemClick::False,
+            }),
+            (valign, {
+                "top"    => VAlign::Top,
+                "middle" => VAlign::Middle,
+                "bottom" => VAlign::Bottom,
+            }),
+            (group_click, {
+                "toggleitem" => GroupClick::ToggleItem,
+                "togglegroup"=> GroupClick::ToggleGroup,
+            }),
+        }?;
+
         layout.legend(legend)
     } else {
         layout
