@@ -189,10 +189,9 @@ The following notation is used throughout this reference to describe expected ty
 - **Rgb** – `"rgb(u8, u8, u8)"` (e.g., `"rgb(0, 0, 0)"`)
 - **Rgba** – `"rgba(u8, u8, u8, f64)"` (e.g., `"rgba(0, 0, 0, 0.0)"`)
 - **Color** – can be one of the following:
-  - A named CSS color: `{ named_color: "aliceblue" }`
-  - An RGB color: `{ rgb_color: "rgb(255, 0, 0)" }`
-  - An RGBA color: `{ rgba_color: "rgba(255, 0, 0, 0.5)" }`
-  - Alternatively, for RGB and RGBA, you can use the plain string forms `"rgb(255,0,0)"` or `"rgba(255,0,0,0.5)"` directly.
+  - A named CSS color: `"aliceblue"`
+  - An RGB color: `"rgb(255, 0, 0)"`
+  - An RGBA color: `"rgba(255, 0, 0, 0.5)"`
 
 ### Map and Generators
 

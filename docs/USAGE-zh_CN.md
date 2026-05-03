@@ -189,10 +189,9 @@ offline_js_sources = false
 - **Rgb** – `"rgb(u8, u8, u8)"`（例如 `"rgb(0, 0, 0)"`）
 - **Rgba** – `"rgba(u8, u8, u8, f64)"`（例如 `"rgba(0, 0, 0, 0.0)"`）
 - **Color** – 可以是：
-  * 命名的 CSS 颜色：`{ named_color: "aliceblue" }`
+  * 命名的 CSS 颜色：`"aliceblue"`
   * RGB 字符串：`"rgb(255, 0, 0)"`
   * RGBA 字符串：`"rgba(255, 0, 0, 0.5)"`
-  * 或等效的对象形式：`{ rgb_color: "rgb(255,0,0)" }`、`{ rgba_color: "rgba(255,0,0,0.5)" }`
 
 ### 映射与生成器
 
