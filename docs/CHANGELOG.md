@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.1.9-alpha
+- Updated Cargo.toml
+    - Adjusted deps
+            - Added `chrono`
+    - Adjusted features
+        - Add the `map-parser-extensions` feature
+- Updated interfaces
+    - Updated the map parser
+            - Updated `time`, `g-random`, `g-choose`
+- Fixed docs
+
 ## v0.1.8
 > [!NOTE]
 > Hotfix. Please don't use old versions.
