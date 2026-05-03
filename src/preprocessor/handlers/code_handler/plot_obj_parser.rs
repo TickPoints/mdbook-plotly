@@ -1,6 +1,6 @@
 pub use super::until;
 use super::until::{Color, Map};
-use crate::translate;
+use crate::{translate, translate_enum};
 use anyhow::{Result, anyhow};
 use plotly::{Configuration, Layout, Plot, Trace};
 use serde_json::Value;
