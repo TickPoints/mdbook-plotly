@@ -1,4 +1,4 @@
-use mdbook_plotly::preprocessor::handlers::code_handler::until::Color;
+use mdbook_plotly::code_handler::until::Color;
 use plotly::color::{NamedColor, Rgba};
 
 #[test]

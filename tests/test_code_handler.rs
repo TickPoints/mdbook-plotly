@@ -1,4 +1,4 @@
-use mdbook_plotly::preprocessor::handlers::code_handler;
+use mdbook_plotly::code_handler;
 use plotly::{Configuration, Layout, Plot};
 
 #[test]

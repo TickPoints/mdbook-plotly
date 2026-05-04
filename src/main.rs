@@ -1,3 +1,4 @@
+mod code_handler;
 mod command;
 mod macros;
 mod preprocessor;

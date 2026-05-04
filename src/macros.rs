@@ -28,7 +28,7 @@ macro_rules! fatal {
 #[macro_export]
 macro_rules! translate {
     ($target:expr, $value:expr, $map:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
-        use $crate::preprocessor::handlers::code_handler::until::DataPack;
+        use $crate::code_handler::until::DataPack;
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
@@ -51,7 +51,7 @@ macro_rules! translate_enum {
     ($target:expr, $value:expr, $map:expr, $(
         ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
     ),* $(,)?) => {{
-        use $crate::preprocessor::handlers::code_handler::until::DataPack;
+        use $crate::code_handler::until::DataPack;
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
