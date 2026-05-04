@@ -681,9 +681,10 @@ impl<'de> Deserialize<'de> for Color {
     {
         let value = Value::deserialize(deserializer)?;
 
-        if let Some(s) = value.as_str() 
-            && let Ok(named) = serde_json::from_str::<color::NamedColor>(&format!("\"{s}\"")) {
-                return Ok(Self::NamedColor(named));
+        if let Some(s) = value.as_str()
+            && let Ok(named) = serde_json::from_str::<color::NamedColor>(&format!("\"{s}\""))
+        {
+            return Ok(Self::NamedColor(named));
         }
 
         if let Ok(rgb) = serde_json::from_value::<color::Rgb>(value.clone()) {

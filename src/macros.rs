@@ -40,7 +40,7 @@ macro_rules! translate {
                 target
             };
         )*
-        Ok::<_, ::anyhow::Error>(target)
+        anyhow::Ok(target)
     }};
 }
 
@@ -73,6 +73,6 @@ macro_rules! translate_enum {
                 target
             };
         )*
-        Ok::<_, ::anyhow::Error>(target)
+        anyhow::Ok(target)
     }};
 }

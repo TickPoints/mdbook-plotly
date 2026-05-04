@@ -67,5 +67,58 @@ pub fn parse_scatter_data(
         }),
     }?;
 
+    let sc = if let Some(marker_obj) = sc_obj.get_mut("marker")
+        && marker_obj.is_object()
+    {
+        let marker = plotly::common::Marker::new();
+        let marker = translate! {
+            marker,
+            marker_obj,
+            map,
+            (color, Color),
+            (opacity, f64),
+            (size, usize),
+            (size_array, Vec<usize>),
+            (max_displayed, usize),
+            (size_ref, usize),
+            (size_min, usize),
+            (cauto, bool),
+            (cmax, f64),
+            (cmin, f64),
+            (cmid, f64),
+            (auto_color_scale, bool),
+            (reverse_scale, bool),
+            (show_scale, bool),
+            (outlier_color, Color)
+        }?;
+
+        use plotly::common::{MarkerSymbol, SizeMode};
+        let marker = translate_enum! {
+            marker,
+            marker_obj,
+            map,
+            (symbol, {
+                "circle" =>         MarkerSymbol::Circle,
+                "square" =>         MarkerSymbol::Square,
+                "diamond" =>        MarkerSymbol::Diamond,
+                "cross" =>          MarkerSymbol::Cross,
+                "x" =>              MarkerSymbol::X,
+                "triangle-up" =>    MarkerSymbol::TriangleUp,
+                "triangle-down" =>  MarkerSymbol::TriangleDown,
+                "triangle-left" =>  MarkerSymbol::TriangleLeft,
+                "triangle-right" => MarkerSymbol::TriangleRight,
+                "pentagon" =>       MarkerSymbol::Pentagon,
+                "hexagon" =>        MarkerSymbol::Hexagon,
+            }),
+            (size_mode, {
+                "area" => SizeMode::Area,
+                "diameter" => SizeMode::Diameter,
+            }),
+        }?;
+        sc.marker(marker)
+    } else {
+        sc
+    };
+
     Ok(sc)
 }

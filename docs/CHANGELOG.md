@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.1.9
+- Updated interfaces
+    - Added Marker in `bar`, `histogra`, `pie`, `scatter`, `scatter_geo`, `scatter_mapbox`, `scatter_polar`
+- Updated tests and macros
+
 ## v0.1.9-beta
 - Updated interfaces
     - Updated layout
