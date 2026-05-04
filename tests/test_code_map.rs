@@ -444,7 +444,8 @@ fn test_time_type() {
                 type: "time",
                 start: "2023-01-01",
                 end: "2023-01-02",
-                interval: "1 day"
+                interval: "1d",
+                format: "%Y-%m-%d"
             }
         },
         data: [{
