@@ -32,7 +32,12 @@ sync = ["dep:rayon"]
 default-handlers = ["plotly-html-handler"]
 full-handlers = ["plotly-svg-handler", "plotly-html-handler"]
 map-parser-extensions = ["dep:chrono", "dep:rand"]
-plotly-backed = ["plotly/static_export_default"]
+plotly-backed = [
+    # If you have firefox, you need to use this feature to enable the plotly backend.
+    # "plotly/static_export_geckodriver"
+    # If you have chrome, you need to use this feature to enable the plotly backend.
+    # "plotly/static_export_chromedriver"
+]
 plotly-svg-handler = ["plotly-backed"]
 plotly-html-handler = []
 
