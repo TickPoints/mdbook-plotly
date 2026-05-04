@@ -736,6 +736,8 @@ config: {
     text_angle?: f64,
     // 柱子方向："v" 为垂直柱状图，"h" 为水平条形图
     orientation?: "v" | "h",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -897,6 +899,8 @@ config: {
     // "density": 概率密度（面积积分为 1）
     // "probability density": 概率密度（与 density 类似）
     hist_norm?: "" | "percent" | "probability" | "density" | "probability density",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -1051,6 +1055,8 @@ config: {
     pull?: f64,
     // 扇区排列方向
     direction?: "clockwise" | "counterclockwise",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -1145,6 +1151,8 @@ config: {
     // "linemarkerstext": 折线 + 标记 + 文本
     // "none": 不显示
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -1208,6 +1216,8 @@ config: {
     // "linemarkerstext": 折线 + 标记 + 文本
     // "none": 不显示
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -1278,6 +1288,8 @@ config: {
     // "false": 不可见
     // "legendonly": 不绘制但在图例中显示
     visible?: "true" | "false" | "legendonly",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 
@@ -1359,6 +1371,8 @@ config: {
     // "linemarkerstext": 折线 + 标记 + 文本
     // "none": 不显示
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // 控制数据点的视觉样式
+    marker?: Marker,
 }
 ```
 

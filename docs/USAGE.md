@@ -742,6 +742,8 @@ config: {
     text_angle?: f64,
     // Bar orientation: "v" for vertical bar chart, "h" for horizontal bar chart
     orientation?: "v" | "h",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -907,6 +909,8 @@ config: {
     // "density": probability density (area integrates to 1)
     // "probability density": probability density (similar to density)
     hist_norm?: "" | "percent" | "probability" | "density" | "probability density",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -1064,6 +1068,8 @@ config: {
     pull?: f64,
     // Sector arrangement direction
     direction?: "clockwise" | "counterclockwise",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -1160,6 +1166,8 @@ config: {
     // "linemarkerstext": lines + markers + text
     // "none": hidden
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -1224,6 +1232,8 @@ config: {
     // "linemarkerstext": lines + markers + text
     // "none": hidden
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -1296,6 +1306,8 @@ config: {
     // "false": hidden
     // "legendonly": not drawn but shown in legend
     visible?: "true" | "false" | "legendonly",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
@@ -1378,6 +1390,8 @@ config: {
     // "linemarkerstext": lines + markers + text
     // "none": hidden
     mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    // Controls the visual appearance of data points
+    marker?: Marker,
 }
 ```
 
