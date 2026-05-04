@@ -66,7 +66,7 @@ pub fn logger_format(fmt: &mut env_logger::fmt::Formatter, record: &Record) -> s
 
     write!(fmt, "{}", record.args())?;
 
-    if record.level() <= Level::Debug {
+    if record.level() >= Level::Debug {
         let gray_style = Style::new().fg_color(Some(RgbColor(128, 128, 128).into()));
 
         if let Some(file) = record.file() {
