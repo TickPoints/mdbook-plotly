@@ -194,6 +194,57 @@ offline_js_sources = false
   * RGB 字符串：`"rgb(255, 0, 0)"`
   * RGBA 字符串：`"rgba(255, 0, 0, 0.5)"`
 
+#### 复杂通用类型
+
+`marker` 是一个嵌套对象，用于控制数据点的视觉样式，包括颜色、透明度、尺寸、符号形状、颜色标尺等。此对象适用于支持 `marker` 字段的 trace 类型（如 `scatter`、`bar`、`scatterpolar` 等）。
+
+```json5
+{
+    // ===== 基本视觉属性 =====
+    // 数据点颜色
+    color?: Color,
+    // 不透明度，取值范围 0（完全透明）~ 1（完全不透明）
+    opacity?: f64,
+    // 数据点的大小（像素或与 size_mode 配合的解释单位）
+    size?: usize,
+    // 每个数据点的单独尺寸
+    size_array?: [usize; usize],
+
+    // 数据点符号形状
+    symbol?: "circle" | "square" | "diamond" | "cross" | "x" | "triangle-up" | "triangle-down" | "triangle-left" | "triangle-right" | "pentagon" | "hexagon",
+    // 尺寸模式：
+    //   "area"     – size 值代表标记的面积（默认）
+    //   "diameter" – size 值代表标记的直径
+    size_mode?: "area" | "diameter",
+
+    // ===== 尺寸与显示控制 =====
+    // 显示的最大数据点数量（超出部分将被隐藏）
+    max_displayed?: usize,
+    // 尺寸参考值，用于自定义尺寸映射
+    size_ref?: usize,
+    // 最小尺寸限制
+    size_min?: usize,
+
+    // ===== 颜色标度（用于颜色编码数值）=====
+    // 是否自动计算颜色标度的最小值/最大值
+    cauto?: bool,
+    // 颜色标度最大值
+    cmax?: f64,
+    // 颜色标度最小值
+    cmin?: f64,
+    // 颜色标度中间值（用于发散色条）
+    cmid?: f64,
+    // 是否自动选择颜色标度
+    auto_color_scale?: bool,
+    // 是否反转颜色标度
+    reverse_scale?: bool,
+    // 是否显示颜色条
+    show_scale?: bool,
+    // 异常值颜色（仅在某些 trace 中有效）
+    outlier_color?: Color,
+}
+```
+
 ### 映射与生成器
 
 `map` 字段提供了一个映射表，可以在图表定义的其他地方通过 `map.key` 语法引用。这允许重复使用数据并通过内置生成器生成复杂值。

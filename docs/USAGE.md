@@ -194,6 +194,57 @@ The following notation is used throughout this reference to describe expected ty
   - An RGB color: `"rgb(255, 0, 0)"`
   - An RGBA color: `"rgba(255, 0, 0, 0.5)"`
 
+#### Common Complex Types
+
+The `marker` object controls the visual appearance of data points, including color, opacity, size, symbol shape, and color scale. This object applies to trace types that support a `marker` field (e.g., `scatter`, `bar`, `scatterpolar`, etc.).
+
+```json5
+{
+    // ===== Basic visual properties =====
+    // Fill color of the data points
+    color?: Color,
+    // Opacity from 0 (transparent) to 1 (opaque)
+    opacity?: f64,
+    // Uniform size of data points (pixels or interpreted according to size_mode)
+    size?: usize,
+    // Per‑point size array
+    size_array?: [usize; usize],
+
+    // Marker symbol shape
+    symbol?: "circle" | "square" | "diamond" | "cross" | "x" | "triangle-up" | "triangle-down" | "triangle-left" | "triangle-right" | "pentagon" | "hexagon",
+    // Size mode:
+    //   "area"     – size value represents marker area (default)
+    //   "diameter" – size value represents marker diameter
+    size_mode?: "area" | "diameter",
+
+    // ===== Size and display limits =====
+    // Maximum number of displayed data points (excess points are hidden)
+    max_displayed?: usize,
+    // Size reference value for custom sizing (used with size_array, etc.)
+    size_ref?: usize,
+    // Minimum size constraint
+    size_min?: usize,
+
+    // ===== Color scale (for encoding numeric values) =====
+    // Whether to auto‑compute the color scale range (cmax/cmin)
+    cauto?: bool,
+    // Maximum value of the color scale
+    cmax?: f64,
+    // Minimum value of the color scale
+    cmin?: f64,
+    // Midpoint of the color scale (used for diverging color bars)
+    cmid?: f64,
+    // Whether to automatically select the color scale
+    auto_color_scale?: bool,
+    // Whether to reverse the color scale
+    reverse_scale?: bool,
+    // Whether to display the color bar
+    show_scale?: bool,
+    // Color for outlier points (only effective in certain trace types)
+    outlier_color?: Color,
+}
+```
+
 ### Map and Generators
 
 The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
