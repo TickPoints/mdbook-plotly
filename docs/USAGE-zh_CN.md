@@ -15,32 +15,32 @@
   - [配置语法](#配置语法)
   - [配置选项](#配置选项)
 - [输入格式](#输入格式)
-    - [JSON Input](#json-input)
-        - [JSON 语法与类型系统](#json-语法与类型系统)
-        - [映射与生成器](#映射与生成器)
-        - [图表主格式](#图表主格式)
-        - [Layout格式](#layout格式)
-        - [Config格式](#config格式)
-        - 轨迹类型
-            - [条形图](#data-bar)
-            - [箱线图](#data-box)
-            - [等高线图](#data-contour)
-            - [Mapbox 密度热力图](#data-density_mapbox)
-            - [热力图](#data-heatmap)
-            - [直方图](#data-histogram)
-            - [图像轨迹](#data-image)
-            - [3D 网格图](#data-mesh3d)
-            - [OHLC 图](#data-ohlc)
-            - [饼图](#data-pie)
-            - [桑基图](#data-sankey)
-            - [散点图](#data-scatter)
-            - [3D 散点图](#data-scatter3d)
-            - [地理散点图](#data-scatter_geo)
-            - [Mapbox 散点图](#data-scatter_mapbox)
-            - [极坐标散点图](#data-scatter_polar)
-            - [3D 曲面图](#data-surface)
-            - [表格](#data-table)
-    - [SandBoxScript（已弃用）](#sand-box-script)
+  - [JSON Input](#json-input)
+    - [JSON 语法与类型系统](#json-语法与类型系统)
+    - [映射与生成器](#映射与生成器)
+    - [图表主格式](#图表主格式)
+    - [Layout格式](#layout格式)
+    - [Config格式](#config格式)
+    - 轨迹类型
+      - [条形图](#data-bar)
+      - [箱线图](#data-box)
+      - [等高线图](#data-contour)
+      - [Mapbox 密度热力图](#data-density_mapbox)
+      - [热力图](#data-heatmap)
+      - [直方图](#data-histogram)
+      - [图像轨迹](#data-image)
+      - [3D 网格图](#data-mesh3d)
+      - [OHLC 图](#data-ohlc)
+      - [饼图](#data-pie)
+      - [桑基图](#data-sankey)
+      - [散点图](#data-scatter)
+      - [3D 散点图](#data-scatter3d)
+      - [地理散点图](#data-scatter_geo)
+      - [Mapbox 散点图](#data-scatter_mapbox)
+      - [极坐标散点图](#data-scatter_polar)
+      - [3D 曲面图](#data-surface)
+      - [表格](#data-table)
+  - [SandBoxScript（已弃用）](#sand-box-script)
 - [输出格式](#输出格式)
 
 ## 快速开始
@@ -1470,7 +1470,6 @@ config: {
     visible?: "true" | "false" | "legendonly",
 }
 ```
-
 
 ## Sand Box Script
 

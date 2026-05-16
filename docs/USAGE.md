@@ -15,32 +15,32 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
   - [Configuration Syntax](#configuration-syntax)
   - [Configuration Options](#configuration-options)
 - [Input Formats](#input-formats)
-    - [JSON Input](#json-input)
-        - [JSON Syntax and Type System](#json-syntax-and-type-system)
-        - [Map and Generators](#map-and-generators)
-        - [Chart Main Format](#chart-main-format)
-        - [Layout Format](#layout-format)
-        - [Config Format](#config-format)
-        - Trace Types
-            - [Bar Charts](#data-bar)
-            - [Box Plots](#data-box)
-            - [Contour Plots](#data-contour)
-            - [Mapbox Density Heatmaps](#data-density_mapbox)
-            - [Heat Maps](#data-heatmap)
-            - [Histograms](#data-histogram)
-            - [Image Traces](#data-image)
-            - [3D Mesh Plots](#data-mesh3d)
-            - [OHLC Charts](#data-ohlc)
-            - [Pie Charts](#data-pie)
-            - [Sankey Diagrams](#data-sankey)
-            - [Scatter Plots](#data-scatter)
-            - [3D Scatter Plots](#data-scatter3d)
-            - [Geographic Scatter Plots](#data-scatter_geo)
-            - [Mapbox Scatter Plots](#data-scatter_mapbox)
-            - [Polar Scatter Plots](#data-scatter_polar)
-            - [3D Surface Plots](#data-surface)
-            - [Tables](#data-table)
-    - [SandBoxScript (Deprecated)](#sand-box-script)
+  - [JSON Input](#json-input)
+    - [JSON Syntax and Type System](#json-syntax-and-type-system)
+    - [Map and Generators](#map-and-generators)
+    - [Chart Main Format](#chart-main-format)
+    - [Layout Format](#layout-format)
+    - [Config Format](#config-format)
+    - Trace Types
+      - [Bar Charts](#data-bar)
+      - [Box Plots](#data-box)
+      - [Contour Plots](#data-contour)
+      - [Mapbox Density Heatmaps](#data-density_mapbox)
+      - [Heat Maps](#data-heatmap)
+      - [Histograms](#data-histogram)
+      - [Image Traces](#data-image)
+      - [3D Mesh Plots](#data-mesh3d)
+      - [OHLC Charts](#data-ohlc)
+      - [Pie Charts](#data-pie)
+      - [Sankey Diagrams](#data-sankey)
+      - [Scatter Plots](#data-scatter)
+      - [3D Scatter Plots](#data-scatter3d)
+      - [Geographic Scatter Plots](#data-scatter_geo)
+      - [Mapbox Scatter Plots](#data-scatter_mapbox)
+      - [Polar Scatter Plots](#data-scatter_polar)
+      - [3D Surface Plots](#data-surface)
+      - [Tables](#data-table)
+  - [SandBoxScript (Deprecated)](#sand-box-script)
 - [Output Formats](#output-formats)
 
 ## Quick Start
@@ -1479,6 +1479,7 @@ config: {
 ### Data-box
 
 `box` can be a `Data` entry. This `Data` will be rendered as a box plot.
+
 ```json5
 {
     type: "box",
@@ -1526,6 +1527,7 @@ config: {
 ### Data-contour
 
 `contour` can be a `Data` entry. This `Data` will be rendered as a contour plot.
+
 ```json5
 {
     type: "contour",
@@ -1563,6 +1565,7 @@ config: {
 ### Data-heatmap
 
 `heatmap` can be a `Data` entry. This `Data` will be rendered as a heat map.
+
 ```json5
 {
     type: "heatmap",
@@ -1603,6 +1606,7 @@ config: {
 ### Data-mesh3d
 
 `mesh3d` can be a `Data` entry. This `Data` will be rendered as a 3D mesh plot.
+
 ```json5
 {
     type: "mesh3d",
@@ -1646,6 +1650,7 @@ config: {
 ### Data-scatter3d
 
 `scatter3d` can be a `Data` entry. This `Data` will be rendered as a 3D scatter plot.
+
 ```json5
 {
     type: "scatter3d",
@@ -1682,6 +1687,7 @@ config: {
 ### Data-surface
 
 `surface` can be a `Data` entry. This `Data` will be rendered as a 3D surface plot.
+
 ```json5
 {
     type: "surface",

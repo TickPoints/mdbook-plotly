@@ -5,7 +5,7 @@
 [![Crates.io](https://img.shields.io/crates/v/mdbook-plotly.svg?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/mdbook-plotly)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/TickPoints/mdbook-plotly/release.yml?style=for-the-badge&logo=github-actions)](https://github.com/TickPoints/mdbook-plotly/actions)
 
-**[English](README.md)**  **中文**
+**[English](README.md)** **中文**
 
 ## 项目概述
 
@@ -38,11 +38,11 @@ after = ["links"]
 
 在您所需要的地方添加一个代码块，如下:
 
-~~~markdown
+````markdown
 ```plot
 {}
 ```
-~~~
+````
 
 更多内容可以查看[使用手册](docs/USAGE-zh_CN.md)。
 
