@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.2.0-beta
+- Added 6 new Data trace types
+    - Added `box` (BoxPlot)
+    - Added `contour` (Contour)
+    - Added `heatmap` (HeatMap)
+    - Added `mesh3d` (Mesh3D)
+    - Added `scatter3d` (Scatter3D)
+    - Added `surface` (Surface)
+- Updated docs for all new trace types (USAGE-zh_CN.md, USAGE.md)
+- Added comprehensive tests for all existing and new trace types
+- Re-exported all new trace types in `src/code_handler/plot_obj_parser.rs`
+
 ## v0.1.9
 - Updated interfaces
     - Added Marker in `bar`, `histogra`, `pie`, `scatter`, `scatter_geo`, `scatter_mapbox`, `scatter_polar`

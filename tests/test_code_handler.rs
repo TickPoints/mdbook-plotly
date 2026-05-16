@@ -1,5 +1,8 @@
-use mdbook_plotly::preprocessor::handlers::code_handler;
-use plotly::{Configuration, Layout, Plot};
+use mdbook_plotly::code_handler;
+use plotly::{
+    Bar, BoxPlot, Candlestick, Configuration, Contour, DensityMapbox, HeatMap, Histogram, Layout,
+    Mesh3D, Ohlc, Pie, Plot, Scatter, Scatter3D, ScatterGeo, ScatterMapbox, ScatterPolar, Surface,
+};
 
 #[test]
 fn test_json5() {
@@ -22,4 +25,422 @@ fn test_json5() {
     reasonable_plot.set_layout(layout);
 
     assert!(reasonable_plot == generated_plot);
+}
+
+// ── Existing Trace Tests ──
+
+#[test]
+fn test_bar() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "bar",
+            x: [1, 2, 3],
+            y: [4, 5, 6],
+            name: "Bar Test",
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Bar::new(vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]).name("Bar Test");
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Bar mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_scatter() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "scatter",
+            x: [0, 1, 2],
+            y: [0, 1, 2],
+            name: "Scatter Test",
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Scatter::new(vec![0.0, 1.0, 2.0], vec![0.0, 1.0, 2.0]).name("Scatter Test");
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Scatter mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_pie() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "pie",
+            values: [10, 20, 30],
+            labels: ["A", "B", "C"],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Pie::new(vec![10.0, 20.0, 30.0]).labels(vec![
+        "A".to_string(),
+        "B".to_string(),
+        "C".to_string(),
+    ]);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Pie mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_histogram() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "histogram",
+            x: [1, 2, 2, 3, 3, 3],
+            name: "Hist Test",
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Histogram::new(vec![1.0, 2.0, 2.0, 3.0, 3.0, 3.0]).name("Hist Test");
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Histogram mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_candlestick() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "candlestick",
+            x: ["2024-01-01", "2024-01-02"],
+            open: [100, 102],
+            high: [105, 106],
+            low: [98, 100],
+            close: [103, 104],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Candlestick::new(
+        vec!["2024-01-01".to_string(), "2024-01-02".to_string()],
+        vec![100.0, 102.0],
+        vec![105.0, 106.0],
+        vec![98.0, 100.0],
+        vec![103.0, 104.0],
+    );
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Candlestick mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_ohlc() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "ohlc",
+            x: ["2024-01-01", "2024-01-02"],
+            open: [100, 102],
+            high: [105, 106],
+            low: [98, 100],
+            close: [103, 104],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Ohlc::new(
+        vec!["2024-01-01".to_string(), "2024-01-02".to_string()],
+        vec![100.0, 102.0],
+        vec![105.0, 106.0],
+        vec![98.0, 100.0],
+        vec![103.0, 104.0],
+    );
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "OHLC mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_scatter_geo() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "scatter_geo",
+            lat: [40.0, 50.0],
+            lon: [-70.0, -80.0],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = ScatterGeo::new(vec![40.0, 50.0], vec![-70.0, -80.0]);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "ScatterGeo mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_scatter_mapbox() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "scatter_mapbox",
+            lat: [40.0],
+            lon: [-70.0],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = ScatterMapbox::new(vec![40.0], vec![-70.0]);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "ScatterMapbox mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_scatter_polar() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "scatter_polar",
+            r: [1, 2, 3],
+            theta: [0, 45, 90],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = ScatterPolar::new(vec![0.0, 45.0, 90.0], vec![1.0, 2.0, 3.0]);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "ScatterPolar mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_density_mapbox() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "density_mapbox",
+            lat: [40.0, 45.0],
+            lon: [-70.0, -75.0],
+            z: [1.0, 2.0],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = DensityMapbox::new(vec![40.0, 45.0], vec![-70.0, -75.0], vec![1.0, 2.0]);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "DensityMapbox mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+// ── New Trace Tests ──
+
+#[test]
+fn test_box_plot() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "box",
+            y: [1, 2, 3, 4, 5],
+            name: "Box Test",
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = BoxPlot::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]).name("Box Test");
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "BoxPlot mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_contour() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "contour",
+            z: [[0.0, 0.5, 1.0], [0.5, 1.0, 0.5], [1.0, 0.5, 0.0]],
+            show_legend: true,
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Contour::new_z(vec![
+        vec![0.0, 0.5, 1.0],
+        vec![0.5, 1.0, 0.5],
+        vec![1.0, 0.5, 0.0],
+    ])
+    .show_legend(true);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Contour mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_heat_map() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "heatmap",
+            z: [[0.0, 0.5], [1.0, 0.0]],
+            opacity: 0.8,
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = HeatMap::new_z(vec![vec![0.0, 0.5], vec![1.0, 0.0]]).opacity(0.8);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "HeatMap mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_mesh3d() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "mesh3d",
+            x: [0.0, 1.0, 0.0],
+            y: [0.0, 0.0, 1.0],
+            z: [0.0, 0.0, 0.0],
+            opacity: 0.5,
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Mesh3D::new(
+        vec![0.0, 1.0, 0.0],
+        vec![0.0, 0.0, 1.0],
+        vec![0.0, 0.0, 0.0],
+        None,
+        None,
+        None,
+    )
+    .opacity(0.5);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Mesh3D mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_scatter3d() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "scatter3d",
+            x: [0.0, 1.0, 2.0],
+            y: [0.0, 1.0, 2.0],
+            z: [0.0, 1.0, 2.0],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace = Scatter3D::new(
+        vec![0.0, 1.0, 2.0],
+        vec![0.0, 1.0, 2.0],
+        vec![0.0, 1.0, 2.0],
+    );
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Scatter3D mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
+#[test]
+fn test_surface() {
+    let raw_code = r#"
+    {
+        data: [{
+            type: "surface",
+            z: [[0.0, 1.0], [1.0, 0.0]],
+            opacity: 0.9,
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let mut reasonable_plot = Plot::new();
+    let trace: Box<Surface<f64, f64, f64>> =
+        Surface::new(vec![vec![0.0, 1.0], vec![1.0, 0.0]]).opacity(0.9);
+    reasonable_plot.add_trace(trace);
+    assert!(
+        reasonable_plot == generated_plot,
+        "Surface mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
 }

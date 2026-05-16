@@ -8,56 +8,64 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-    - [Installation](#installation)
-    - [Basic Configuration](#basic-configuration)
-    - [First Chart Example](#first-chart-example)
+  - [Installation](#installation)
+  - [Basic Configuration](#basic-configuration)
+  - [First Chart Example](#first-chart-example)
 - [Configuration Reference](#configuration-reference)
-    - [Configuration Syntax](#configuration-syntax)
-    - [Configuration Options](#configuration-options)
+  - [Configuration Syntax](#configuration-syntax)
+  - [Configuration Options](#configuration-options)
 - [Input Formats](#input-formats)
-    - [JSON Input](#json-input)
-        - [JSON Syntax and Type System](#json-syntax-and-type-system)
-        - [Map and Generators](#map-and-generators)
-        - [Chart Main Format](#chart-main-format)
-        - [Layout Format](#layout-format)
-        - [Config Format](#config-format)
-        - Trace Types
-            - [Bar Charts](#data-bar)
-            - [Scatter Plots](#data-scatter)
-            - [Pie Charts](#data-pie)
-            - [Histograms](#data-histogram)
-            - [Candlestick Charts](#data-candlestick)
-            - [OHLC Charts](#data-ohlc)
-            - [Image Traces](#data-image)
-            - [Sankey Diagrams](#data-sankey)
-            - [Geographic Scatter Plots](#data-scatter_geo)
-            - [Mapbox Scatter Plots](#data-scatter_mapbox)
-            - [Polar Scatter Plots](#data-scatter_polar)
-            - [Mapbox Density Heatmaps](#data-density_mapbox)
-            - [Tables](#data-table)
-    - [SandBoxScript (Deprecated)](#sand-box-script)
+  - [JSON Input](#json-input)
+    - [JSON Syntax and Type System](#json-syntax-and-type-system)
+    - [Map and Generators](#map-and-generators)
+    - [Chart Main Format](#chart-main-format)
+    - [Layout Format](#layout-format)
+    - [Config Format](#config-format)
+    - Trace Types
+      - [Bar Charts](#data-bar)
+      - [Box Plots](#data-box)
+      - [Contour Plots](#data-contour)
+      - [Mapbox Density Heatmaps](#data-density_mapbox)
+      - [Heat Maps](#data-heatmap)
+      - [Histograms](#data-histogram)
+      - [Image Traces](#data-image)
+      - [3D Mesh Plots](#data-mesh3d)
+      - [OHLC Charts](#data-ohlc)
+      - [Pie Charts](#data-pie)
+      - [Sankey Diagrams](#data-sankey)
+      - [Scatter Plots](#data-scatter)
+      - [3D Scatter Plots](#data-scatter3d)
+      - [Geographic Scatter Plots](#data-scatter_geo)
+      - [Mapbox Scatter Plots](#data-scatter_mapbox)
+      - [Polar Scatter Plots](#data-scatter_polar)
+      - [3D Surface Plots](#data-surface)
+      - [Tables](#data-table)
+  - [SandBoxScript (Deprecated)](#sand-box-script)
 - [Output Formats](#output-formats)
 
-# Quick Start
+## Quick Start
 
 This section guides you through installing mdbook-plotly, configuring your mdbook, and creating your first chart.
 
-## Installation
+### Installation
 
-### Using Cargo
+#### Using Cargo
+
 ```shell
 cargo install mdbook-plotly
 ```
 
 If you use `cargo-binstall`:
+
 ```shell
 cargo binstall mdbook-plotly
 ```
 
-### Manual Download
+#### Manual Download
+
 Download the latest release for your platform from the [Releases](https://github.com/TickPoints/mdbook-plotly/releases) page and add the binary to your system's PATH.
 
-## Basic Configuration
+### Basic Configuration
 
 Add the following to your book's `book.toml` file:
 
@@ -71,11 +79,11 @@ This configuration enables the default JSON5 input format. Code blocks with lang
 > [!NOTE]
 > mdbook-plotly uses **JSON5** syntax, which extends JSON with comments, trailing commas, unquoted object keys, single‑quoted strings, hexadecimal numbers, and multi‑line strings. This improves readability and maintainability of chart definitions.
 
-## First Chart Example
+### First Chart Example
 
 A minimal chart definition requires three top‑level fields: `data`, `layout`, and `config`:
 
-~~~markdown
+````markdown
 ```plot
 {
     layout: {
@@ -90,20 +98,21 @@ A minimal chart definition requires three top‑level fields: `data`, `layout`, 
     }
 }
 ```
-~~~
+````
 
 This example:
+
 - Sets the chart title to "Test Chart"
 - Creates a pie chart with four slices
 - Disables interactivity (static plot)
 
 For detailed information on available chart types, configuration options, and advanced features, refer to the sections below.
 
-# Configuration Reference
+## Configuration Reference
 
 Configuration options for mdbook-plotly are specified in the `[preprocessor.plotly]` section of your `book.toml`.
 
-## Configuration Syntax
+### Configuration Syntax
 
 All configuration keys use `kebab-case`. The parser follows these rules:
 
@@ -117,7 +126,7 @@ Example error when an invalid enum variant is supplied:
 Illegal config format for 'preprocessor.mdbook-plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
 ```
 
-## Configuration Options
+### Configuration Options
 
 ```toml
 [preprocessor.plotly]
@@ -135,21 +144,21 @@ input-type = "json-input"
 offline_js_sources = false
 ```
 
-# Input Formats
+## Input Formats
 
 The `input-type` configuration option determines the syntax used to define charts inside `plot`/`plotly` code blocks. Supported values:
 
 - `json-input` – JSON5‑based chart definitions (recommended)
 - `sand-box-script` – deprecated script‑based format
 
-## JSON Input
+### JSON Input
 
 This is the primary and recommended format. Charts are defined using JSON5 syntax, which extends standard JSON with comments, trailing commas, unquoted keys, and other conveniences.
 
 > [!NOTE]
 > mdbook‑plotly implements its own deserialization logic. While the structure generally follows Plotly’s native schema, compatibility is not guaranteed, and extensions (such as map references and generators) are available. Always refer to the documented fields below for reliable usage. Missing fields can be requested via GitHub issues.
 
-### JSON Syntax and Type System
+#### JSON Syntax and Type System
 
 The following notation is used throughout this reference to describe expected types and optionality.
 
@@ -175,7 +184,7 @@ The following notation is used throughout this reference to describe expected ty
 }
 ```
 
-#### Basic Types
+##### Basic Types
 
 - **Objects** – `{ "key": value }` or `{ key: value }` (JSON5 allows unquoted keys)
 - **Arrays** – `[value1, value2, ...]`; notation `[T; N]` means an array of `N` elements each of type `T`
@@ -185,7 +194,7 @@ The following notation is used throughout this reference to describe expected ty
 - **Unions** – `"a" | "b"` means the value can be either `"a"` or `"b"`
 - **Ranges** – `0..6f64` means any `f64` value ≥ 0.0 and < 6.0
 
-#### Common Composite Types
+##### Common Composite Types
 
 - **Rgb** – `"rgb(u8, u8, u8)"` (e.g., `"rgb(0, 0, 0)"`)
 - **Rgba** – `"rgba(u8, u8, u8, f64)"` (e.g., `"rgba(0, 0, 0, 0.0)"`)
@@ -194,7 +203,7 @@ The following notation is used throughout this reference to describe expected ty
   - An RGB color: `"rgb(255, 0, 0)"`
   - An RGBA color: `"rgba(255, 0, 0, 0.5)"`
 
-#### Common Complex Types
+##### Common Complex Types
 
 The `marker` object controls the visual appearance of data points, including color, opacity, size, symbol shape, and color scale. This object applies to trace types that support a `marker` field (e.g., `scatter`, `bar`, `scatterpolar`, etc.).
 
@@ -245,7 +254,13 @@ The `marker` object controls the visual appearance of data points, including col
 }
 ```
 
-### Map and Generators
+#### Map and Generators
+
+The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
+
+Map values can be either raw data (any JSON value) or generator objects. Generator objects have a `type` field indicating the generation algorithm, plus additional parameters.
+
+##### Generator Types
 
 The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
 
@@ -253,24 +268,21 @@ Map values can be either raw data (any JSON value) or generator objects. Generat
 
 #### Generator Types
 
-The `map` field provides a mapping table that can be referenced elsewhere in the chart definition using the `map.key` syntax. This allows reuse of data and generation of complex values via built-in generators.
-
-Map values can be either raw data (any JSON value) or generator objects. Generator objects have a `type` field indicating the generation algorithm, plus additional parameters.
-
-### Generator Types
-
 All generator objects must have a `type` field. The following generator types are supported:
 
 - **`raw`** — Passes through data unchanged.
 
   _Parameters:_
+
   ```json5
   {
       type: "raw",
       data: T  // Any value to be used directly
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "raw", data: [1, 2, 3] }
   ```
@@ -278,6 +290,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-number-list`** — Generates a list of numbers by evaluating an expression for each integer in a range.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-number-list",
@@ -286,9 +299,11 @@ All generator objects must have a `type` field. The following generator types ar
       expr: String    // arithmetic expression in variable `i`
   }
   ```
+
   The expression is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; the variable `i` (as `f64`) is available inside the expression.
 
   _Example:_
+
   ```json5
   { type: "g-number-list", begin: 0, end: 3, expr: "i * 2" }
   // yields [0.0, 2.0, 4.0]
@@ -297,13 +312,16 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-number`** — Evaluates a constant arithmetic expression.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-number",
       expr: String    // arithmetic expression (no variables)
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "g-number", expr: "2 + 3 * 4" }
   // yields 14.0
@@ -312,6 +330,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-range`** — Generates an arithmetic progression of floating‑point numbers.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-range",
@@ -320,7 +339,9 @@ All generator objects must have a `type` field. The following generator types ar
       step?: f64      // step size (default 1.0, must be positive)
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "g-range", begin: 0.0, end: 5.0, step: 1.0 }
   // yields [0.0, 1.0, 2.0, 3.0, 4.0]
@@ -329,6 +350,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-repeat`** — Repeats a given value a specified number of times.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-repeat",
@@ -336,7 +358,9 @@ All generator objects must have a `type` field. The following generator types ar
       count: usize    // number of repetitions
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "g-repeat", value: 42.0, count: 3 }
   // yields [42.0, 42.0, 42.0]
@@ -345,6 +369,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-linear`** — Generates `count` values linearly spaced between `begin` and `end` (inclusive of both endpoints).
 
   _Parameters:_
+
   ```json5
   {
       type: "g-linear",
@@ -353,9 +378,11 @@ All generator objects must have a `type` field. The following generator types ar
       count: usize    // must be positive
   }
   ```
+
   If `count` is 1, the result is `[begin]`. Otherwise the step is `(end - begin) / (count - 1)`.
 
   _Example:_
+
   ```json5
   { type: "g-linear", begin: 0.0, end: 1.0, count: 5 }
   // yields [0.0, 0.25, 0.5, 0.75, 1.0]
@@ -364,6 +391,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-random`** — Generates random numbers. Can produce a single value or an array; supports integers or floats; an optional seed ensures reproducibility.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-random",
@@ -374,7 +402,9 @@ All generator objects must have a `type` field. The following generator types ar
       count?: u64         // number of values to generate (omit for a single value)
   }
   ```
+
   _Example:_
+
   ```json5
   // Generate a single floating‑point number between 0 and 100
   { type: "g-random", min: 0, max: 100 }
@@ -386,6 +416,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-choose`** — Randomly picks from a list of options. Can pick a single value or an array; optional seed.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-choose",
@@ -394,7 +425,9 @@ All generator objects must have a `type` field. The following generator types ar
       count?: u64           // number of picks (omit for a single pick)
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "g-choose", options: ["red", "green", "blue", "yellow"], seed: 1, count: 3 }
   // might yield ["blue", "red", "yellow"]
@@ -403,6 +436,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-env`** — Reads the value of an environment variable. Useful for injecting build‑time configuration; an optional default can be provided.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-env",
@@ -410,9 +444,11 @@ All generator objects must have a `type` field. The following generator types ar
       default?: String      // fallback when the variable is not set
   }
   ```
+
   If the variable is not set and no `default` is given, an error is raised.
 
   _Example:_
+
   ```json5
   { type: "g-env", name: "MAPBOX_TOKEN", default: "" }
   // reads $MAPBOX_TOKEN, returns "" if not set
@@ -421,6 +457,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`g-join`** — Joins an array of strings into a single string using a separator.
 
   _Parameters:_
+
   ```json5
   {
       type: "g-join",
@@ -428,7 +465,9 @@ All generator objects must have a `type` field. The following generator types ar
       separator?: String        // separator (default: empty string)
   }
   ```
+
   _Example:_
+
   ```json5
   { type: "g-join", values: ["a", "b", "c"], separator: ", " }
   // yields "a, b, c"
@@ -437,6 +476,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`if`** — Conditionally selects between two values based on an arithmetic expression.
 
   _Parameters:_
+
   ```json5
   {
       type: "if",
@@ -445,9 +485,11 @@ All generator objects must have a `type` field. The following generator types ar
       false: T              // value used when condition = 0.0
   }
   ```
+
   The condition is evaluated using the [fasteval](https://crates.io/crates/fasteval) library; no variables are available. Comparison operators (e.g., `2 > 1`) yield `1.0` (true) or `0.0` (false).
 
   _Example:_
+
   ```json5
   { type: "if", condition: "2 > 1", true: [1,2,3], false: [4,5,6] }
   // yields [1,2,3] because 2 > 1 evaluates to 1.0 (non‑zero)
@@ -456,6 +498,7 @@ All generator objects must have a `type` field. The following generator types ar
 - **`time`** — Generates a sequence of timestamps between two time points at a specified interval.
 
   _Parameters:_
+
   ```json5
   {
       type: "time",
@@ -465,12 +508,14 @@ All generator objects must have a `type` field. The following generator types ar
       format?: String       // optional output format (strftime syntax, default RFC 3339)
   }
   ```
+
   Supported time string formats: RFC 3339, `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD`.
   Relative times are also supported: `now`, `now+1d`, `now-2h`, etc.
 
   Supported interval units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks). Units can be combined, e.g., `"1d12h30m"`.
 
   _Example:_
+
   ```json5
   { type: "time", start: "2026-01-01", end: "2026-01-03", interval: "1d" }
   // yields ["2026-01-01T00:00:00+00:00", "2026-01-02T00:00:00+00:00", "2026-01-03T00:00:00+00:00"]
@@ -479,7 +524,7 @@ All generator objects must have a `type` field. The following generator types ar
   // yields [today, tomorrow, day after tomorrow, 3 days from now] formatted as "YYYY-MM-DD"
   ```
 
-#### Using the Map
+##### Using the Map
 
 Map entries are referenced elsewhere by prefixing the key with `map.`. For example, if the map contains a key `myrange`, you can refer to it as `"map.myrange"` in any field that accepts a `DataPack<T>` (most array and numeric fields).
 
@@ -508,7 +553,7 @@ Also note that the generator is lazily loaded each time it is processed, and the
 
 If you find that some items are not given above, but do not support Map, please submit an Issue, and we will solve it.
 
-### Chart Main Format
+#### Chart Main Format
 
 ```json5
 {
@@ -526,7 +571,7 @@ If you find that some items are not given above, but do not support Map, please 
 }
 ```
 
-### Layout Format
+#### Layout Format
 
 ```json5
 layout: {
@@ -623,7 +668,7 @@ layout: {
 }
 ```
 
-### Config Format
+#### Config Format
 
 ```json5
 config: {
@@ -686,9 +731,10 @@ config: {
 }
 ```
 
-### Data-bar
+#### Data-bar
 
 `bar` can be a `Data` entry. This `Data` will be rendered as a bar chart.
+
 ```json5
 {
     type: "bar",
@@ -747,9 +793,10 @@ config: {
 }
 ```
 
-### Data-candlestick
+#### Data-candlestick
 
 `candlestick` can be a `Data` entry. This `Data` will be rendered as a candlestick chart—the most common representation of price movements in financial visualization.
+
 ```json5
 {
     type: "candlestick",
@@ -795,7 +842,7 @@ config: {
 }
 ```
 
-### Data-density_mapbox
+#### Data-density_mapbox
 
 `densitymapbox` can be a `Data` entry. This `Data` will be rendered as a density heatmap on a map.
 
@@ -840,9 +887,10 @@ config: {
 }
 ```
 
-### Data-histogram
+#### Data-histogram
 
 `histogram` can be a `Data` entry. This `Data` will be rendered as a histogram.
+
 ```json5
 {
     type: "histogram",
@@ -914,9 +962,10 @@ config: {
 }
 ```
 
-### Data-ohlc
+#### Data-ohlc
 
 `ohlc` can be a `Data` entry. This `Data` will be rendered as an OHLC chart, commonly used for financial stock trend analysis.
+
 ```json5
 {
     type: "ohlc",
@@ -954,9 +1003,10 @@ config: {
 }
 ```
 
-### Data-image
+#### Data-image
 
 `image` can be a `Data` entry. This `Data` will be rendered as a pixel image, supporting direct image display via a 2D pixel array within a Cartesian coordinate system.
+
 ```json5
 {
     type: "image",
@@ -1008,9 +1058,10 @@ config: {
 }
 ```
 
-### Data-pie
+#### Data-pie
 
 `pie` can be a `Data` entry. This `Data` will be rendered as a pie chart.
+
 ```json5
 {
     type: "pie",
@@ -1073,9 +1124,10 @@ config: {
 }
 ```
 
-### Data-sankey
+#### Data-sankey
 
 `sankey` can be a `Data` entry. This `Data` will be rendered as a Sankey diagram, used for visualizing flow relationships between nodes.
+
 ```json5
 {
     type: "sankey",
@@ -1109,7 +1161,7 @@ config: {
 }
 ```
 
-### Data-scatter_geo
+#### Data-scatter_geo
 
 `scatter_geo` can be a `Data` entry. This `Data` will be rendered as a geographic scatter plot, drawn on a geographic coordinate system.
 
@@ -1171,7 +1223,7 @@ config: {
 }
 ```
 
-### Data-scatter_mapbox
+#### Data-scatter_mapbox
 
 `scatter_mapbox` can be a `Data` entry. This `Data` will be rendered as a Mapbox scatter plot.
 > [!NOTE]
@@ -1237,7 +1289,7 @@ config: {
 }
 ```
 
-### Data-scatter_polar
+#### Data-scatter_polar
 
 `scatter_polar` can be a `Data` entry. This `Data` will be rendered as a scatter plot in polar coordinates.
 
@@ -1311,9 +1363,10 @@ config: {
 }
 ```
 
-### Data-scatter
+#### Data-scatter
 
 `scatter` can be a `Data` entry. This `Data` will be rendered as a filled area chart.
+
 ```json5
 {
     type: "scatter",
@@ -1395,9 +1448,10 @@ config: {
 }
 ```
 
-### Data-table
+#### Data-table
 
 `table` can be a `Data` entry. This `Data` will be rendered as a table.
+
 ```json5
 {
     type: "table",
@@ -1422,14 +1476,261 @@ config: {
 }
 ```
 
-## Sand Box Script
+### Data-box
+
+`box` can be a `Data` entry. This `Data` will be rendered as a box plot.
+
+```json5
+{
+    type: "box",
+    y?: [f64; usize],
+    x?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    width?: usize,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    x_axis?: String,
+    y_axis?: String,
+    alignment_group?: String,
+    offset_group?: String,
+    show_legend?: bool,
+    legend_group?: String,
+    fill_color?: Color,
+    notched?: bool,
+    notch_width?: f64,
+    whisker_width?: f64,
+    q1?: [f64; usize],
+    median?: [f64; usize],
+    q3?: [f64; usize],
+    upper_fence?: [f64; usize],
+    lower_fence?: [f64; usize],
+    notch_span?: [f64; usize],
+    mean?: [f64; usize],
+    standard_deviation?: [f64; usize],
+    point_pos?: f64,
+    jitter?: f64,
+    orientation?: "v" | "h",
+    box_mean?: "true" | "false" | "sd",
+    box_points?: "all" | "outliers" | "suspectedoutliers" | "false",
+    quartile_method?: "linear" | "exclusive" | "inclusive",
+    hover_on?: "points" | "boxes" | "boxes+points",
+    marker?: Marker,
+}
+```
+
+### Data-contour
+
+`contour` can be a `Data` entry. This `Data` will be rendered as a contour plot.
+
+```json5
+{
+    type: "contour",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    x0?: f64,
+    dx?: f64,
+    y0?: f64,
+    dy?: f64,
+    opacity?: f64,
+    n_contours?: usize,
+    connect_gaps?: bool,
+    hover_on_gaps?: bool,
+    show_legend?: bool,
+    transpose?: bool,
+    auto_contour?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    fill_color?: Color,
+    contours?: {
+        start?: f64,
+        end?: f64,
+        size?: f64,
+        coloring?: "fill" | "heatmap" | "lines" | "none",
+    },
+    line?: Line,
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-heatmap
+
+`heatmap` can be a `Data` entry. This `Data` will be rendered as a heat map.
+
+```json5
+{
+    type: "heatmap",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_text_matrix?: [[String; usize]; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_matrix?: [[String; usize]; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    x_axis?: String,
+    y_axis?: String,
+    connect_gaps?: bool,
+    transpose?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    zmax?: f64,
+    zmin?: f64,
+    zmid?: f64,
+    x_gap?: usize,
+    y_gap?: usize,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-mesh3d
+
+`mesh3d` can be a `Data` entry. This `Data` will be rendered as a 3D mesh plot.
+
+```json5
+{
+    type: "mesh3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    i?: [usize; usize],
+    j?: [usize; usize],
+    k?: [usize; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    color?: Color,
+    face_color?: [Color; usize],
+    vertex_color?: [Color; usize],
+    intensity?: [f64; usize],
+    intensity_mode?: "vertex" | "cell",
+    scene?: String,
+    flat_shading?: bool,
+    alpha_hull?: f64,
+    delaunay_axis?: "x" | "y" | "z",
+    meta?: String,
+    color_axis?: String,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: f64, y?: f64, z?: f64 },
+}
+```
+
+### Data-scatter3d
+
+`scatter3d` can be a `Data` entry. This `Data` will be rendered as a 3D scatter plot.
+
+```json5
+{
+    type: "scatter3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    text_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    surface_color?: Color,
+    connect_gaps?: bool,
+    scene?: String,
+    meta?: String,
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    text_position?: "top left" | "top center" | "top right" | "middle left" | "middle center" | "middle right" | "bottom left" | "bottom center" | "bottom right",
+    surface_axis?: "-1" | "0" | "1" | "2",
+    marker?: Marker,
+    line?: Line,
+}
+```
+
+### Data-surface
+
+`surface` can be a `Data` entry. This `Data` will be rendered as a 3D surface plot.
+
+```json5
+{
+    type: "surface",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    connect_gaps?: bool,
+    hide_surface?: bool,
+    surface_color?: [Color; usize],
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    cauto?: bool,
+    cmax?: f64,
+    cmin?: f64,
+    cmid?: f64,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: i32, y?: i32, z?: i32 },
+}
+```
+
+### Sand Box Script
 
 > [!WARNING]
 > **This format is deprecated**. Using it will emit a warning and a debug message, and fall back to rendering the default chart.
 
 This format allows you to define a script that runs in a local sandboxed environment. Upon execution, the script generates the corresponding chart object.
 
-# Output Formats
+## Output Formats
+
 Output formats determine whether the final rendered result is HTML, SVG, or another format. Each format has its own advantages and trade-offs—we leave the choice to the user.
 
 Output format must be configured globally; for details, see [Configuration](#configuration-reference).
