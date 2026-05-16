@@ -23,17 +23,22 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
         - [Config Format](#config-format)
         - Trace Types
             - [Bar Charts](#data-bar)
-            - [Scatter Plots](#data-scatter)
-            - [Pie Charts](#data-pie)
+            - [Box Plots](#data-box)
+            - [Contour Plots](#data-contour)
+            - [Mapbox Density Heatmaps](#data-density_mapbox)
+            - [Heat Maps](#data-heatmap)
             - [Histograms](#data-histogram)
-            - [Candlestick Charts](#data-candlestick)
-            - [OHLC Charts](#data-ohlc)
             - [Image Traces](#data-image)
+            - [3D Mesh Plots](#data-mesh3d)
+            - [OHLC Charts](#data-ohlc)
+            - [Pie Charts](#data-pie)
             - [Sankey Diagrams](#data-sankey)
+            - [Scatter Plots](#data-scatter)
+            - [3D Scatter Plots](#data-scatter3d)
             - [Geographic Scatter Plots](#data-scatter_geo)
             - [Mapbox Scatter Plots](#data-scatter_mapbox)
             - [Polar Scatter Plots](#data-scatter_polar)
-            - [Mapbox Density Heatmaps](#data-density_mapbox)
+            - [3D Surface Plots](#data-surface)
             - [Tables](#data-table)
     - [SandBoxScript (Deprecated)](#sand-box-script)
 - [Output Formats](#output-formats)
@@ -1419,6 +1424,246 @@ config: {
     // "false": hidden
     // "legendonly": not drawn but shown in the legend
     visible?: "true" | "false" | "legendonly",
+}
+```
+
+### Data-box
+
+`box` can be a `Data` entry. This `Data` will be rendered as a box plot.
+```json5
+{
+    type: "box",
+    y?: [f64; usize],
+    x?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    width?: usize,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    x_axis?: String,
+    y_axis?: String,
+    alignment_group?: String,
+    offset_group?: String,
+    show_legend?: bool,
+    legend_group?: String,
+    fill_color?: Color,
+    notched?: bool,
+    notch_width?: f64,
+    whisker_width?: f64,
+    q1?: [f64; usize],
+    median?: [f64; usize],
+    q3?: [f64; usize],
+    upper_fence?: [f64; usize],
+    lower_fence?: [f64; usize],
+    notch_span?: [f64; usize],
+    mean?: [f64; usize],
+    standard_deviation?: [f64; usize],
+    point_pos?: f64,
+    jitter?: f64,
+    orientation?: "v" | "h",
+    box_mean?: "true" | "false" | "sd",
+    box_points?: "all" | "outliers" | "suspectedoutliers" | "false",
+    quartile_method?: "linear" | "exclusive" | "inclusive",
+    hover_on?: "points" | "boxes" | "boxes+points",
+    marker?: Marker,
+}
+```
+
+### Data-contour
+
+`contour` can be a `Data` entry. This `Data` will be rendered as a contour plot.
+```json5
+{
+    type: "contour",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    x0?: f64,
+    dx?: f64,
+    y0?: f64,
+    dy?: f64,
+    opacity?: f64,
+    n_contours?: usize,
+    connect_gaps?: bool,
+    hover_on_gaps?: bool,
+    show_legend?: bool,
+    transpose?: bool,
+    auto_contour?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    fill_color?: Color,
+    contours?: {
+        start?: f64,
+        end?: f64,
+        size?: f64,
+        coloring?: "fill" | "heatmap" | "lines" | "none",
+    },
+    line?: Line,
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-heatmap
+
+`heatmap` can be a `Data` entry. This `Data` will be rendered as a heat map.
+```json5
+{
+    type: "heatmap",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_text_matrix?: [[String; usize]; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_matrix?: [[String; usize]; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    x_axis?: String,
+    y_axis?: String,
+    connect_gaps?: bool,
+    transpose?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    zmax?: f64,
+    zmin?: f64,
+    zmid?: f64,
+    x_gap?: usize,
+    y_gap?: usize,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-mesh3d
+
+`mesh3d` can be a `Data` entry. This `Data` will be rendered as a 3D mesh plot.
+```json5
+{
+    type: "mesh3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    i?: [usize; usize],
+    j?: [usize; usize],
+    k?: [usize; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    color?: Color,
+    face_color?: [Color; usize],
+    vertex_color?: [Color; usize],
+    intensity?: [f64; usize],
+    intensity_mode?: "vertex" | "cell",
+    scene?: String,
+    flat_shading?: bool,
+    alpha_hull?: f64,
+    delaunay_axis?: "x" | "y" | "z",
+    meta?: String,
+    color_axis?: String,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: f64, y?: f64, z?: f64 },
+}
+```
+
+### Data-scatter3d
+
+`scatter3d` can be a `Data` entry. This `Data` will be rendered as a 3D scatter plot.
+```json5
+{
+    type: "scatter3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    text_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    surface_color?: Color,
+    connect_gaps?: bool,
+    scene?: String,
+    meta?: String,
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    text_position?: "top left" | "top center" | "top right" | "middle left" | "middle center" | "middle right" | "bottom left" | "bottom center" | "bottom right",
+    surface_axis?: "-1" | "0" | "1" | "2",
+    marker?: Marker,
+    line?: Line,
+}
+```
+
+### Data-surface
+
+`surface` can be a `Data` entry. This `Data` will be rendered as a 3D surface plot.
+```json5
+{
+    type: "surface",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    connect_gaps?: bool,
+    hide_surface?: bool,
+    surface_color?: [Color; usize],
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    cauto?: bool,
+    cmax?: f64,
+    cmin?: f64,
+    cmid?: f64,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: i32, y?: i32, z?: i32 },
 }
 ```
 

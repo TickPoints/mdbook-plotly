@@ -23,17 +23,22 @@
         - [Config格式](#config格式)
         - 轨迹类型
             - [条形图](#data-bar)
-            - [散点图](#data-scatter)
-            - [饼图](#data-pie)
+            - [箱线图](#data-box)
+            - [等高线图](#data-contour)
+            - [Mapbox 密度热力图](#data-density_mapbox)
+            - [热力图](#data-heatmap)
             - [直方图](#data-histogram)
-            - [蜡烛图](#data-candlestick)
-            - [OHLC 图](#data-ohlc)
             - [图像轨迹](#data-image)
+            - [3D 网格图](#data-mesh3d)
+            - [OHLC 图](#data-ohlc)
+            - [饼图](#data-pie)
             - [桑基图](#data-sankey)
+            - [散点图](#data-scatter)
+            - [3D 散点图](#data-scatter3d)
             - [地理散点图](#data-scatter_geo)
             - [Mapbox 散点图](#data-scatter_mapbox)
             - [极坐标散点图](#data-scatter_polar)
-            - [Mapbox 密度热力图](#data-density_mapbox)
+            - [3D 曲面图](#data-surface)
             - [表格](#data-table)
     - [SandBoxScript（已弃用）](#sand-box-script)
 - [输出格式](#输出格式)
@@ -1402,6 +1407,240 @@ config: {
 }
 ```
 
+
+### Data-box
+`box`可以是一个`Data`。该`Data`将被渲染为箱线图。
+```json5
+{
+    type: "box",
+    y?: [f64; usize],
+    x?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    width?: usize,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    x_axis?: String,
+    y_axis?: String,
+    alignment_group?: String,
+    offset_group?: String,
+    show_legend?: bool,
+    legend_group?: String,
+    fill_color?: Color,
+    notched?: bool,
+    notch_width?: f64,
+    whisker_width?: f64,
+    q1?: [f64; usize],
+    median?: [f64; usize],
+    q3?: [f64; usize],
+    upper_fence?: [f64; usize],
+    lower_fence?: [f64; usize],
+    notch_span?: [f64; usize],
+    mean?: [f64; usize],
+    standard_deviation?: [f64; usize],
+    point_pos?: f64,
+    jitter?: f64,
+    orientation?: "v" | "h",
+    box_mean?: "true" | "false" | "sd",
+    box_points?: "all" | "outliers" | "suspectedoutliers" | "false",
+    quartile_method?: "linear" | "exclusive" | "inclusive",
+    hover_on?: "points" | "boxes" | "boxes+points",
+    marker?: Marker,
+}
+```
+
+### Data-contour
+`contour`可以是一个`Data`。该`Data`将被渲染为等高线图。
+```json5
+{
+    type: "contour",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    x0?: f64,
+    dx?: f64,
+    y0?: f64,
+    dy?: f64,
+    opacity?: f64,
+    n_contours?: usize,
+    connect_gaps?: bool,
+    hover_on_gaps?: bool,
+    show_legend?: bool,
+    transpose?: bool,
+    auto_contour?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    fill_color?: Color,
+    contours?: {
+        start?: f64,
+        end?: f64,
+        size?: f64,
+        coloring?: "fill" | "heatmap" | "lines" | "none",
+    },
+    line?: Line,
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-heatmap
+`heatmap`可以是一个`Data`。该`Data`将被渲染为热力图。
+```json5
+{
+    type: "heatmap",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_text_matrix?: [[String; usize]; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_matrix?: [[String; usize]; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    x_axis?: String,
+    y_axis?: String,
+    connect_gaps?: bool,
+    transpose?: bool,
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    zauto?: bool,
+    zmax?: f64,
+    zmin?: f64,
+    zmid?: f64,
+    x_gap?: usize,
+    y_gap?: usize,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+}
+```
+
+### Data-mesh3d
+`mesh3d`可以是一个`Data`。该`Data`将被渲染为3D网格图。
+```json5
+{
+    type: "mesh3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    i?: [usize; usize],
+    j?: [usize; usize],
+    k?: [usize; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    color?: Color,
+    face_color?: [Color; usize],
+    vertex_color?: [Color; usize],
+    intensity?: [f64; usize],
+    intensity_mode?: "vertex" | "cell",
+    scene?: String,
+    flat_shading?: bool,
+    alpha_hull?: f64,
+    delaunay_axis?: "x" | "y" | "z",
+    meta?: String,
+    color_axis?: String,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: f64, y?: f64, z?: f64 },
+}
+```
+
+### Data-scatter3d
+`scatter3d`可以是一个`Data`。该`Data`将被渲染为3D散点图。
+```json5
+{
+    type: "scatter3d",
+    x: [f64; usize],
+    y: [f64; usize],
+    z: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    ids?: [String; usize],
+    text?: String,
+    text_array?: [String; usize],
+    text_template?: String,
+    text_template_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    legend_rank?: usize,
+    surface_color?: Color,
+    connect_gaps?: bool,
+    scene?: String,
+    meta?: String,
+    mode?: "lines" | "markers" | "text" | "linesmarkers" | "linestext" | "markerstext" | "linemarkerstext" | "none",
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    text_position?: "top left" | "top center" | "top right" | "middle left" | "middle center" | "middle right" | "bottom left" | "bottom center" | "bottom right",
+    surface_axis?: "-1" | "0" | "1" | "2",
+    marker?: Marker,
+    line?: Line,
+}
+```
+
+### Data-surface
+`surface`可以是一个`Data`。该`Data`将被渲染为3D曲面图。
+```json5
+{
+    type: "surface",
+    z: [[f64; usize]; usize],
+    x?: [f64; usize],
+    y?: [f64; usize],
+    name?: String,
+    opacity?: f64,
+    text?: String,
+    text_array?: [String; usize],
+    hover_text?: String,
+    hover_text_array?: [String; usize],
+    hover_template?: String,
+    hover_template_array?: [String; usize],
+    show_legend?: bool,
+    legend_group?: String,
+    connect_gaps?: bool,
+    hide_surface?: bool,
+    surface_color?: [Color; usize],
+    auto_color_scale?: bool,
+    reverse_scale?: bool,
+    show_scale?: bool,
+    cauto?: bool,
+    cmax?: f64,
+    cmin?: f64,
+    cmid?: f64,
+    hover_info?: "all" | "x" | "y" | "z" | "x+y" | "x+z" | "y+z" | "x+y+z" | "text" | "name" | "none" | "skip",
+    color_bar?: ColorBar,
+    color_scale?: "greys" | "ylgnbu" | "greens" | "ylorrd" | "bluered" | "rdbu" | "reds" | "blues" | "picnic" | "rainbow" | "portland" | "jet" | "hot" | "blackbody" | "earth" | "electric" | "viridis" | "cividis",
+    lighting?: { ambient?: f64, diffuse?: f64, specular?: f64, roughness?: f64, fresnel?: f64 },
+    light_position?: { x?: i32, y?: i32, z?: i32 },
+}
+```
 
 ## Sand Box Script
 
