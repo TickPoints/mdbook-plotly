@@ -107,7 +107,10 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
 }
 
 fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
-    use plotly::layout::{GroupClick, ItemClick, ItemSizing, Legend, Margin, TraceOrder, VAlign};
+    use plotly::layout::{
+        ClickMode, DragMode, GroupClick, HoverMode, ItemClick, ItemSizing, Legend, Margin,
+        TraceOrder, VAlign,
+    };
 
     let layout = translate! {
         Layout::new(),
@@ -122,6 +125,38 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
         (plot_background_color, Color),
         (paper_background_color, Color),
         (separators, String),
+        (bar_gap, f64),
+        (bar_group_gap, f64),
+        (box_gap, f64),
+        (box_group_gap, f64),
+    }?;
+
+    let layout = translate_enum! {
+        layout,
+        layout_obj,
+        map,
+        (hover_mode, {
+            "x"          => HoverMode::X,
+            "y"          => HoverMode::Y,
+            "closest"    => HoverMode::Closest,
+            "false"      => HoverMode::False,
+            "x unified"  => HoverMode::XUnified,
+            "y unified"  => HoverMode::YUnified,
+        }),
+        (drag_mode, {
+            "zoom"      => DragMode::Zoom,
+            "pan"       => DragMode::Pan,
+            "select"    => DragMode::Select,
+            "lasso"     => DragMode::Lasso,
+            "orbit"     => DragMode::Orbit,
+            "turntable" => DragMode::Turntable,
+            "false"     => DragMode::False,
+        }),
+        (click_mode, {
+            "event"        => ClickMode::Event,
+            "select"       => ClickMode::Select,
+            "none"         => ClickMode::None,
+        }),
     }?;
 
     let layout = if let Some(legend_obj) = layout_obj.get_mut("legend")
@@ -200,6 +235,200 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
         layout
     };
 
+    // ── Phase 1: Basic fields & sub-objects ──
+
+    // Font sub-object
+    use plotly::common::Font;
+    let layout = if let Some(font_obj) = layout_obj.get_mut("font")
+        && font_obj.is_object()
+    {
+        let font = translate! {
+            Font::new(),
+            font_obj,
+            map,
+            (family, String),
+            (size, usize),
+            (color, Color),
+        }?;
+        layout.font(font)
+    } else {
+        layout
+    };
+
+    // ColorAxis sub-object
+    use plotly::layout::ColorAxis;
+    let layout = if let Some(ca_obj) = layout_obj.get_mut("coloraxis")
+        && ca_obj.is_object()
+    {
+        let ca = translate! {
+            ColorAxis::new(),
+            ca_obj,
+            map,
+            (cmin, f64),
+            (cmax, f64),
+            (cmid, f64),
+            (auto_color_scale, bool),
+            (reverse_scale, bool),
+            (show_scale, bool),
+        }?;
+        layout.color_axis(ca)
+    } else {
+        layout
+    };
+
+    // ── Phase 2: Axis support ──
+    // Default axes: `xaxis` & `yaxis`
+    let layout = if let Some(axis_obj) = layout_obj.get_mut("xaxis")
+        && axis_obj.is_object()
+    {
+        let axis = parse_axis_obj(axis_obj, map)?;
+        layout.x_axis(axis)
+    } else {
+        layout
+    };
+
+    let layout = if let Some(axis_obj) = layout_obj.get_mut("yaxis")
+        && axis_obj.is_object()
+    {
+        let axis = parse_axis_obj(axis_obj, map)?;
+        layout.y_axis(axis)
+    } else {
+        layout
+    };
+
+    // Named axes: `xaxis2`, `xaxis3`, … / `yaxis2`, `yaxis3`, …
+    // Layout methods: x_axis2(), x_axis3(), … / y_axis2(), y_axis3(), …
+    let layout = parse_named_axes(layout, layout_obj, map, "x")?;
+    let layout = parse_named_axes(layout, layout_obj, map, "y")?;
+
+    Ok(layout)
+}
+
+/// Parse an `Axis` object from a JSON value.
+fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axis> {
+    use crate::code_handler::until::DataPack;
+    use plotly::layout::{Axis, AxisType};
+
+    // translate! for simple fields.
+    // Note: builder methods whose parameter types cannot be directly deserialized
+    // from JSON (e.g. &[f64], enums) must be handled manually below.
+    let axis = translate! {
+        Axis::new(),
+        axis_obj,
+        map,
+        (title, String),
+        (show_grid, bool),
+        (show_line, bool),
+        (zero_line, bool),
+        (visible, bool),
+        (anchor, String),
+        (overlaying, String),
+        (range, Vec<Option<f64>>),
+        (color, Color),
+        (line_color, Color),
+        (grid_color, Color),
+        (tick_prefix, String),
+        (tick_suffix, String),
+        (tick_format, String),
+        (hover_format, String),
+        (category_array, Vec<String>),
+        (fixed_range, bool),
+        (scale_anchor, String),
+        (auto_margin, bool),
+        (show_tick_labels, bool),
+    }?;
+
+    let axis = translate_enum! {
+        axis,
+        axis_obj,
+        map,
+        (category_order, {
+            "trace"               => plotly::layout::CategoryOrder::Trace,
+            "category-ascending"  => plotly::layout::CategoryOrder::CategoryAscending,
+            "category-descending" => plotly::layout::CategoryOrder::CategoryDescending,
+            "array"               => plotly::layout::CategoryOrder::Array,
+            "total-ascending"     => plotly::layout::CategoryOrder::TotalAscending,
+            "total-descending"    => plotly::layout::CategoryOrder::TotalDescending,
+            "min-ascending"       => plotly::layout::CategoryOrder::MinAscending,
+            "min-descending"      => plotly::layout::CategoryOrder::MinDescending,
+            "max-ascending"       => plotly::layout::CategoryOrder::MaxAscending,
+            "max-descending"      => plotly::layout::CategoryOrder::MaxDescending,
+            "sum-ascending"       => plotly::layout::CategoryOrder::SumAscending,
+            "sum-descending"      => plotly::layout::CategoryOrder::SumDescending,
+            "mean-ascending"      => plotly::layout::CategoryOrder::MeanAscending,
+            "mean-descending"     => plotly::layout::CategoryOrder::MeanDescending,
+            "median-ascending"    => plotly::layout::CategoryOrder::MedianAscending,
+            "median-descending"   => plotly::layout::CategoryOrder::MedianDescending,
+        }),
+    }?;
+
+    // Handle `type` field separately — `type` is a Rust keyword,
+    // the plotly crate exposes it as `type_()` which takes an `AxisType` enum.
+    let axis = if let Some(v) = axis_obj.get_mut("type") {
+        let data = serde_json::from_value::<DataPack<String>>(v.take())
+            .map_err(|e| anyhow!("Failed to deserialize axis `type`: {}", e))?;
+        let s = data
+            .unwrap(map)
+            .map_err(|e| anyhow!("Failed to unwrap DataPack for axis `type`: {}", e))?;
+        let at = match s.as_str() {
+            "-" | "linear" => AxisType::Linear,
+            "log" => AxisType::Log,
+            "date" => AxisType::Date,
+            "category" => AxisType::Category,
+            "multicategory" => AxisType::MultiCategory,
+            other => return Err(anyhow!("Invalid axis type: '{}'", other)),
+        };
+        axis.type_(at)
+    } else {
+        axis
+    };
+
+    Ok(axis)
+}
+
+/// Parse named axes (xaxis2..xaxis8, yaxis2..yaxis8) and chain them onto the layout.
+/// JSON `xaxisN` → `Layout::x_axisN()`, JSON `yaxisN` → `Layout::y_axisN()`.
+fn parse_named_axes(
+    layout: Layout,
+    layout_obj: &mut Value,
+    map: &Map,
+    prefix: &str,
+) -> Result<Layout> {
+    let mut layout = layout;
+    // plotly.rs 0.14 supports up to 8 additional axes (xaxis2..xaxis8, yaxis2..yaxis8)
+    for i in 2..=8 {
+        let json_key = format!("{}axis{}", prefix, i);
+        let Some(axis_obj) = layout_obj.get_mut(json_key.as_str()) else {
+            continue;
+        };
+        if !axis_obj.is_object() {
+            continue;
+        }
+        let axis = parse_axis_obj(axis_obj, map)?;
+        if prefix == "x" {
+            layout = match i {
+                2 => layout.x_axis2(axis),
+                3 => layout.x_axis3(axis),
+                4 => layout.x_axis4(axis),
+                5 => layout.x_axis5(axis),
+                6 => layout.x_axis6(axis),
+                7 => layout.x_axis7(axis),
+                8 => layout.x_axis8(axis),
+                _ => unreachable!(),
+            };
+        } else {
+            layout = match i {
+                2 => layout.y_axis2(axis),
+                3 => layout.y_axis3(axis),
+                4 => layout.y_axis4(axis),
+                5 => layout.y_axis5(axis),
+                6 => layout.y_axis6(axis),
+                7 => layout.y_axis7(axis),
+                8 => layout.y_axis8(axis),
+                _ => unreachable!(),
+            };
+        }
+    }
     Ok(layout)
 }
 
