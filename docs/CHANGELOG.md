@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.2.0
+- Added **Layout field expansion** — Phase 1 & 2
+    - **Phase 1 (Basic fields)**:
+        - Spacing: `bar_gap`, `bar_group_gap`, `box_gap`, `box_group_gap`
+        - Interaction: `hover_mode`, `drag_mode`, `click_mode`
+        - Sub-objects: `font` (family/size/color), `coloraxis` (cmin/cmax/cmid/auto/reverse/show)
+    - **Phase 2 (Axis support)**:
+        - Default axes: `xaxis`, `yaxis` with full field support
+        - Named axes: `xaxis2`–`xaxis8`, `yaxis2`–`yaxis8`
+        - Axis fields: `title`, `show_grid`, `show_line`, `zero_line`, `visible`,
+          `anchor`, `overlaying`, `range`, `color`, `line_color`, `grid_color`,
+          `tick_prefix`, `tick_suffix`, `tick_format`, `hover_format`, `category_array`,
+          `fixed_range`, `scale_anchor`, `auto_margin`, `show_tick_labels`
+        - Axis enums: `category_order` (16 variants), `type` (linear/log/date/category/multicategory)
+- Added helper functions: `parse_axis_obj()`, `parse_named_axes()`
+- Added 3 axis tests (xaxis, date type, named axes)
+- Updated documentation (USAGE-zh_CN.md, USAGE.md) with new Layout fields and Axis reference
+
 ## v0.2.0-beta
 - Added 6 new Data trace types
     - Added `box` (BoxPlot)

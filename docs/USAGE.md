@@ -598,6 +598,88 @@ layout: {
     // Paper background colour (distinct from plot_background_color)
     paper_background_color?: Color,
 
+    // ===== Phase 1 fields =====
+
+    // Bar gap (0~1), controls spacing between bars in the same group
+    bar_gap?: f64,
+    // Bar group gap (0~1), controls spacing between bar groups
+    bar_group_gap?: f64,
+    // Box gap (0~1), controls spacing between boxes in the same group
+    box_gap?: f64,
+    // Box group gap (0~1), controls spacing between box groups
+    box_group_gap?: f64,
+
+    // Hover mode
+    // "x": show only data aligned with x coordinate
+    // "y": show only data aligned with y coordinate
+    // "closest": show closest data point
+    // "false": disable hover
+    // "x unified": unified display for x-aligned data
+    // "y unified": unified display for y-aligned data
+    hover_mode?: "x" | "y" | "closest" | "false" | "x unified" | "y unified",
+
+    // Drag mode
+    // "zoom": box select zoom
+    // "pan": pan
+    // "select": box select
+    // "lasso": lasso select
+    // "orbit": 3D orbit rotation
+    // "turntable": 3D turntable rotation
+    // "false": disabled
+    drag_mode?: "zoom" | "pan" | "select" | "lasso" | "orbit" | "turntable" | "false",
+
+    // Click mode
+    // "event": fire click events
+    // "select": trigger selection
+    // "none": disabled
+    click_mode?: "event" | "select" | "none",
+
+    // Global font settings
+    font?: {
+        // Font family (e.g., "Arial", "sans-serif")
+        family?: String,
+        // Font size (pixels)
+        size?: usize,
+        // Font color
+        color?: Color,
+    },
+
+    // Color axis configuration
+    coloraxis?: {
+        // Color scale minimum
+        cmin?: f64,
+        // Color scale maximum
+        cmax?: f64,
+        // Color scale midpoint (for diverging color bars)
+        cmid?: f64,
+        // Whether to auto-select the color scale
+        auto_color_scale?: bool,
+        // Whether to reverse the color scale
+        reverse_scale?: bool,
+        // Whether to display the color bar
+        show_scale?: bool,
+    },
+
+    // ===== Axis Configuration =====
+    // Default axes: xaxis, yaxis
+    xaxis?: Axis,
+    yaxis?: Axis,
+    // Additional named axes: up to 8 (xaxis2~xaxis8, yaxis2~yaxis8)
+    xaxis2?: Axis,
+    xaxis3?: Axis,
+    xaxis4?: Axis,
+    xaxis5?: Axis,
+    xaxis6?: Axis,
+    xaxis7?: Axis,
+    xaxis8?: Axis,
+    yaxis2?: Axis,
+    yaxis3?: Axis,
+    yaxis4?: Axis,
+    yaxis5?: Axis,
+    yaxis6?: Axis,
+    yaxis7?: Axis,
+    yaxis8?: Axis,
+
     // Legend configuration
     legend?: {
         // Background color
@@ -665,6 +747,118 @@ layout: {
         // Auto-expand
         auto_expand?: bool
     },
+}
+```
+
+##### Axis Reference
+
+The `Axis` object configures x and y axes. Supports the default axes (`xaxis`/`yaxis`)
+as well as up to 8 additional named axes (`xaxis2`–`xaxis8`/`yaxis2`–`yaxis8`).
+
+All Axis fields support [DataPack map references](#map-and-generators) (e.g. `"map.my_range"`).
+
+```json5
+{
+    // Axis title
+    title?: String,
+    // Axis type
+    // "linear": linear scale (default)
+    // "log": logarithmic scale
+    // "date": date/time axis
+    // "category": categorical axis
+    // "multicategory": multi-level categorical axis
+    type?: "-" | "linear" | "log" | "date" | "category" | "multicategory",
+
+    // Axis range [min, max]
+    // Use null for open bounds, e.g. [0, null] = from 0 upward
+    // Date axes accept date strings, e.g. ["2024-01-01", "2024-01-10"]
+    range?: [f64; 2],
+
+    // Axis domain on the canvas (0~1)
+    // e.g. [0, 0.5] means the axis occupies the left half
+    domain?: [f64; 2],
+
+    // The axis this one is anchored to (e.g. "y", "y2", "free")
+    anchor?: String,
+    // Show/hide the axis
+    visible?: bool,
+    // Whether to auto-adjust margins
+    auto_margin?: bool,
+
+    // Grid & line styling
+    show_grid?: bool,       // Show grid lines
+    show_line?: bool,       // Show axis line
+    show_tick_labels?: bool,// Show tick labels
+    zero_line?: bool,       // Show zero line
+    grid_color?: Color,     // Grid line color
+    line_color?: Color,     // Axis line color
+    grid_width?: f64,       // Grid line width
+    line_width?: f64,       // Axis line width
+    color?: Color,          // Tick color
+
+    // Tick configuration
+    tick_prefix?: String,   // Tick label prefix
+    tick_suffix?: String,   // Tick label suffix
+    tick_format?: String,   // Tick format (d3-format syntax)
+    tick_angle?: f64,       // Tick label rotation angle
+    tick0?: f64,            // Starting tick value
+    dtick?: f64,            // Tick step
+    nticks?: usize,         // Number of ticks
+    hover_format?: String,  // Hover tooltip format
+
+    // Category axis
+    category_array?: [String; usize],   // Category order list
+    category_order?: "trace" | "category-ascending" | "category-descending"
+                    | "array" | "total-ascending" | "total-descending"
+                    | "min-ascending" | "min-descending"
+                    | "max-ascending" | "max-descending"
+                    | "sum-ascending" | "sum-descending"
+                    | "mean-ascending" | "mean-descending"
+                    | "median-ascending" | "median-descending",
+
+    // Axis overlay (for dual-axis charts)
+    // e.g. yaxis2.overlaying: "y" means y2 overlays on y
+    overlaying?: String,
+    // Axis side
+    side?: "bottom" | "top" | "left" | "right",
+    // Axis position offset
+    position?: f64,
+    // Axis layer
+    // "above traces": drawn above data
+    // "below traces": drawn below data
+    layer?: String,
+
+    // Fixed range (disable zoom/pan)
+    fixed_range?: bool,
+    // Scale anchor (e.g., y axis scales anchored to x axis)
+    scale_anchor?: String,
+    // Scale ratio
+    scale_ratio?: f64,
+}
+```
+
+##### Dual Y-Axis Example
+
+```json5
+{
+    layout: {
+        xaxis: {
+            title: "Time",
+        },
+        yaxis: {
+            title: "Left Axis",
+            side: "left",
+        },
+        yaxis2: {
+            title: "Right Axis",
+            overlaying: "y",
+            side: "right",
+        },
+    },
+    data: [
+        { type: "scatter", x: [1,2,3], y: [4,5,6] },
+        { type: "scatter", x: [1,2,3], y: [10,20,30], yaxis: "y2" },
+    ]
 }
 ```
 
