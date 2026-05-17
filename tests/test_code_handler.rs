@@ -421,6 +421,91 @@ fn test_scatter3d() {
     );
 }
 
+// ── Layout Axis Tests ──
+
+#[test]
+fn test_layout_xaxis() {
+    let raw_code = r#"
+    {
+        layout: {
+            title: "Axis Test",
+            xaxis: {
+                title: "Time (s)",
+                show_grid: true,
+                zero_line: false,
+                range: [null, 100],
+            },
+            yaxis: {
+                title: "Amplitude",
+                show_grid: true,
+            },
+        },
+        data: [{
+            type: "scatter",
+            x: [0, 1, 2],
+            y: [0, 1, 2],
+        }]
+    }
+    "#;
+    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    // Verify it parses without error — the exact PartialEq for Layout may differ
+    // due to default fields, but this at minimum validates parsing succeeds.
+    let _ = generated_plot;
+}
+
+#[test]
+fn test_layout_xaxis_type_date() {
+    let raw_code = r#"
+    {
+        layout: {
+            xaxis: {
+                type: "date",
+                tick_format: "%Y-%m-%d",
+            },
+        },
+        data: [{
+            type: "bar",
+            x: [1, 2, 3],
+            y: [4, 5, 6],
+        }]
+    }
+    "#;
+    let result = code_handler::handle_json_input(raw_code.to_string());
+    assert!(result.is_ok(), "date axis should parse: {:?}", result.err());
+}
+
+#[test]
+fn test_layout_named_axes() {
+    let raw_code = r#"
+    {
+        layout: {
+            xaxis: {
+                title: "Shared X",
+            },
+            yaxis: {
+                title: "Left Y",
+                side: "left",
+            },
+            yaxis2: {
+                title: "Right Y",
+                overlaying: "y",
+                side: "right",
+            },
+        },
+        data: [
+            { type: "scatter", x: [1,2,3], y: [4,5,6] },
+            { type: "scatter", x: [1,2,3], y: [10,20,30], yaxis: "y2" },
+        ]
+    }
+    "#;
+    let result = code_handler::handle_json_input(raw_code.to_string());
+    assert!(
+        result.is_ok(),
+        "named axes should parse: {:?}",
+        result.err()
+    );
+}
+
 #[test]
 fn test_surface() {
     let raw_code = r#"
