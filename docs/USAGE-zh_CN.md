@@ -590,6 +590,89 @@ layout: {
     // 图纸背景色（区别于 plot_background_color）
     paper_background_color?: Color,
 
+    // ===== Phase 1 新增字段 =====
+
+    // 条形图间距（0~1），控制同一分组中相邻条形的间距
+    bar_gap?: f64,
+    // 条形图组间距（0~1），控制不同分组之间的间距
+    bar_group_gap?: f64,
+    // 箱线图间距（0~1），控制同一分组中相邻箱线的间距
+    box_gap?: f64,
+    // 箱线图组间距（0~1），控制不同分组之间的间距
+    box_group_gap?: f64,
+
+    // 悬停模式，控制悬停信息的显示方式
+    // "x": 只显示与 x 坐标对齐的数据
+    // "y": 只显示与 y 坐标对齐的数据
+    // "closest": 显示最近的数据点
+    // "false": 禁用悬停
+    // "x unified": 统一显示所有 x 坐标对齐的数据
+    // "y unified": 统一显示所有 y 坐标对齐的数据
+    hover_mode?: "x" | "y" | "closest" | "false" | "x unified" | "y unified",
+
+    // 拖拽模式
+    // "zoom": 框选缩放
+    // "pan": 平移
+    // "select": 框选
+    // "lasso": 套索选择
+    // "orbit": 3D 轨道旋转
+    // "turntable": 3D 转盘旋转
+    // "false": 禁用
+    drag_mode?: "zoom" | "pan" | "select" | "lasso" | "orbit" | "turntable" | "false",
+
+    // 点击模式
+    // "event": 触发点击事件
+    // "select": 触发选择
+    // "none": 禁用
+    click_mode?: "event" | "select" | "none",
+
+    // 全局字体设置
+    font?: {
+        // 字体系列（如 "Arial", "sans-serif"）
+        family?: String,
+        // 字体大小（像素）
+        size?: usize,
+        // 字体颜色
+        color?: Color,
+    },
+
+    // 颜色轴配置
+    coloraxis?: {
+        // 颜色映射最小值
+        cmin?: f64,
+        // 颜色映射最大值
+        cmax?: f64,
+        // 颜色映射中间值（用于发散色条）
+        cmid?: f64,
+        // 是否自动选择颜色标度
+        auto_color_scale?: bool,
+        // 是否反转颜色标度
+        reverse_scale?: bool,
+        // 是否显示颜色条
+        show_scale?: bool,
+    },
+
+    // ===== x轴 / y轴 配置 =====
+    // 默认x轴（xaxis）和默认y轴（yaxis）
+    xaxis?: Axis,
+    yaxis?: Axis,
+    // 附加轴：xaxis2~xaxis8, yaxis2~yaxis8
+    // 支持最多8个附加轴，可用于双Y轴、多子图等场景
+    xaxis2?: Axis,
+    xaxis3?: Axis,
+    xaxis4?: Axis,
+    xaxis5?: Axis,
+    xaxis6?: Axis,
+    xaxis7?: Axis,
+    xaxis8?: Axis,
+    yaxis2?: Axis,
+    yaxis3?: Axis,
+    yaxis4?: Axis,
+    yaxis5?: Axis,
+    yaxis6?: Axis,
+    yaxis7?: Axis,
+    yaxis8?: Axis,
+
     // 说明器具体设置
     legend?: {
         // 背景色
@@ -657,6 +740,117 @@ layout: {
         // 自动扩张
         auto_expand?: bool
     },
+}
+```
+
+##### Axis 参考
+
+`Axis` 对象用于配置 x 轴和 y 轴，支持默认轴（`xaxis`/`yaxis`）以及最多 8 个附加命名轴（`xaxis2`–`xaxis8`/`yaxis2`–`yaxis8`）。
+
+所有 Axis 字段均支持 [DataPack 映射引用](#映射与生成器)（如 `"map.my_range"`）。
+
+```json5
+{
+    // 轴标题
+    title?: String,
+    // 轴类型
+    // "linear": 线性轴（默认）
+    // "log": 对数轴
+    // "date": 日期轴
+    // "category": 类别轴
+    // "multicategory": 多级类别轴
+    type?: "-" | "linear" | "log" | "date" | "category" | "multicategory",
+
+    // 轴范围 [最小值, 最大值]
+    // 可以用 null 表示开放边界，例如 [0, null] 表示从 0 开始
+    // 日期轴可使用日期字符串，如 ["2024-01-01", "2024-01-10"]
+    range?: [f64; 2],
+
+    // 轴在画布上的域（0~1）
+    // 例如 [0, 0.5] 表示轴占据左半部分
+    domain?: [f64; 2],
+
+    // 当前轴锚定的另一轴（如 "y", "y2", "free"）
+    anchor?: String,
+    // 隐藏/显示轴
+    visible?: bool,
+    // 是否自动调整边距
+    auto_margin?: bool,
+
+    // 网格线
+    show_grid?: bool,       // 显示网格线
+    show_line?: bool,       // 显示轴线
+    show_tick_labels?: bool,// 显示刻度标签
+    zero_line?: bool,       // 显示零线
+    grid_color?: Color,     // 网格线颜色
+    line_color?: Color,     // 轴线颜色
+    grid_width?: f64,       // 网格线宽度
+    line_width?: f64,       // 轴线宽度
+    color?: Color,          // 刻度颜色
+
+    // 刻度配置
+    tick_prefix?: String,   // 刻度前缀
+    tick_suffix?: String,   // 刻度后缀
+    tick_format?: String,   // 刻度格式（d3-format 语法）
+    tick_angle?: f64,       // 刻度旋转角度
+    tick0?: f64,            // 起始刻度值
+    dtick?: f64,            // 刻度步长
+    nticks?: usize,         // 刻度数量
+    hover_format?: String,  // 悬停提示格式
+
+    // 类别轴配置
+    category_array?: [String; usize],   // 类别顺序列表
+    category_order?: "trace" | "category-ascending" | "category-descending"
+                    | "array" | "total-ascending" | "total-descending"
+                    | "min-ascending" | "min-descending"
+                    | "max-ascending" | "max-descending"
+                    | "sum-ascending" | "sum-descending"
+                    | "mean-ascending" | "mean-descending"
+                    | "median-ascending" | "median-descending",
+
+    // 轴叠加（用于双轴图表）
+    // 例如 yaxis2.overlaying: "y" 表示 y2 轴叠加在 y 轴上
+    overlaying?: String,
+    // 轴侧边位置
+    side?: "bottom" | "top" | "left" | "right",
+    // 轴的位置偏移
+    position?: f64,
+    // 轴分层
+    // "above traces": 在数据之上
+    // "below traces": 在数据之下
+    layer?: String,
+
+    // 固定轴范围（禁止缩放/平移）
+    fixed_range?: bool,
+    // 比例锚定（例如 y 轴比例锚定到 x 轴）
+    scale_anchor?: String,
+    // 比例系数
+    scale_ratio?: f64,
+}
+```
+
+##### 双 Y 轴示例
+
+```json5
+{
+    layout: {
+        xaxis: {
+            title: "时间",
+        },
+        yaxis: {
+            title: "左轴",
+            side: "left",
+        },
+        yaxis2: {
+            title: "右轴",
+            overlaying: "y",
+            side: "right",
+        },
+    },
+    data: [
+        { type: "scatter", x: [1,2,3], y: [4,5,6] },
+        { type: "scatter", x: [1,2,3], y: [10,20,30], yaxis: "y2" },
+    ]
 }
 ```
 
