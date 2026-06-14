@@ -2,6 +2,7 @@
 #![allow(unexpected_cfgs)]
 
 use anyhow::{Context, Result, anyhow};
+use crate::preprocessor::config::{MapEvalConfig, MapNamespaceScope};
 use fasteval::{Compiler, EvalNamespace, Evaler, Parser, Slab};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
 use serde_json::{Map as JsonMap, Value, value::Index};
@@ -28,11 +29,31 @@ where
     T: DeserializeOwned + Serialize + Debug + Clone,
     N: Index + Display,
 {
-    take_optional(obj, map, &name)?.ok_or_else(|| anyhow!("missing `{}` field", name))
+    take_optional(obj, map, &MapEvalConfig::default(), &name)
+        ?.ok_or_else(|| anyhow!("missing `{}` field", name))
 }
 
 #[inline]
-fn take_optional<T, N>(obj: &mut Value, map: &Map, name: &N) -> Result<Option<T>>
+pub fn must_translate_with_config<T, N>(
+    obj: &mut Value,
+    map: &Map,
+    map_eval: &MapEvalConfig,
+    name: N,
+) -> Result<T>
+where
+    T: DeserializeOwned + Serialize + Debug + Clone,
+    N: Index + Display,
+{
+    take_optional(obj, map, map_eval, &name)?.ok_or_else(|| anyhow!("missing `{}` field", name))
+}
+
+#[inline]
+fn take_optional<T, N>(
+    obj: &mut Value,
+    map: &Map,
+    map_eval: &MapEvalConfig,
+    name: &N,
+) -> Result<Option<T>>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
     N: Index + Display,
@@ -43,7 +64,7 @@ where
 
     serde_json::from_value::<DataPack<T>>(value.take())
         .with_context(|| format!("failed to deserialize field '{}'", name))?
-        .unwrap(map)
+        .unwrap(map, map_eval)
         .with_context(|| format!("failed to unwrap DataPack for field '{}'", name))
         .map(Some)
 }
@@ -101,11 +122,26 @@ fn map_value<'a>(map: &'a Map, index: &str) -> Result<&'a Value> {
 struct MapNamespace<'a> {
     map: &'a Map,
     vars: &'a Vars,
+    scope: &'a MapNamespaceScope,
 }
 
 impl<'a> MapNamespace<'a> {
-    fn new(map: &'a Map, vars: &'a Vars) -> Self {
-        Self { map, vars }
+    fn new(map: &'a Map, vars: &'a Vars, scope: &'a MapNamespaceScope) -> Self {
+        Self { map, vars, scope }
+    }
+
+    fn lookup_map_value(&self, name: &str) -> Option<f64> {
+        match self.scope {
+            MapNamespaceScope::FullMap => lookup_path(self.map, name).and_then(value_to_f64),
+            MapNamespaceScope::ExportsOnly => {
+                let path = if name.starts_with("map.exports.") {
+                    name.to_owned()
+                } else {
+                    format!("exports.{name}")
+                };
+                lookup_path(self.map, &path).and_then(value_to_f64)
+            }
+        }
     }
 }
 
@@ -114,36 +150,48 @@ impl EvalNamespace for MapNamespace<'_> {
         self.vars
             .get(name)
             .copied()
-            .or_else(|| lookup_path(self.map, name).and_then(value_to_f64))
+            .or_else(|| self.lookup_map_value(name))
     }
 }
 
 struct EvalContext {
     parser: Parser,
     slab: Slab,
-}
-
-impl Default for EvalContext {
-    fn default() -> Self {
-        Self {
-            parser: Parser::new(),
-            slab: Slab::new(),
-        }
-    }
+    config: MapEvalConfig,
 }
 
 impl EvalContext {
+    fn new(config: &MapEvalConfig) -> Self {
+        Self {
+            parser: Parser::new(),
+            slab: Slab::new(),
+            config: config.clone(),
+        }
+    }
+
     fn eval(&mut self, expr: &str, map: &Map, vars: &Vars) -> Result<f64> {
-        let mut namespace = MapNamespace::new(map, vars);
+        let mut namespace = MapNamespace::new(map, vars, &self.config.namespace_scope);
+
+        if !self.config.enabled || !self.config.compile_expressions {
+            let expr_ref = self
+                .parser
+                .parse(expr, &mut self.slab.ps)
+                .with_context(|| format!("failed to parse expression `{}`", expr))?
+                .from(&self.slab.ps);
+
+            return expr_ref
+                .eval(&self.slab, &mut namespace)
+                .with_context(|| format!("failed to evaluate expression `{}`", expr));
+        }
+
         let expr_ref = self
             .parser
             .parse(expr, &mut self.slab.ps)
             .with_context(|| format!("failed to parse expression `{}`", expr))?
             .from(&self.slab.ps);
 
-        expr_ref
-            .eval(&self.slab, &mut namespace)
-            .with_context(|| format!("failed to evaluate expression `{}`", expr))
+        let compiled = expr_ref.compile(&self.slab.ps, &mut self.slab.cs);
+        Ok(fasteval::eval_compiled!(compiled, &self.slab, &mut namespace))
     }
 }
 
@@ -151,37 +199,37 @@ impl<T> DataPack<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
-    pub fn unwrap(self, map: &Map) -> Result<T> {
+    pub fn unwrap(self, map: &Map, map_eval: &MapEvalConfig) -> Result<T> {
         match self {
             Self::Data(data) => Ok(data),
             Self::Index(index) => {
                 let value = map_value(map, &index)?.clone();
-                Self::parse_value(map, value)
+                Self::parse_value(map, value, map_eval)
                     .with_context(|| format!("failed to resolve map value `{}`", index))
             }
         }
     }
 
-    fn parse_value(map: &Map, value: Value) -> Result<T> {
+    fn parse_value(map: &Map, value: Value, map_eval: &MapEvalConfig) -> Result<T> {
         if value.is_object() && value.get("type").is_some() {
-            Self::parse_map(map, value)
+            Self::parse_map(map, value, map_eval)
         } else {
             serde_json::from_value(value).context("failed to deserialize value")
         }
     }
 
-    fn parse_map(map: &Map, mut value: Value) -> Result<T> {
+    fn parse_map(map: &Map, mut value: Value, map_eval: &MapEvalConfig) -> Result<T> {
         let value_type = value
             .get("type")
             .and_then(Value::as_str)
             .ok_or_else(|| anyhow!("`type` must be a string"))?
             .to_owned();
 
-        let mut eval = EvalContext::default();
+        let mut eval = EvalContext::new(map_eval);
         let vars = Vars::new();
 
         match value_type.as_str() {
-            "raw" => must_translate(&mut value, map, "data"),
+            "raw" => must_translate_with_config(&mut value, map, map_eval, "data"),
             "g-number" => parse_g_number(map, &mut value, &mut eval, &vars),
             "g-number-list" => parse_g_number_list(map, &mut value, &mut eval),
             "g-range" => parse_g_range(map, &mut value),
@@ -233,12 +281,13 @@ where
 
     for i in index_begin..index_end {
         vars.insert("i".to_owned(), i as f64);
-        let mut namespace = MapNamespace::new(map, &vars);
-        result.push(json_number(fasteval::eval_compiled!(
-            compiled,
-            &eval.slab,
-            &mut namespace
-        ))?);
+        let mut namespace = MapNamespace::new(map, &vars, &eval.config.namespace_scope);
+        let value = if eval.config.enabled && eval.config.compile_expressions {
+            fasteval::eval_compiled!(compiled, &eval.slab, &mut namespace)
+        } else {
+            eval.eval(&expr, map, &vars)?
+        };
+        result.push(json_number(value)?);
     }
 
     try_deser(
@@ -253,7 +302,7 @@ where
 {
     let begin: f64 = must_translate(value, map, "begin")?;
     let end: f64 = must_translate(value, map, "end")?;
-    let step: f64 = take_optional(value, map, &"step")?.unwrap_or(1.0);
+    let step: f64 = take_optional(value, map, &MapEvalConfig::default(), &"step")?.unwrap_or(1.0);
 
     if step <= 0.0 {
         return Err(anyhow!("step must be positive"));
@@ -335,7 +384,7 @@ where
         false_val
     };
 
-    DataPack::<T>::parse_value(map, selected)
+    DataPack::<T>::parse_value(map, selected, &eval.config)
 }
 
 #[cfg(feature = "map-parser-extensions")]
@@ -346,7 +395,7 @@ where
     let start: String = must_translate(value, map, "start")?;
     let end: String = must_translate(value, map, "end")?;
     let interval: String = must_translate(value, map, "interval")?;
-    let format: Option<String> = take_optional(value, map, &"format")?;
+    let format: Option<String> = take_optional(value, map, &MapEvalConfig::default(), &"format")?;
 
     let start_dt = parse_time_str(&start)?;
     let end_dt = parse_time_str(&end)?;
@@ -391,8 +440,8 @@ where
         .get("integer")
         .and_then(Value::as_bool)
         .unwrap_or(false);
-    let seed: Option<u64> = take_optional(value, map, &"seed")?;
-    let count: Option<u64> = take_optional(value, map, &"count")?;
+    let seed: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"seed")?;
+    let count: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"count")?;
 
     let gen_value = |rng: &mut dyn Rng| -> Result<Value> {
         if integer {
@@ -433,8 +482,8 @@ where
         return Err(anyhow!("options must not be empty for g-choose"));
     }
 
-    let seed: Option<u64> = take_optional(value, map, &"seed")?;
-    let count: Option<u64> = take_optional(value, map, &"count")?;
+    let seed: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"seed")?;
+    let count: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"count")?;
 
     match count {
         Some(0) => Err(anyhow!("count must be positive")),
@@ -464,7 +513,7 @@ where
     T: DeserializeOwned,
 {
     let name: String = must_translate(value, map, "name")?;
-    let default: Option<String> = take_optional(value, map, &"default")?;
+    let default: Option<String> = take_optional(value, map, &MapEvalConfig::default(), &"default")?;
     let env_val = std::env::var(&name).ok().or(default).ok_or_else(|| {
         anyhow!(
             "environment variable '{}' is not set and no default provided",
@@ -480,7 +529,7 @@ where
     T: DeserializeOwned,
 {
     let values: Vec<String> = must_translate(value, map, "values")?;
-    let separator: String = take_optional(value, map, &"separator")?.unwrap_or_default();
+    let separator: String = take_optional(value, map, &MapEvalConfig::default(), &"separator")?.unwrap_or_default();
     try_deser(
         Value::String(values.join(&separator)),
         "failed to deserialize joined string",

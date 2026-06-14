@@ -1,5 +1,6 @@
 pub use super::until;
 use super::until::{Color, Map};
+use crate::preprocessor::config::MapEvalConfig;
 use crate::{translate, translate_enum};
 use anyhow::{Result, anyhow};
 use plotly::{Configuration, Layout, Plot, Trace};
@@ -25,7 +26,7 @@ pub mod scatter_polar_parser;
 pub mod surface_parser;
 pub mod table_parser;
 
-pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
+pub fn parse(plot_obj: &mut Value, map_eval: &MapEvalConfig) -> Result<Plot> {
     let mut plot = Plot::new();
 
     let map = if let Some(map_obj) = plot_obj.get_mut("map") {
@@ -37,14 +38,14 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     if let Some(config_obj) = plot_obj.get_mut("config")
         && config_obj.is_object()
     {
-        let config = parse_config_obj(config_obj, &map)?;
+        let config = parse_config_obj(config_obj, &map, map_eval)?;
         plot.set_configuration(config);
     }
 
     if let Some(layout_obj) = plot_obj.get_mut("layout")
         && layout_obj.is_object()
     {
-        let layout = parse_layout_obj(layout_obj, &map)?;
+        let layout = parse_layout_obj(layout_obj, &map, map_eval)?;
         plot.set_layout(layout);
     }
 
@@ -52,7 +53,7 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
         && data_list.is_array()
     {
         for data in data_list.as_array_mut().unwrap_or_else(|| unreachable!()) {
-            let trace = parse_data_obj(data, &map)?;
+            let trace = parse_data_obj(data, &map, map_eval)?;
             plot.add_trace(trace);
         }
     }
@@ -60,7 +61,7 @@ pub fn parse(plot_obj: &mut Value) -> Result<Plot> {
     Ok(plot)
 }
 
-fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> {
+fn parse_config_obj(config_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Configuration> {
     use plotly::configuration::{DisplayModeBar, DoubleClick};
 
     let config = translate! {
@@ -106,7 +107,7 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map) -> Result<Configuration> 
     Ok(config)
 }
 
-fn parse_layout_obj(layout_obj: &mut Value, map: &Map) -> Result<Layout> {
+fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Layout> {
     use plotly::layout::{
         ClickMode, DragMode, GroupClick, HoverMode, ItemClick, ItemSizing, Legend, Margin,
         TraceOrder, VAlign,
@@ -368,7 +369,7 @@ fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axi
         let data = serde_json::from_value::<DataPack<String>>(v.take())
             .map_err(|e| anyhow!("Failed to deserialize axis `type`: {}", e))?;
         let s = data
-            .unwrap(map)
+            .unwrap(map, &MapEvalConfig::default())
             .map_err(|e| anyhow!("Failed to unwrap DataPack for axis `type`: {}", e))?;
         let at = match s.as_str() {
             "-" | "linear" => AxisType::Linear,
@@ -432,7 +433,7 @@ fn parse_named_axes(
     Ok(layout)
 }
 
-pub fn parse_data_obj(data_obj: &mut Value, map: &Map) -> Result<Box<dyn Trace>> {
+pub fn parse_data_obj(data_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Box<dyn Trace>> {
     let data_type = data_obj
         .get("type")
         .and_then(|v| v.as_str())

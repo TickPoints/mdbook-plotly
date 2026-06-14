@@ -141,7 +141,39 @@ input-type = "json-input"
 
 # Whether to use offline JavaScript sources (true/false).
 offline-js-sources = false
+
+# Controls expression evaluation behavior for the `map` section.
+[preprocessor.plotly.map-eval]
+enabled = true
+reuse-slab = true
+compile-expressions = true
+namespace-scope = "full-map"
 ```
+
+#### `map-eval` configuration
+
+The optional [`map-eval`](../src/preprocessor/config.rs:30) section controls how expressions inside map generators such as [`g-number`](../src/code_handler/until.rs:253), [`g-number-list`](../src/code_handler/until.rs:264), and [`if`](../src/code_handler/until.rs:403) are evaluated.
+
+Available keys:
+
+- `enabled` – master switch for the map expression evaluation strategy
+- `reuse-slab` – enables reusing [`Slab`](../src/code_handler/until.rs:159) during evaluation
+- `compile-expressions` – enables compiled fasteval execution paths when possible
+- `namespace-scope` – controls which symbols are visible to the expression namespace
+
+Supported values for `namespace-scope`:
+
+- `full-map` – current default; preserves existing behavior and allows namespace lookup against the full map
+- `exports-only` – restricts namespace symbol lookup to `map.exports.*`, while explicit map references such as `map.exports.value` continue to work
+
+Example:
+
+```toml
+[preprocessor.plotly.map-eval]
+namespace-scope = "exports-only"
+```
+
+With `exports-only`, expressions can use values exported under `map.exports` as bare names, which helps separate public expression symbols from the rest of the map payload.
 
 ## Input Formats
 

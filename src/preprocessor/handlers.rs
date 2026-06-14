@@ -89,7 +89,7 @@ pub fn handle_plotly<'a>(
     config: &'a PreprocessorConfig,
     book_path: &'a Path,
 ) -> Result<Event<'static>> {
-    let plot = code_handler::handle(code, &config.input_type)?;
+    let plot = code_handler::handle(code, &config.input_type, &config.map_eval)?;
     let result = match config.output_type {
         #[cfg(feature = "plotly-html-handler")]
         PlotlyOutputType::PlotlyHtml => plotly_html_handler::handle(plot),

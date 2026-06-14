@@ -141,7 +141,39 @@ input-type = "json-input"
 
 # 是否使用离线 JavaScript 源（true/false）。
 offline-js-sources = false
+
+# 控制 `map` 部分中的表达式求值行为。
+[preprocessor.plotly.map-eval]
+enabled = true
+reuse-slab = true
+compile-expressions = true
+namespace-scope = "full-map"
 ```
+
+#### `map-eval` 配置
+
+可选的 [`map-eval`](../src/preprocessor/config.rs:30) 部分用于控制 [`g-number`](../src/code_handler/until.rs:253)、[`g-number-list`](../src/code_handler/until.rs:264)、[`if`](../src/code_handler/until.rs:403) 等 map 生成器中的表达式如何被求值。
+
+可用键：
+
+- `enabled` – map 表达式求值策略的总开关
+- `reuse-slab` – 是否在求值期间复用 [`Slab`](../src/code_handler/until.rs:159)
+- `compile-expressions` – 是否尽可能走 fasteval 的编译执行路径
+- `namespace-scope` – 控制表达式 namespace 中哪些符号可见
+
+`namespace-scope` 支持的值：
+
+- `full-map` – 当前默认值；保持现有行为，允许 namespace 从整个 map 中查找
+- `exports-only` – 将 namespace 符号查找限制为 `map.exports.*`，同时显式写法如 `map.exports.value` 仍然可用
+
+示例：
+
+```toml
+[preprocessor.plotly.map-eval]
+namespace-scope = "exports-only"
+```
+
+在 `exports-only` 模式下，表达式可以直接使用定义在 `map.exports` 下的值作为裸名字，从而把“对表达式公开的符号”和普通 map 数据分离开。
 
 ## 输入格式
 

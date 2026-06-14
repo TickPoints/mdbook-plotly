@@ -26,6 +26,38 @@ pub struct PreprocessorConfig {
     /// If this is false(default), a JS script source from CDN will be injected;
     /// otherwise, an HTML script tag containing an embedded JS source will be added for offline use.
     pub offline_js_sources: bool,
+
+    /// Controls map expression evaluation behavior such as namespace visibility
+    /// and whether fasteval optimizations should be enabled.
+    pub map_eval: MapEvalConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default, rename_all = "kebab-case")]
+pub struct MapEvalConfig {
+    pub enabled: bool,
+    pub reuse_slab: bool,
+    pub compile_expressions: bool,
+    pub namespace_scope: MapNamespaceScope,
+}
+
+impl Default for MapEvalConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            reuse_slab: true,
+            compile_expressions: true,
+            namespace_scope: MapNamespaceScope::FullMap,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum MapNamespaceScope {
+    #[default]
+    FullMap,
+    ExportsOnly,
 }
 
 /// NOTE: These configurations are printed as kebab-case names. Please pay attention when using.
