@@ -1,4 +1,5 @@
 use mdbook_plotly::code_handler;
+use mdbook_plotly::preprocessor::config::{PlotlyInputType, PreprocessorConfig};
 use plotly::{
     Bar, BoxPlot, Candlestick, Configuration, Contour, DensityMapbox, HeatMap, Histogram, Layout,
     Mesh3D, Ohlc, Pie, Plot, Scatter, Scatter3D, ScatterGeo, ScatterMapbox, ScatterPolar, Surface,
@@ -25,6 +26,32 @@ fn test_json5() {
     reasonable_plot.set_layout(layout);
 
     assert!(reasonable_plot == generated_plot);
+}
+
+#[test]
+fn test_handle_uses_json_input_config() {
+    let raw_code = r#"
+    {
+        layout: {
+            title: "Config Input Type Test",
+        }
+    }
+    "#;
+
+    let generated_plot = code_handler::handle(raw_code.to_string(), &PlotlyInputType::JSONInput).unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    reasonable_plot.set_layout(Layout::new().title("Config Input Type Test"));
+
+    assert!(reasonable_plot == generated_plot);
+}
+
+#[test]
+fn test_preprocessor_config_default_contract() {
+    let config = PreprocessorConfig::default();
+
+    assert_eq!(config.input_type, PlotlyInputType::JSONInput);
+    assert!(!config.offline_js_sources);
 }
 
 // ── Existing Trace Tests ──

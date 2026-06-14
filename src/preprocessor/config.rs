@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub const SUPPORTED_MDBOOK_VERSION: &str = "0.5.2";
+pub const PREPROCESSOR_CONFIG_KEY: &str = "preprocessor.plotly";
 
 /// NOTE: These configurations are printed as kebab-case names. Please pay attention when using.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -49,9 +50,4 @@ pub enum PlotlyInputType {
     /// NOTE: In the `PlotlyOutputType = PlotlySvg` state, this method may cause some performance loss due to multiple packaging.
     #[default]
     JSONInput,
-
-    /// NOTE: This entry is deprecated because the use of `rquickjs` was abandoned.
-    /// Execute the script locally in a sandbox, either for preprocessing or to complete the compilation directly.
-    /// Once processed, follow the target output type.
-    SandBoxScript,
 }

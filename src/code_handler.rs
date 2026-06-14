@@ -3,18 +3,11 @@ pub mod until;
 
 use crate::preprocessor::config::PlotlyInputType;
 use anyhow::Result;
-use log::{debug, warn};
 use plotly::Plot;
 use serde_json::Value;
 
 pub fn handle(raw_code: String, input_type: &PlotlyInputType) -> Result<Plot> {
     let result = match input_type {
-        PlotlyInputType::SandBoxScript => {
-            warn!("The entry has been discarded. This config shouldn't be used.");
-            debug!("This function returns an empty string.");
-            // This treatment may not be good, but it is sufficient.
-            Plot::new()
-        }
         PlotlyInputType::JSONInput => handle_json_input(raw_code)?,
     };
     Ok(result)
