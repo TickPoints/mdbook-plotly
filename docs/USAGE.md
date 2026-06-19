@@ -40,8 +40,7 @@ This is the official user manual (English edition) for **mdbook-plotly**, a prep
       - [Polar Scatter Plots](#data-scatter_polar)
       - [3D Surface Plots](#data-surface)
       - [Tables](#data-table)
-  - [SandBoxScript (Deprecated)](#sand-box-script)
-- [Output Formats](#output-formats)
+  - [Output Formats](#output-formats)
 
 ## Quick Start
 
@@ -123,7 +122,7 @@ All configuration keys use `kebab-case`. The parser follows these rules:
 Example error when an invalid enum variant is supplied:
 
 ```shell
-Illegal config format for 'preprocessor.mdbook-plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
+Illegal config format for 'preprocessor.plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
 ```
 
 ### Configuration Options
@@ -137,19 +136,50 @@ after = ["links"]
 output-type = "plotly-html"
 
 # Input format – specifies the syntax of chart definitions.
-# Valid values: "json-input", "sandbox-script" (deprecated)
+# Valid values: "json-input"
 input-type = "json-input"
 
 # Whether to use offline JavaScript sources (true/false).
-offline_js_sources = false
+offline-js-sources = false
+
+# Controls expression evaluation behavior for the `map` section.
+[preprocessor.plotly.map-eval]
+enabled = true
+reuse-slab = true
+compile-expressions = true
+namespace-scope = "full-map"
 ```
+
+#### `map-eval` configuration
+
+The optional [`map-eval`](../src/preprocessor/config.rs:30) section controls how expressions inside map generators such as [`g-number`](../src/code_handler/until.rs:253), [`g-number-list`](../src/code_handler/until.rs:264), and [`if`](../src/code_handler/until.rs:403) are evaluated.
+
+Available keys:
+
+- `enabled` – master switch for the map expression evaluation strategy
+- `reuse-slab` – enables reusing [`Slab`](../src/code_handler/until.rs:159) during evaluation
+- `compile-expressions` – enables compiled fasteval execution paths when possible
+- `namespace-scope` – controls which symbols are visible to the expression namespace
+
+Supported values for `namespace-scope`:
+
+- `full-map` – current default; preserves existing behavior and allows namespace lookup against the full map
+- `exports-only` – restricts namespace symbol lookup to `map.exports.*`, while explicit map references such as `map.exports.value` continue to work
+
+Example:
+
+```toml
+[preprocessor.plotly.map-eval]
+namespace-scope = "exports-only"
+```
+
+With `exports-only`, expressions can use values exported under `map.exports` as bare names, which helps separate public expression symbols from the rest of the map payload.
 
 ## Input Formats
 
-The `input-type` configuration option determines the syntax used to define charts inside `plot`/`plotly` code blocks. Supported values:
+The `input-type` configuration option determines the syntax used to define charts inside `plot`/`plotly` code blocks. Currently supported values:
 
-- `json-input` – JSON5‑based chart definitions (recommended)
-- `sand-box-script` – deprecated script‑based format
+- `json-input` – JSON5‑based chart definitions (recommended and currently the only supported input format)
 
 ### JSON Input
 

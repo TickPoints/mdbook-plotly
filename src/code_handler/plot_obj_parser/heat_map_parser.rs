@@ -1,25 +1,28 @@
-use super::until::{Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_color_bar;
+use super::until::must_translate_from_context;
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
 use plotly::HeatMap;
 
 pub fn parse_heat_map_data(
     hm_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<HeatMap<f64, f64, Vec<f64>>>> {
-    let z: Vec<Vec<f64>> = must_translate(hm_obj, map, "z")?;
+    let z: Vec<Vec<f64>> = must_translate_from_context(hm_obj, context, "z")?;
     let heat_map = if hm_obj.get("x").is_some() {
-        let x: Vec<f64> = must_translate(hm_obj, map, "x")?;
-        let y: Vec<f64> = must_translate(hm_obj, map, "y")?;
+        let x: Vec<f64> = must_translate_from_context(hm_obj, context, "x")?;
+        let y: Vec<f64> = must_translate_from_context(hm_obj, context, "y")?;
         HeatMap::new(x, y, z)
     } else {
         HeatMap::new_z(z)
     };
 
-    let heat_map = translate! {
+    let heat_map = translate_with_config! {
         heat_map,
         hm_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (name, String),
         (opacity, f64),
         (hover_template, String),
@@ -48,10 +51,11 @@ pub fn parse_heat_map_data(
     }?;
 
     use plotly::common::HoverInfo;
-    let heat_map = translate_enum! {
+    let heat_map = translate_enum_with_config! {
         heat_map,
         hm_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (hover_info, {
             "all" => HoverInfo::All,
             "x" => HoverInfo::X,
@@ -71,17 +75,7 @@ pub fn parse_heat_map_data(
     let heat_map = if let Some(color_bar_obj) = hm_obj.get_mut("color_bar")
         && color_bar_obj.is_object()
     {
-        use plotly::common::ColorBar;
-        let color_bar = translate! {
-            ColorBar::new(),
-            color_bar_obj,
-            map,
-            (thickness, usize),
-            (len, usize),
-            (x, f64),
-            (y, f64),
-            (title, String),
-        }?;
+        let color_bar = parse_color_bar(color_bar_obj, context)?;
         heat_map.color_bar(color_bar)
     } else {
         heat_map
@@ -89,7 +83,7 @@ pub fn parse_heat_map_data(
 
     let heat_map = if hm_obj.get("color_scale").is_some() {
         use plotly::common::{ColorScale, ColorScalePalette};
-        let color_scale_str: String = must_translate(hm_obj, map, "color_scale")?;
+        let color_scale_str: String = must_translate_from_context(hm_obj, context, "color_scale")?;
         let palette = match color_scale_str.to_lowercase().as_str() {
             "greys" => ColorScalePalette::Greys,
             "ylgnbu" => ColorScalePalette::YlGnBu,

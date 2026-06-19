@@ -1,19 +1,22 @@
-use super::until::{Color, Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_color_bar;
+use super::until::{Color, must_translate_from_context};
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
 use plotly::Surface;
 
 pub fn parse_surface_data(
     sf_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<Surface<f64, f64, f64>>> {
-    let z: Vec<Vec<f64>> = must_translate(sf_obj, map, "z")?;
+    let z: Vec<Vec<f64>> = must_translate_from_context(sf_obj, context, "z")?;
     let surface = Surface::new(z);
 
-    let surface = translate! {
+    let surface = translate_with_config! {
         surface,
         sf_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (x, Vec<f64>),
         (y, Vec<f64>),
         (name, String),
@@ -39,10 +42,11 @@ pub fn parse_surface_data(
     }?;
 
     use plotly::common::HoverInfo;
-    let surface = translate_enum! {
+    let surface = translate_enum_with_config! {
         surface,
         sf_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (hover_info, {
             "all" => HoverInfo::All,
             "x" => HoverInfo::X,
@@ -62,17 +66,7 @@ pub fn parse_surface_data(
     let surface = if let Some(color_bar_obj) = sf_obj.get_mut("color_bar")
         && color_bar_obj.is_object()
     {
-        use plotly::common::ColorBar;
-        let color_bar = translate! {
-            ColorBar::new(),
-            color_bar_obj,
-            map,
-            (thickness, usize),
-            (len, usize),
-            (x, f64),
-            (y, f64),
-            (title, String),
-        }?;
+        let color_bar = parse_color_bar(color_bar_obj, context)?;
         surface.color_bar(color_bar)
     } else {
         surface
@@ -80,7 +74,7 @@ pub fn parse_surface_data(
 
     let surface = if sf_obj.get("color_scale").is_some() {
         use plotly::common::{ColorScale, ColorScalePalette};
-        let color_scale_str: String = must_translate(sf_obj, map, "color_scale")?;
+        let color_scale_str: String = must_translate_from_context(sf_obj, context, "color_scale")?;
         let palette = match color_scale_str.to_lowercase().as_str() {
             "greys" => ColorScalePalette::Greys,
             "ylgnbu" => ColorScalePalette::YlGnBu,
@@ -111,10 +105,11 @@ pub fn parse_surface_data(
         && lighting_obj.is_object()
     {
         use plotly::traces::surface::Lighting;
-        let lighting = translate! {
+        let lighting = translate_with_config! {
             Lighting::new(),
             lighting_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (ambient, f64),
             (diffuse, f64),
             (specular, f64),
@@ -130,9 +125,9 @@ pub fn parse_surface_data(
         && light_pos_obj.is_object()
     {
         use plotly::traces::surface::Position;
-        let x: i32 = must_translate(light_pos_obj, map, "x")?;
-        let y: i32 = must_translate(light_pos_obj, map, "y")?;
-        let z: i32 = must_translate(light_pos_obj, map, "z")?;
+        let x: i32 = must_translate_from_context(light_pos_obj, context, "x")?;
+        let y: i32 = must_translate_from_context(light_pos_obj, context, "y")?;
+        let z: i32 = must_translate_from_context(light_pos_obj, context, "z")?;
         surface.light_position(Position::new(x, y, z))
     } else {
         surface

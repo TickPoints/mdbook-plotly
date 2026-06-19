@@ -1,5 +1,70 @@
 use mdbook_plotly::code_handler;
+use mdbook_plotly::preprocessor::config::{MapEvalConfig, MapNamespaceScope};
 use plotly::{Layout, Plot, Scatter};
+
+#[test]
+fn test_exports_only_namespace_scope() {
+    let raw_code = r#"
+    {
+        map: {
+            exports: {
+                opacity: 5
+            }
+        },
+        data: [{
+            type: "scatter",
+            x: [0, 1, 2],
+            y: [0, 0, 0],
+            opacity: "map.exports.opacity"
+        }]
+    }
+    "#;
+
+    let generated_plot = code_handler::handle_json_input(
+        raw_code.to_string(),
+        &MapEvalConfig {
+            namespace_scope: MapNamespaceScope::ExportsOnly,
+            ..MapEvalConfig::default()
+        },
+    )
+    .unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    let trace = Scatter::new(vec![0.0, 1.0, 2.0], vec![0.0, 0.0, 0.0]).opacity(5.0);
+    reasonable_plot.add_trace(trace);
+
+    assert!(reasonable_plot == generated_plot);
+}
+
+#[test]
+fn test_exports_only_blocks_non_exports_namespace_access() {
+    let raw_code = r#"
+    {
+        map: {
+            mynum: {
+                type: "g-number",
+                expr: "hidden + 1"
+            }
+        },
+        data: [{
+            type: "scatter",
+            x: [0, 1, 2],
+            y: [0, 0, 0],
+            opacity: "map.mynum"
+        }]
+    }
+    "#;
+
+    let result = code_handler::handle_json_input(
+        raw_code.to_string(),
+        &MapEvalConfig {
+            namespace_scope: MapNamespaceScope::ExportsOnly,
+            ..MapEvalConfig::default()
+        },
+    );
+
+    assert!(result.is_err());
+}
 
 #[test]
 fn test_json5() {
@@ -13,7 +78,8 @@ fn test_json5() {
         }
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
 
     let mut reasonable_plot = Plot::new();
     let layout = Layout::new().title("Test");
@@ -41,7 +107,8 @@ fn test_g_linear() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     // Debug: print JSON representation
     println!(
         "Generated: {}",
@@ -79,7 +146,8 @@ fn test_g_range() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -112,7 +180,8 @@ fn test_g_repeat() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -145,7 +214,8 @@ fn test_g_number() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -179,7 +249,8 @@ fn test_g_number_list() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -211,7 +282,8 @@ fn test_raw() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -244,7 +316,8 @@ fn test_boolean_type() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated boolean: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -277,7 +350,8 @@ fn test_integer_type() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated integer: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -310,7 +384,8 @@ fn test_string_type() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated string: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -343,7 +418,8 @@ fn test_array_of_strings() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated string array: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -381,7 +457,8 @@ fn test_g_repeat_with_string() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated repeat string: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -420,7 +497,8 @@ fn test_if_type() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated if: {}",
         serde_json::to_string(&generated_plot).unwrap()
@@ -456,7 +534,8 @@ fn test_time_type() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     println!(
         "Generated time: {}",
         serde_json::to_string(&generated_plot).unwrap()

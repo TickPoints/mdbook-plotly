@@ -28,13 +28,23 @@ macro_rules! fatal {
 #[macro_export]
 macro_rules! translate {
     ($target:expr, $value:expr, $map:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
+        $crate::translate_with_config!($target, $value, $map, &$crate::preprocessor::config::MapEvalConfig::default(), $(($method, $ty)),*)
+    }};
+    ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
+        $crate::translate_with_config!($target, $value, $map, $map_eval, $(($method, $ty)),*)
+    }};
+}
+
+#[macro_export]
+macro_rules! translate_with_config {
+    ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
         use $crate::code_handler::until::DataPack;
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
                 let data = serde_json::from_value::<DataPack<$ty>>(v.take())
                     .map_err(|e| ::anyhow::anyhow!("Failed to deserialize field '{}': {}", stringify!($method), e))?;
-                target.$method(data.unwrap($map)
+                target.$method(data.unwrap($map, $map_eval)
                     .map_err(|e| ::anyhow::anyhow!("Failed to unwrap DataPack for field '{}': {}", stringify!($method), e))?)
             } else {
                 target
@@ -51,13 +61,27 @@ macro_rules! translate_enum {
     ($target:expr, $value:expr, $map:expr, $(
         ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
     ),* $(,)?) => {{
+        $crate::translate_enum_with_config!($target, $value, $map, &$crate::preprocessor::config::MapEvalConfig::default(), $(($method, { $($str_val => $variant),* })),*)
+    }};
+    ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(
+        ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
+    ),* $(,)?) => {{
+        $crate::translate_enum_with_config!($target, $value, $map, $map_eval, $(($method, { $($str_val => $variant),* })),*)
+    }};
+}
+
+#[macro_export]
+macro_rules! translate_enum_with_config {
+    ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(
+        ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
+    ),* $(,)?) => {{
         use $crate::code_handler::until::DataPack;
         let target = $target;
         $(
             let target = if let Some(v) = $value.get_mut(stringify!($method)) {
                 let data = serde_json::from_value::<DataPack<String>>(v.take())
                     .map_err(|e| ::anyhow::anyhow!("Failed to deserialize field '{}': {}", stringify!($method), e))?;
-                let s = data.unwrap($map)
+                let s = data.unwrap($map, $map_eval)
                     .map_err(|e| ::anyhow::anyhow!("Failed to unwrap DataPack for field '{}': {}", stringify!($method), e))?;
                 match s.as_str() {
                     $($str_val => target.$method($variant),)*
