@@ -1,8 +1,9 @@
 // Tmp fix
 #![allow(unexpected_cfgs)]
 
-use anyhow::{Context, Result, anyhow};
+use crate::code_handler::parse_context::ParseContext;
 use crate::preprocessor::config::{MapEvalConfig, MapNamespaceScope};
+use anyhow::{Context, Result, anyhow};
 use fasteval::{Compiler, EvalNamespace, Evaler, Parser, Slab};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
 use serde_json::{Map as JsonMap, Value, value::Index};
@@ -23,14 +24,28 @@ pub enum DataPack<T> {
     Index(String),
 }
 
+#[allow(dead_code)]
 #[inline]
 pub fn must_translate<T, N>(obj: &mut Value, map: &Map, name: N) -> Result<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
     N: Index + Display,
 {
-    take_optional(obj, map, &MapEvalConfig::default(), &name)
-        ?.ok_or_else(|| anyhow!("missing `{}` field", name))
+    must_translate_with_config(obj, map, &MapEvalConfig::default(), name)
+}
+
+#[allow(dead_code)]
+#[inline]
+pub fn must_translate_from_context<T, N>(
+    obj: &mut Value,
+    context: &ParseContext<'_>,
+    name: N,
+) -> Result<T>
+where
+    T: DeserializeOwned + Serialize + Debug + Clone,
+    N: Index + Display,
+{
+    must_translate_with_config(obj, context.map(), context.map_eval(), name)
 }
 
 #[inline]
@@ -191,7 +206,11 @@ impl EvalContext {
             .from(&self.slab.ps);
 
         let compiled = expr_ref.compile(&self.slab.ps, &mut self.slab.cs);
-        Ok(fasteval::eval_compiled!(compiled, &self.slab, &mut namespace))
+        Ok(fasteval::eval_compiled!(
+            compiled,
+            &self.slab,
+            &mut namespace
+        ))
     }
 }
 
@@ -208,6 +227,10 @@ where
                     .with_context(|| format!("failed to resolve map value `{}`", index))
             }
         }
+    }
+
+    pub fn unwrap_from_context(self, context: &ParseContext<'_>) -> Result<T> {
+        self.unwrap(context.map(), context.map_eval())
     }
 
     fn parse_value(map: &Map, value: Value, map_eval: &MapEvalConfig) -> Result<T> {
@@ -529,7 +552,8 @@ where
     T: DeserializeOwned,
 {
     let values: Vec<String> = must_translate(value, map, "values")?;
-    let separator: String = take_optional(value, map, &MapEvalConfig::default(), &"separator")?.unwrap_or_default();
+    let separator: String =
+        take_optional(value, map, &MapEvalConfig::default(), &"separator")?.unwrap_or_default();
     try_deser(
         Value::String(values.join(&separator)),
         "failed to deserialize joined string",

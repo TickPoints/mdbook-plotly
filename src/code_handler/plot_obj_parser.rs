@@ -1,7 +1,8 @@
+use super::parse_context::ParseContext;
 pub use super::until;
 use super::until::{Color, Map};
 use crate::preprocessor::config::MapEvalConfig;
-use crate::{translate, translate_enum};
+use crate::{translate, translate_enum_with_config, translate_with_config};
 use anyhow::{Result, anyhow};
 use plotly::{Configuration, Layout, Plot, Trace};
 use serde_json::Value;
@@ -35,17 +36,19 @@ pub fn parse(plot_obj: &mut Value, map_eval: &MapEvalConfig) -> Result<Plot> {
         Map::new()
     };
 
+    let context = ParseContext::new(&map, map_eval);
+
     if let Some(config_obj) = plot_obj.get_mut("config")
         && config_obj.is_object()
     {
-        let config = parse_config_obj(config_obj, &map, map_eval)?;
+        let config = parse_config_obj(config_obj, &context)?;
         plot.set_configuration(config);
     }
 
     if let Some(layout_obj) = plot_obj.get_mut("layout")
         && layout_obj.is_object()
     {
-        let layout = parse_layout_obj(layout_obj, &map, map_eval)?;
+        let layout = parse_layout_obj(layout_obj, &context)?;
         plot.set_layout(layout);
     }
 
@@ -53,7 +56,7 @@ pub fn parse(plot_obj: &mut Value, map_eval: &MapEvalConfig) -> Result<Plot> {
         && data_list.is_array()
     {
         for data in data_list.as_array_mut().unwrap_or_else(|| unreachable!()) {
-            let trace = parse_data_obj(data, &map, map_eval)?;
+            let trace = parse_data_obj(data, &context)?;
             plot.add_trace(trace);
         }
     }
@@ -61,13 +64,14 @@ pub fn parse(plot_obj: &mut Value, map_eval: &MapEvalConfig) -> Result<Plot> {
     Ok(plot)
 }
 
-fn parse_config_obj(config_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Configuration> {
+fn parse_config_obj(config_obj: &mut Value, context: &ParseContext<'_>) -> Result<Configuration> {
     use plotly::configuration::{DisplayModeBar, DoubleClick};
 
     let config = translate! {
         Configuration::new(),
         config_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (static_plot, bool),
         (typeset_math, bool),
         (editable, bool),
@@ -87,10 +91,11 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
         (watermark, bool),
     }?;
 
-    let config = translate_enum! {
+    let config = translate_enum_with_config! {
         config,
         config_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (display_mode_bar, {
             "hover"  => DisplayModeBar::Hover,
             "true"   => DisplayModeBar::True,
@@ -107,7 +112,7 @@ fn parse_config_obj(config_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     Ok(config)
 }
 
-fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Layout> {
+fn parse_layout_obj(layout_obj: &mut Value, context: &ParseContext<'_>) -> Result<Layout> {
     use plotly::layout::{
         ClickMode, DragMode, GroupClick, HoverMode, ItemClick, ItemSizing, Legend, Margin,
         TraceOrder, VAlign,
@@ -116,7 +121,8 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = translate! {
         Layout::new(),
         layout_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (title, String),
         (show_legend, bool),
         (auto_size, bool),
@@ -132,10 +138,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
         (box_group_gap, f64),
     }?;
 
-    let layout = translate_enum! {
+    let layout = translate_enum_with_config! {
         layout,
         layout_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (hover_mode, {
             "x"          => HoverMode::X,
             "y"          => HoverMode::Y,
@@ -163,10 +170,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(legend_obj) = layout_obj.get_mut("legend")
         && legend_obj.is_object()
     {
-        let legend = translate! {
+        let legend = translate_with_config! {
             Legend::new(),
             legend_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (background_color, Color),
             (border_color, Color),
             (border_width, usize),
@@ -177,10 +185,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
             (title, String),
         }?;
 
-        let legend = translate_enum! {
+        let legend = translate_enum_with_config! {
             legend,
             legend_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (trace_order, {
                 "reversed"        => TraceOrder::Reversed,
                 "grouped"         => TraceOrder::Grouped,
@@ -220,10 +229,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(margin_obj) = layout_obj.get_mut("margin")
         && margin_obj.is_object()
     {
-        let margin = translate! {
+        let margin = translate_with_config! {
             Margin::new(),
             margin_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (left, usize),
             (right, usize),
             (top, usize),
@@ -243,10 +253,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(font_obj) = layout_obj.get_mut("font")
         && font_obj.is_object()
     {
-        let font = translate! {
+        let font = translate_with_config! {
             Font::new(),
             font_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (family, String),
             (size, usize),
             (color, Color),
@@ -261,10 +272,11 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(ca_obj) = layout_obj.get_mut("coloraxis")
         && ca_obj.is_object()
     {
-        let ca = translate! {
+        let ca = translate_with_config! {
             ColorAxis::new(),
             ca_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (cmin, f64),
             (cmax, f64),
             (cmid, f64),
@@ -282,7 +294,7 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(axis_obj) = layout_obj.get_mut("xaxis")
         && axis_obj.is_object()
     {
-        let axis = parse_axis_obj(axis_obj, map)?;
+        let axis = parse_axis_obj(axis_obj, context)?;
         layout.x_axis(axis)
     } else {
         layout
@@ -291,7 +303,7 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
     let layout = if let Some(axis_obj) = layout_obj.get_mut("yaxis")
         && axis_obj.is_object()
     {
-        let axis = parse_axis_obj(axis_obj, map)?;
+        let axis = parse_axis_obj(axis_obj, context)?;
         layout.y_axis(axis)
     } else {
         layout
@@ -299,24 +311,28 @@ fn parse_layout_obj(layout_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig
 
     // Named axes: `xaxis2`, `xaxis3`, … / `yaxis2`, `yaxis3`, …
     // Layout methods: x_axis2(), x_axis3(), … / y_axis2(), y_axis3(), …
-    let layout = parse_named_axes(layout, layout_obj, map, "x")?;
-    let layout = parse_named_axes(layout, layout_obj, map, "y")?;
+    let layout = parse_named_axes(layout, layout_obj, context, "x")?;
+    let layout = parse_named_axes(layout, layout_obj, context, "y")?;
 
     Ok(layout)
 }
 
 /// Parse an `Axis` object from a JSON value.
-fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axis> {
+fn parse_axis_obj(
+    axis_obj: &mut Value,
+    context: &ParseContext<'_>,
+) -> Result<plotly::layout::Axis> {
     use crate::code_handler::until::DataPack;
     use plotly::layout::{Axis, AxisType};
 
     // translate! for simple fields.
     // Note: builder methods whose parameter types cannot be directly deserialized
     // from JSON (e.g. &[f64], enums) must be handled manually below.
-    let axis = translate! {
+    let axis = translate_with_config! {
         Axis::new(),
         axis_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (title, String),
         (show_grid, bool),
         (show_line, bool),
@@ -339,10 +355,11 @@ fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axi
         (show_tick_labels, bool),
     }?;
 
-    let axis = translate_enum! {
+    let axis = translate_enum_with_config! {
         axis,
         axis_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (category_order, {
             "trace"               => plotly::layout::CategoryOrder::Trace,
             "category-ascending"  => plotly::layout::CategoryOrder::CategoryAscending,
@@ -369,7 +386,7 @@ fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axi
         let data = serde_json::from_value::<DataPack<String>>(v.take())
             .map_err(|e| anyhow!("Failed to deserialize axis `type`: {}", e))?;
         let s = data
-            .unwrap(map, &MapEvalConfig::default())
+            .unwrap_from_context(context)
             .map_err(|e| anyhow!("Failed to unwrap DataPack for axis `type`: {}", e))?;
         let at = match s.as_str() {
             "-" | "linear" => AxisType::Linear,
@@ -392,7 +409,7 @@ fn parse_axis_obj(axis_obj: &mut Value, map: &Map) -> Result<plotly::layout::Axi
 fn parse_named_axes(
     layout: Layout,
     layout_obj: &mut Value,
-    map: &Map,
+    context: &ParseContext<'_>,
     prefix: &str,
 ) -> Result<Layout> {
     let mut layout = layout;
@@ -405,7 +422,7 @@ fn parse_named_axes(
         if !axis_obj.is_object() {
             continue;
         }
-        let axis = parse_axis_obj(axis_obj, map)?;
+        let axis = parse_axis_obj(axis_obj, context)?;
         if prefix == "x" {
             layout = match i {
                 2 => layout.x_axis2(axis),
@@ -433,44 +450,60 @@ fn parse_named_axes(
     Ok(layout)
 }
 
-pub fn parse_data_obj(data_obj: &mut Value, map: &Map, _map_eval: &MapEvalConfig) -> Result<Box<dyn Trace>> {
+pub fn parse_data_obj(data_obj: &mut Value, context: &ParseContext<'_>) -> Result<Box<dyn Trace>> {
     let data_type = data_obj
         .get("type")
         .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow!("`type` must be a string"))?;
     match data_type {
-        "bar" => bar_parser::parse_bar_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "box" => box_plot_parser::parse_box_plot_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "candlestick" => {
-            candlestick_parser::parse_candlestick_data(data_obj, map).map(|v| v as Box<dyn Trace>)
-        }
-        "contour" => contour_parser::parse_contour_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "density_mapbox" => density_mapbox_parser::parse_density_mapbox_data(data_obj, map)
+        "bar" => bar_parser::parse_bar_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>),
+        "box" => box_plot_parser::parse_box_plot_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
-        "heatmap" => {
-            heat_map_parser::parse_heat_map_data(data_obj, map).map(|v| v as Box<dyn Trace>)
-        }
-        "histogram" => {
-            histogram_parser::parse_histogram_data(data_obj, map).map(|v| v as Box<dyn Trace>)
-        }
-        "ohlc" => ohlc_parser::parse_ohlc_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "image" => image_parser::parse_image_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "mesh3d" => mesh3d_parser::parse_mesh3d_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "pie" => pie_parser::parse_pie_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "sankey" => sankey_parser::parse_sankey_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "scatter" => scatter_parser::parse_scatter_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "scatter3d" => {
-            scatter3d_parser::parse_scatter3d_data(data_obj, map).map(|v| v as Box<dyn Trace>)
-        }
-        "scatter_geo" => {
-            scatter_geo_parser::parse_scatter_geo_data(data_obj, map).map(|v| v as Box<dyn Trace>)
-        }
-        "scatter_mapbox" => scatter_mapbox_parser::parse_scatter_mapbox_data(data_obj, map)
+        "candlestick" => candlestick_parser::parse_candlestick_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
-        "scatter_polar" => scatter_polar_parser::parse_scatter_polar_data(data_obj, map)
+        "contour" => {
+            contour_parser::parse_contour_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "density_mapbox" => {
+            density_mapbox_parser::parse_density_mapbox_data(data_obj, context.map())
+                .map(|v| v as Box<dyn Trace>)
+        }
+        "heatmap" => heat_map_parser::parse_heat_map_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
-        "surface" => surface_parser::parse_surface_data(data_obj, map).map(|v| v as Box<dyn Trace>),
-        "table" => table_parser::parse_table_data(data_obj, map).map(|v| v as Box<dyn Trace>),
+        "histogram" => histogram_parser::parse_histogram_data(data_obj, context.map())
+            .map(|v| v as Box<dyn Trace>),
+        "ohlc" => {
+            ohlc_parser::parse_ohlc_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "image" => {
+            image_parser::parse_image_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "mesh3d" => {
+            mesh3d_parser::parse_mesh3d_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "pie" => pie_parser::parse_pie_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>),
+        "sankey" => {
+            sankey_parser::parse_sankey_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "scatter" => {
+            scatter_parser::parse_scatter_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "scatter3d" => scatter3d_parser::parse_scatter3d_data(data_obj, context.map())
+            .map(|v| v as Box<dyn Trace>),
+        "scatter_geo" => scatter_geo_parser::parse_scatter_geo_data(data_obj, context.map())
+            .map(|v| v as Box<dyn Trace>),
+        "scatter_mapbox" => {
+            scatter_mapbox_parser::parse_scatter_mapbox_data(data_obj, context.map())
+                .map(|v| v as Box<dyn Trace>)
+        }
+        "scatter_polar" => scatter_polar_parser::parse_scatter_polar_data(data_obj, context.map())
+            .map(|v| v as Box<dyn Trace>),
+        "surface" => {
+            surface_parser::parse_surface_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
+        "table" => {
+            table_parser::parse_table_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+        }
         unexpected => Err(anyhow!("{} isn't a type in data", unexpected)),
     }
 }

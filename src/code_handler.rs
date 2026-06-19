@@ -1,3 +1,4 @@
+pub mod parse_context;
 pub mod plot_obj_parser;
 pub mod until;
 
@@ -6,7 +7,11 @@ use anyhow::Result;
 use plotly::Plot;
 use serde_json::Value;
 
-pub fn handle(raw_code: String, input_type: &PlotlyInputType, map_eval: &MapEvalConfig) -> Result<Plot> {
+pub fn handle(
+    raw_code: String,
+    input_type: &PlotlyInputType,
+    map_eval: &MapEvalConfig,
+) -> Result<Plot> {
     let result = match input_type {
         PlotlyInputType::JSONInput => handle_json_input(raw_code, map_eval)?,
     };
