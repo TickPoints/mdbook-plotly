@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.2.1-alpha
+- Refined plot parser structure
+- Refined parser config propagation
+- Updated deps
+
 ## v0.2.0
 - Added **Layout field expansion** — Phase 1 & 2
     - **Phase 1 (Basic fields)**:
