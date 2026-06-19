@@ -2,7 +2,7 @@ use super::until::Color;
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::common::Marker;
+use plotly::common::{ColorBar, Marker};
 
 pub fn parse_marker(
     marker_obj: &mut serde_json::Value,
@@ -53,5 +53,22 @@ pub fn parse_marker(
             "area" => SizeMode::Area,
             "diameter" => SizeMode::Diameter,
         }),
+    }
+}
+
+pub fn parse_color_bar(
+    color_bar_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<ColorBar> {
+    translate_with_config! {
+        ColorBar::new(),
+        color_bar_obj,
+        context.map(),
+        context.map_eval(),
+        (thickness, usize),
+        (len, usize),
+        (x, f64),
+        (y, f64),
+        (title, String),
     }
 }

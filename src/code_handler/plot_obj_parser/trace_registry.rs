@@ -22,13 +22,13 @@ pub fn parse_data_obj(data_obj: &mut Value, context: &ParseContext<'_>) -> Resul
         "candlestick" => candlestick_parser::parse_candlestick_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
         "contour" => {
-            contour_parser::parse_contour_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
+            contour_parser::parse_contour_data(data_obj, context).map(|v| v as Box<dyn Trace>)
         }
         "density_mapbox" => {
             density_mapbox_parser::parse_density_mapbox_data(data_obj, context.map())
                 .map(|v| v as Box<dyn Trace>)
         }
-        "heatmap" => heat_map_parser::parse_heat_map_data(data_obj, context.map())
+        "heatmap" => heat_map_parser::parse_heat_map_data(data_obj, context)
             .map(|v| v as Box<dyn Trace>),
         "histogram" => histogram_parser::parse_histogram_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
@@ -38,9 +38,7 @@ pub fn parse_data_obj(data_obj: &mut Value, context: &ParseContext<'_>) -> Resul
         "image" => {
             image_parser::parse_image_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
         }
-        "mesh3d" => {
-            mesh3d_parser::parse_mesh3d_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
-        }
+        "mesh3d" => mesh3d_parser::parse_mesh3d_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>),
         "pie" => pie_parser::parse_pie_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>),
         "sankey" => {
             sankey_parser::parse_sankey_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
@@ -58,9 +56,7 @@ pub fn parse_data_obj(data_obj: &mut Value, context: &ParseContext<'_>) -> Resul
         }
         "scatter_polar" => scatter_polar_parser::parse_scatter_polar_data(data_obj, context.map())
             .map(|v| v as Box<dyn Trace>),
-        "surface" => {
-            surface_parser::parse_surface_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
-        }
+        "surface" => surface_parser::parse_surface_data(data_obj, context).map(|v| v as Box<dyn Trace>),
         "table" => {
             table_parser::parse_table_data(data_obj, context.map()).map(|v| v as Box<dyn Trace>)
         }

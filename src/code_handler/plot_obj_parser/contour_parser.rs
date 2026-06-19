@@ -1,25 +1,28 @@
-use super::until::{Color, Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_color_bar;
+use super::until::{Color, must_translate_from_context};
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
 use plotly::Contour;
 
 pub fn parse_contour_data(
     ct_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<Contour<Vec<f64>, f64, f64>>> {
-    let z: Vec<Vec<f64>> = must_translate(ct_obj, map, "z")?;
+    let z: Vec<Vec<f64>> = must_translate_from_context(ct_obj, context, "z")?;
     let contour = if ct_obj.get("x").is_some() {
-        let x: Vec<f64> = must_translate(ct_obj, map, "x")?;
-        let y: Vec<f64> = must_translate(ct_obj, map, "y")?;
+        let x: Vec<f64> = must_translate_from_context(ct_obj, context, "x")?;
+        let y: Vec<f64> = must_translate_from_context(ct_obj, context, "y")?;
         Contour::new(x, y, z)
     } else {
         Contour::new_z(z)
     };
 
-    let contour = translate! {
+    let contour = translate_with_config! {
         contour,
         ct_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (x0, f64),
         (dx, f64),
         (y0, f64),
@@ -39,10 +42,11 @@ pub fn parse_contour_data(
     }?;
 
     use plotly::common::HoverInfo;
-    let contour = translate_enum! {
+    let contour = translate_enum_with_config! {
         contour,
         ct_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (hover_info, {
             "all" => HoverInfo::All,
             "x" => HoverInfo::X,
@@ -63,20 +67,22 @@ pub fn parse_contour_data(
         && contours_obj.is_object()
     {
         use plotly::traces::contour::Contours;
-        let contours = translate! {
+        let contours = translate_with_config! {
             Contours::new(),
             contours_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (start, f64),
             (end, f64),
             (size, f64),
         }?;
 
         use plotly::traces::contour::Coloring;
-        let contours = translate_enum! {
+        let contours = translate_enum_with_config! {
             contours,
             contours_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (coloring, {
                 "fill"        => Coloring::Fill,
                 "heatmap"     => Coloring::HeatMap,
@@ -93,18 +99,20 @@ pub fn parse_contour_data(
         && line_obj.is_object()
     {
         use plotly::common::Line;
-        let line = translate! {
+        let line = translate_with_config! {
             Line::new(),
             line_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (color, Color),
             (width, f64),
         }?;
         use plotly::common::DashType;
-        let line = translate_enum! {
+        let line = translate_enum_with_config! {
             line,
             line_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (dash, {
                 "solid" => DashType::Solid,
                 "dot" => DashType::Dot,
@@ -122,17 +130,7 @@ pub fn parse_contour_data(
     let contour = if let Some(color_bar_obj) = ct_obj.get_mut("color_bar")
         && color_bar_obj.is_object()
     {
-        use plotly::common::ColorBar;
-        let color_bar = translate! {
-            ColorBar::new(),
-            color_bar_obj,
-            map,
-            (thickness, usize),
-            (len, usize),
-            (x, f64),
-            (y, f64),
-            (title, String),
-        }?;
+        let color_bar = parse_color_bar(color_bar_obj, context)?;
         contour.color_bar(color_bar)
     } else {
         contour
@@ -140,7 +138,7 @@ pub fn parse_contour_data(
 
     let contour = if ct_obj.get("color_scale").is_some() {
         use plotly::common::{ColorScale, ColorScalePalette};
-        let color_scale_str: String = must_translate(ct_obj, map, "color_scale")?;
+        let color_scale_str: String = must_translate_from_context(ct_obj, context, "color_scale")?;
         let palette = match color_scale_str.to_lowercase().as_str() {
             "greys" => ColorScalePalette::Greys,
             "ylgnbu" => ColorScalePalette::YlGnBu,
