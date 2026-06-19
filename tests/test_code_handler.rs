@@ -1,5 +1,7 @@
 use mdbook_plotly::code_handler;
-use mdbook_plotly::preprocessor::config::{MapEvalConfig, MapNamespaceScope, PlotlyInputType, PreprocessorConfig};
+use mdbook_plotly::preprocessor::config::{
+    MapEvalConfig, MapNamespaceScope, PlotlyInputType, PreprocessorConfig,
+};
 use plotly::{
     Bar, BoxPlot, Candlestick, Configuration, Contour, DensityMapbox, HeatMap, Histogram, Layout,
     Mesh3D, Ohlc, Pie, Plot, Scatter, Scatter3D, ScatterGeo, ScatterMapbox, ScatterPolar, Surface,
@@ -17,7 +19,8 @@ fn test_json5() {
         }
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
 
     let mut reasonable_plot = Plot::new();
     let config = Configuration::new().static_plot(true);
@@ -38,7 +41,12 @@ fn test_handle_uses_json_input_config() {
     }
     "#;
 
-    let generated_plot = code_handler::handle(raw_code.to_string(), &PlotlyInputType::JSONInput, &MapEvalConfig::default()).unwrap();
+    let generated_plot = code_handler::handle(
+        raw_code.to_string(),
+        &PlotlyInputType::JSONInput,
+        &MapEvalConfig::default(),
+    )
+    .unwrap();
 
     let mut reasonable_plot = Plot::new();
     reasonable_plot.set_layout(Layout::new().title("Config Input Type Test"));
@@ -72,7 +80,8 @@ fn test_bar() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Bar::new(vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]).name("Bar Test");
     reasonable_plot.add_trace(trace);
@@ -96,7 +105,8 @@ fn test_scatter() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Scatter::new(vec![0.0, 1.0, 2.0], vec![0.0, 1.0, 2.0]).name("Scatter Test");
     reasonable_plot.add_trace(trace);
@@ -119,7 +129,8 @@ fn test_pie() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Pie::new(vec![10.0, 20.0, 30.0]).labels(vec![
         "A".to_string(),
@@ -146,7 +157,8 @@ fn test_histogram() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Histogram::new(vec![1.0, 2.0, 2.0, 3.0, 3.0, 3.0]).name("Hist Test");
     reasonable_plot.add_trace(trace);
@@ -172,7 +184,8 @@ fn test_candlestick() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Candlestick::new(
         vec!["2024-01-01".to_string(), "2024-01-02".to_string()],
@@ -204,7 +217,8 @@ fn test_ohlc() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Ohlc::new(
         vec!["2024-01-01".to_string(), "2024-01-02".to_string()],
@@ -233,7 +247,8 @@ fn test_scatter_geo() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = ScatterGeo::new(vec![40.0, 50.0], vec![-70.0, -80.0]);
     reasonable_plot.add_trace(trace);
@@ -256,7 +271,8 @@ fn test_scatter_mapbox() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = ScatterMapbox::new(vec![40.0], vec![-70.0]);
     reasonable_plot.add_trace(trace);
@@ -279,7 +295,8 @@ fn test_scatter_polar() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = ScatterPolar::new(vec![0.0, 45.0, 90.0], vec![1.0, 2.0, 3.0]);
     reasonable_plot.add_trace(trace);
@@ -303,7 +320,8 @@ fn test_density_mapbox() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = DensityMapbox::new(vec![40.0, 45.0], vec![-70.0, -75.0], vec![1.0, 2.0]);
     reasonable_plot.add_trace(trace);
@@ -328,7 +346,8 @@ fn test_box_plot() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = BoxPlot::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]).name("Box Test");
     reasonable_plot.add_trace(trace);
@@ -351,7 +370,8 @@ fn test_contour() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Contour::new_z(vec![
         vec![0.0, 0.5, 1.0],
@@ -379,7 +399,8 @@ fn test_heat_map() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = HeatMap::new_z(vec![vec![0.0, 0.5], vec![1.0, 0.0]]).opacity(0.8);
     reasonable_plot.add_trace(trace);
@@ -404,7 +425,8 @@ fn test_mesh3d() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Mesh3D::new(
         vec![0.0, 1.0, 0.0],
@@ -436,7 +458,8 @@ fn test_scatter3d() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace = Scatter3D::new(
         vec![0.0, 1.0, 2.0],
@@ -478,7 +501,8 @@ fn test_layout_xaxis() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     // Verify it parses without error — the exact PartialEq for Layout may differ
     // due to default fields, but this at minimum validates parsing succeeds.
     let _ = generated_plot;
@@ -548,7 +572,8 @@ fn test_surface() {
         }]
     }
     "#;
-    let generated_plot = code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
     let mut reasonable_plot = Plot::new();
     let trace: Box<Surface<f64, f64, f64>> =
         Surface::new(vec![vec![0.0, 1.0], vec![1.0, 0.0]]).opacity(0.9);

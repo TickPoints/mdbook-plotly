@@ -91,7 +91,10 @@ pub fn get_book_data() -> BookData {
         Err(e) => fatal!("Input parsing failed.\nInterError: {:#?}", e),
     };
 
-    let config = match ctx.config.get::<PreprocessorConfig>(PREPROCESSOR_CONFIG_KEY) {
+    let config = match ctx
+        .config
+        .get::<PreprocessorConfig>(PREPROCESSOR_CONFIG_KEY)
+    {
         Ok(Some(cfg)) => cfg,
         Ok(None) => {
             warn!("Custom config not found; using default configuration.");
