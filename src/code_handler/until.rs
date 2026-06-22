@@ -263,7 +263,12 @@ where
     }
 }
 
-fn parse_g_number<T>(context: &ParseContext<'_>, value: &mut Value, eval: &mut EvalContext, vars: &Vars) -> Result<T>
+fn parse_g_number<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+    vars: &Vars,
+) -> Result<T>
 where
     T: DeserializeOwned,
 {
@@ -274,7 +279,11 @@ where
     )
 }
 
-fn parse_g_number_list<T>(context: &ParseContext<'_>, value: &mut Value, eval: &mut EvalContext) -> Result<T>
+fn parse_g_number_list<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+) -> Result<T>
 where
     T: DeserializeOwned,
 {
@@ -316,7 +325,8 @@ where
 {
     let begin: f64 = must_translate_from_context(value, context, "begin")?;
     let end: f64 = must_translate_from_context(value, context, "end")?;
-    let step: f64 = take_optional(value, context.map(), context.map_eval(), &"step")?.unwrap_or(1.0);
+    let step: f64 =
+        take_optional(value, context.map(), context.map_eval(), &"step")?.unwrap_or(1.0);
 
     if step <= 0.0 {
         return Err(anyhow!("step must be positive"));
@@ -385,7 +395,12 @@ where
     )
 }
 
-fn parse_if<T>(context: &ParseContext<'_>, value: &mut Value, eval: &mut EvalContext, vars: &Vars) -> Result<T>
+fn parse_if<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+    vars: &Vars,
+) -> Result<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
@@ -409,7 +424,8 @@ where
     let start: String = must_translate_from_context(value, context, "start")?;
     let end: String = must_translate_from_context(value, context, "end")?;
     let interval: String = must_translate_from_context(value, context, "interval")?;
-    let format: Option<String> = take_optional(value, context.map(), context.map_eval(), &"format")?;
+    let format: Option<String> =
+        take_optional(value, context.map(), context.map_eval(), &"format")?;
 
     let start_dt = parse_time_str(&start)?;
     let end_dt = parse_time_str(&end)?;
@@ -527,7 +543,8 @@ where
     T: DeserializeOwned,
 {
     let name: String = must_translate_from_context(value, context, "name")?;
-    let default: Option<String> = take_optional(value, context.map(), context.map_eval(), &"default")?;
+    let default: Option<String> =
+        take_optional(value, context.map(), context.map_eval(), &"default")?;
     let env_val = std::env::var(&name).ok().or(default).ok_or_else(|| {
         anyhow!(
             "environment variable '{}' is not set and no default provided",

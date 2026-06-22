@@ -9,8 +9,10 @@ pub fn parse_table_data(
     table_obj: &mut serde_json::Value,
     context: &ParseContext<'_>,
 ) -> Result<Box<dyn Trace>> {
-    let header_values: Vec<Vec<String>> = must_translate_from_context(table_obj, context, "header_values")?;
-    let cells_values: Vec<Vec<String>> = must_translate_from_context(table_obj, context, "cells_values")?;
+    let header_values: Vec<Vec<String>> =
+        must_translate_from_context(table_obj, context, "header_values")?;
+    let cells_values: Vec<Vec<String>> =
+        must_translate_from_context(table_obj, context, "cells_values")?;
     let header = Header::new(header_values);
     let cells = Cells::new(cells_values);
     let table = Table::new(header, cells);

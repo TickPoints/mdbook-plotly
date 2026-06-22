@@ -19,7 +19,10 @@ fn parse_candlestick(data_obj: &mut Value, context: &ParseContext<'_>) -> Result
     candlestick_parser::parse_candlestick_data(data_obj, context)
 }
 
-fn parse_density_mapbox(data_obj: &mut Value, context: &ParseContext<'_>) -> Result<Box<dyn Trace>> {
+fn parse_density_mapbox(
+    data_obj: &mut Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
     density_mapbox_parser::parse_density_mapbox_trace(data_obj, context)
 }
 
@@ -62,10 +65,7 @@ fn parse_scatter_mapbox(
     scatter_mapbox_parser::parse_scatter_mapbox_trace(data_obj, context)
 }
 
-fn parse_scatter_polar(
-    data_obj: &mut Value,
-    context: &ParseContext<'_>,
-) -> Result<Box<dyn Trace>> {
+fn parse_scatter_polar(data_obj: &mut Value, context: &ParseContext<'_>) -> Result<Box<dyn Trace>> {
     scatter_polar_parser::parse_scatter_polar_trace(data_obj, context)
 }
 
