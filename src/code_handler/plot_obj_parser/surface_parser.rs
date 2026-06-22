@@ -3,7 +3,7 @@ use super::until::{Color, must_translate_from_context};
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Surface;
+use plotly::{Surface, Trace};
 
 pub fn parse_surface_data(
     sf_obj: &mut serde_json::Value,
@@ -134,4 +134,11 @@ pub fn parse_surface_data(
     };
 
     Ok(surface)
+}
+
+pub fn parse_surface_trace(
+    sf_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_surface_data(sf_obj, context)?)
 }

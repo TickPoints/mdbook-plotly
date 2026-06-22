@@ -1,23 +1,26 @@
-use super::until::{Map, must_translate};
-use crate::{translate, translate_enum};
+use super::until::must_translate_from_context;
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
 use plotly::Candlestick;
+use plotly::Trace;
 
 pub fn parse_candlestick_data(
     cs_obj: &mut serde_json::Value,
-    map: &Map,
-) -> Result<Box<Candlestick<String, f64>>> {
-    let x: Vec<String> = must_translate(cs_obj, map, "x")?;
-    let open: Vec<f64> = must_translate(cs_obj, map, "open")?;
-    let high: Vec<f64> = must_translate(cs_obj, map, "high")?;
-    let low: Vec<f64> = must_translate(cs_obj, map, "low")?;
-    let close: Vec<f64> = must_translate(cs_obj, map, "close")?;
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    let x: Vec<String> = must_translate_from_context(cs_obj, context, "x")?;
+    let open: Vec<f64> = must_translate_from_context(cs_obj, context, "open")?;
+    let high: Vec<f64> = must_translate_from_context(cs_obj, context, "high")?;
+    let low: Vec<f64> = must_translate_from_context(cs_obj, context, "low")?;
+    let close: Vec<f64> = must_translate_from_context(cs_obj, context, "close")?;
     let cs = Candlestick::new(x, open, high, low, close);
-    let cs = translate! {
+    let cs = translate_with_config! {
         // UNEXPECTED: The other methods of the `Ohlc` return only `self`, not boxed `self`.
         *cs,
         cs_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (name, String),
         (show_legend, bool),
         (legend_group, String),
@@ -32,10 +35,11 @@ pub fn parse_candlestick_data(
     }?;
 
     use plotly::common::Visible;
-    let cs = translate_enum! {
+    let cs = translate_enum_with_config! {
         cs,
         cs_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (visible, {
             "true" =>       Visible::True,
             "false" =>      Visible::False,

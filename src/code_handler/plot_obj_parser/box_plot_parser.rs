@@ -1,16 +1,19 @@
-use super::until::{Color, Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_marker;
+use super::until::{Color, must_translate_from_context};
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
+use plotly::Trace;
 use plotly::BoxPlot;
 
 pub fn parse_box_plot_data(
     box_obj: &mut serde_json::Value,
-    map: &Map,
-) -> Result<Box<BoxPlot<f64, f64>>> {
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
     let box_plot = if box_obj.get("y").is_some() {
-        let y: Vec<f64> = must_translate(box_obj, map, "y")?;
+        let y: Vec<f64> = must_translate_from_context(box_obj, context, "y")?;
         if box_obj.get("x").is_some() {
-            let x: Vec<f64> = must_translate(box_obj, map, "x")?;
+            let x: Vec<f64> = must_translate_from_context(box_obj, context, "x")?;
             BoxPlot::new_xy(x, y)
         } else {
             BoxPlot::new(y)
@@ -20,10 +23,11 @@ pub fn parse_box_plot_data(
         BoxPlot::new(y)
     };
 
-    let box_plot = translate! {
+    let box_plot = translate_with_config! {
         box_plot,
         box_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (name, String),
         (opacity, f64),
         (ids, Vec<String>),
@@ -56,10 +60,11 @@ pub fn parse_box_plot_data(
     }?;
 
     use plotly::common::Orientation;
-    let box_plot = translate_enum! {
+    let box_plot = translate_enum_with_config! {
         box_plot,
         box_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (orientation, {
             "v" => Orientation::Vertical,
             "h" => Orientation::Horizontal,
@@ -67,10 +72,11 @@ pub fn parse_box_plot_data(
     }?;
 
     use plotly::traces::box_plot::{BoxMean, BoxPoints, HoverOn, QuartileMethod};
-    let box_plot = translate_enum! {
+    let box_plot = translate_enum_with_config! {
         box_plot,
         box_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (box_mean, {
             "true"    => BoxMean::True,
             "false"   => BoxMean::False,
@@ -97,51 +103,7 @@ pub fn parse_box_plot_data(
     let box_plot = if let Some(marker_obj) = box_obj.get_mut("marker")
         && marker_obj.is_object()
     {
-        let marker = plotly::common::Marker::new();
-        let marker = translate! {
-            marker,
-            marker_obj,
-            map,
-            (color, Color),
-            (opacity, f64),
-            (size, usize),
-            (size_array, Vec<usize>),
-            (max_displayed, usize),
-            (size_ref, usize),
-            (size_min, usize),
-            (cauto, bool),
-            (cmax, f64),
-            (cmin, f64),
-            (cmid, f64),
-            (auto_color_scale, bool),
-            (reverse_scale, bool),
-            (show_scale, bool),
-            (outlier_color, Color),
-        }?;
-
-        use plotly::common::{MarkerSymbol, SizeMode};
-        let marker = translate_enum! {
-            marker,
-            marker_obj,
-            map,
-            (symbol, {
-                "circle" =>         MarkerSymbol::Circle,
-                "square" =>         MarkerSymbol::Square,
-                "diamond" =>        MarkerSymbol::Diamond,
-                "cross" =>          MarkerSymbol::Cross,
-                "x" =>              MarkerSymbol::X,
-                "triangle-up" =>    MarkerSymbol::TriangleUp,
-                "triangle-down" =>  MarkerSymbol::TriangleDown,
-                "triangle-left" =>  MarkerSymbol::TriangleLeft,
-                "triangle-right" => MarkerSymbol::TriangleRight,
-                "pentagon" =>       MarkerSymbol::Pentagon,
-                "hexagon" =>        MarkerSymbol::Hexagon,
-            }),
-            (size_mode, {
-                "area" => SizeMode::Area,
-                "diameter" => SizeMode::Diameter,
-            }),
-        }?;
+        let marker = parse_marker(marker_obj, context)?;
         box_plot.marker(marker)
     } else {
         box_plot
@@ -151,18 +113,20 @@ pub fn parse_box_plot_data(
         && line_obj.is_object()
     {
         use plotly::common::Line;
-        let line = translate! {
+        let line = translate_with_config! {
             Line::new(),
             line_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (color, Color),
             (width, f64),
         }?;
         use plotly::common::DashType;
-        let line = translate_enum! {
+        let line = translate_enum_with_config! {
             line,
             line_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (dash, {
                 "solid" => DashType::Solid,
                 "dot" => DashType::Dot,

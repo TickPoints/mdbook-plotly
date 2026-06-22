@@ -1,36 +1,39 @@
-use super::until::{Color, Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_color_bar;
+use super::until::{Color, must_translate_from_context};
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Mesh3D;
+use plotly::{Mesh3D, Trace};
 
 pub fn parse_mesh3d_data(
     mesh_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<Mesh3D<f64, f64, f64>>> {
-    let x: Vec<f64> = must_translate(mesh_obj, map, "x")?;
-    let y: Vec<f64> = must_translate(mesh_obj, map, "y")?;
-    let z: Vec<f64> = must_translate(mesh_obj, map, "z")?;
+    let x: Vec<f64> = must_translate_from_context(mesh_obj, context, "x")?;
+    let y: Vec<f64> = must_translate_from_context(mesh_obj, context, "y")?;
+    let z: Vec<f64> = must_translate_from_context(mesh_obj, context, "z")?;
     let i: Option<Vec<usize>> = if mesh_obj.get("i").is_some() {
-        Some(must_translate(mesh_obj, map, "i")?)
+        Some(must_translate_from_context(mesh_obj, context, "i")?)
     } else {
         None
     };
     let j: Option<Vec<usize>> = if mesh_obj.get("j").is_some() {
-        Some(must_translate(mesh_obj, map, "j")?)
+        Some(must_translate_from_context(mesh_obj, context, "j")?)
     } else {
         None
     };
     let k: Option<Vec<usize>> = if mesh_obj.get("k").is_some() {
-        Some(must_translate(mesh_obj, map, "k")?)
+        Some(must_translate_from_context(mesh_obj, context, "k")?)
     } else {
         None
     };
     let mesh = Mesh3D::new(x, y, z, i, j, k);
 
-    let mesh = translate! {
+    let mesh = translate_with_config! {
         mesh,
         mesh_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (name, String),
         (opacity, f64),
         (ids, Vec<String>),
@@ -62,10 +65,11 @@ pub fn parse_mesh3d_data(
     }?;
 
     use plotly::common::HoverInfo;
-    let mesh = translate_enum! {
+    let mesh = translate_enum_with_config! {
         mesh,
         mesh_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (hover_info, {
             "all" => HoverInfo::All,
             "x" => HoverInfo::X,
@@ -83,10 +87,11 @@ pub fn parse_mesh3d_data(
     }?;
 
     use plotly::traces::mesh3d::{DelaunayAxis, IntensityMode};
-    let mesh = translate_enum! {
+    let mesh = translate_enum_with_config! {
         mesh,
         mesh_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (intensity_mode, {
             "vertex" => IntensityMode::Vertex,
             "cell" => IntensityMode::Cell,
@@ -101,17 +106,7 @@ pub fn parse_mesh3d_data(
     let mesh = if let Some(color_bar_obj) = mesh_obj.get_mut("color_bar")
         && color_bar_obj.is_object()
     {
-        use plotly::common::ColorBar;
-        let color_bar = translate! {
-            ColorBar::new(),
-            color_bar_obj,
-            map,
-            (thickness, usize),
-            (len, usize),
-            (x, f64),
-            (y, f64),
-            (title, String),
-        }?;
+        let color_bar = parse_color_bar(color_bar_obj, context)?;
         mesh.color_bar(color_bar)
     } else {
         mesh
@@ -119,7 +114,7 @@ pub fn parse_mesh3d_data(
 
     let mesh = if mesh_obj.get("color_scale").is_some() {
         use plotly::common::{ColorScale, ColorScalePalette};
-        let color_scale_str: String = must_translate(mesh_obj, map, "color_scale")?;
+        let color_scale_str: String = must_translate_from_context(mesh_obj, context, "color_scale")?;
         let palette = match color_scale_str.to_lowercase().as_str() {
             "greys" => ColorScalePalette::Greys,
             "ylgnbu" => ColorScalePalette::YlGnBu,
@@ -150,10 +145,11 @@ pub fn parse_mesh3d_data(
         && lighting_obj.is_object()
     {
         use plotly::traces::mesh3d::Lighting;
-        let lighting = translate! {
+        let lighting = translate_with_config! {
             Lighting::new(),
             lighting_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (ambient, f64),
             (diffuse, f64),
             (specular, f64),
@@ -169,10 +165,11 @@ pub fn parse_mesh3d_data(
         && light_pos_obj.is_object()
     {
         use plotly::traces::mesh3d::LightPosition;
-        let light_pos = translate! {
+        let light_pos = translate_with_config! {
             LightPosition::new(),
             light_pos_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (x, Vec<f64>),
             (y, Vec<f64>),
             (z, Vec<f64>),
@@ -183,4 +180,11 @@ pub fn parse_mesh3d_data(
     };
 
     Ok(mesh)
+}
+
+pub fn parse_mesh3d_trace(
+    mesh_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_mesh3d_data(mesh_obj, context)?)
 }
