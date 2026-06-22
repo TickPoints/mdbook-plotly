@@ -1,19 +1,22 @@
-use super::until::{Color, Map, must_translate};
-use crate::{translate, translate_enum};
+use super::common::parse_marker;
+use super::until::must_translate_from_context;
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::ScatterGeo;
+use plotly::{ScatterGeo, Trace};
 
 pub fn parse_scatter_geo_data(
     sg_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<ScatterGeo<f64, f64>>> {
-    let lat: Vec<f64> = must_translate(sg_obj, map, "lat")?;
-    let lon: Vec<f64> = must_translate(sg_obj, map, "lon")?;
+    let lat: Vec<f64> = must_translate_from_context(sg_obj, context, "lat")?;
+    let lon: Vec<f64> = must_translate_from_context(sg_obj, context, "lon")?;
     let sg = ScatterGeo::new(lat, lon);
-    let sg = translate! {
+    let sg = translate_with_config! {
         sg,
         sg_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (ids, Vec<String>),
         (show_legend, bool),
         (name, String),
@@ -34,10 +37,11 @@ pub fn parse_scatter_geo_data(
     }?;
 
     use plotly::common::Mode;
-    let sg = translate_enum! {
+    let sg = translate_enum_with_config! {
         sg,
         sg_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (mode, {
             "lines" =>          Mode::Lines,
             "markers" =>        Mode::Markers,
@@ -53,55 +57,18 @@ pub fn parse_scatter_geo_data(
     let sg = if let Some(marker_obj) = sg_obj.get_mut("marker")
         && marker_obj.is_object()
     {
-        let marker = plotly::common::Marker::new();
-        let marker = translate! {
-            marker,
-            marker_obj,
-            map,
-            (color, Color),
-            (opacity, f64),
-            (size, usize),
-            (size_array, Vec<usize>),
-            (max_displayed, usize),
-            (size_ref, usize),
-            (size_min, usize),
-            (cauto, bool),
-            (cmax, f64),
-            (cmin, f64),
-            (cmid, f64),
-            (auto_color_scale, bool),
-            (reverse_scale, bool),
-            (show_scale, bool),
-            (outlier_color, Color)
-        }?;
-
-        use plotly::common::{MarkerSymbol, SizeMode};
-        let marker = translate_enum! {
-            marker,
-            marker_obj,
-            map,
-            (symbol, {
-                "circle" =>         MarkerSymbol::Circle,
-                "square" =>         MarkerSymbol::Square,
-                "diamond" =>        MarkerSymbol::Diamond,
-                "cross" =>          MarkerSymbol::Cross,
-                "x" =>              MarkerSymbol::X,
-                "triangle-up" =>    MarkerSymbol::TriangleUp,
-                "triangle-down" =>  MarkerSymbol::TriangleDown,
-                "triangle-left" =>  MarkerSymbol::TriangleLeft,
-                "triangle-right" => MarkerSymbol::TriangleRight,
-                "pentagon" =>       MarkerSymbol::Pentagon,
-                "hexagon" =>        MarkerSymbol::Hexagon,
-            }),
-            (size_mode, {
-                "area" => SizeMode::Area,
-                "diameter" => SizeMode::Diameter,
-            }),
-        }?;
+        let marker = parse_marker(marker_obj, context)?;
         sg.marker(marker)
     } else {
         sg
     };
 
     Ok(sg)
+}
+
+pub fn parse_scatter_geo_trace(
+    sg_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_scatter_geo_data(sg_obj, context)?)
 }

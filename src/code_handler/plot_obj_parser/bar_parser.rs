@@ -3,7 +3,7 @@ use super::until::must_translate_from_context;
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Bar;
+use plotly::{Bar, Trace};
 
 pub fn parse_bar_data(
     bar_obj: &mut serde_json::Value,
@@ -62,4 +62,11 @@ pub fn parse_bar_data(
     };
 
     Ok(bar)
+}
+
+pub fn parse_bar_trace(
+    bar_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_bar_data(bar_obj, context)?)
 }

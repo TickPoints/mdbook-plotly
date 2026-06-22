@@ -3,7 +3,7 @@ use super::until::{Color, must_translate_from_context};
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Contour;
+use plotly::{Contour, Trace};
 
 pub fn parse_contour_data(
     ct_obj: &mut serde_json::Value,
@@ -166,4 +166,11 @@ pub fn parse_contour_data(
     };
 
     Ok(contour)
+}
+
+pub fn parse_contour_trace(
+    ct_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_contour_data(ct_obj, context)?)
 }

@@ -3,7 +3,7 @@ use super::until::must_translate_from_context;
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::HeatMap;
+use plotly::{HeatMap, Trace};
 
 pub fn parse_heat_map_data(
     hm_obj: &mut serde_json::Value,
@@ -111,4 +111,11 @@ pub fn parse_heat_map_data(
     };
 
     Ok(heat_map)
+}
+
+pub fn parse_heat_map_trace(
+    hm_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_heat_map_data(hm_obj, context)?)
 }

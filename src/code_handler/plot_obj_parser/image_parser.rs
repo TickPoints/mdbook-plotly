@@ -1,15 +1,20 @@
-use super::until::{Map, must_translate};
-use crate::{translate, translate_enum};
+use super::until::must_translate_from_context;
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::{Image, color::Rgba};
+use plotly::{Image, Trace, color::Rgba};
 
-pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<Box<Image>> {
-    let z: Vec<Vec<Rgba>> = must_translate(image_obj, map, "z")?;
+pub fn parse_image_data(
+    image_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<Image>> {
+    let z: Vec<Vec<Rgba>> = must_translate_from_context(image_obj, context, "z")?;
     let image = Image::new(z);
-    let image = translate! {
+    let image = translate_with_config! {
         image,
         image_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (opacity, f64),
         (name, String),
         (legend_rank, usize),
@@ -31,10 +36,11 @@ pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<
     }?;
 
     use plotly::image::ZSmooth;
-    let image = translate_enum! {
+    let image = translate_enum_with_config! {
         image,
         image_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (z_smooth, {
             "fast" =>   ZSmooth::Fast,
             "false" =>  ZSmooth::False,
@@ -42,4 +48,11 @@ pub fn parse_image_data(image_obj: &mut serde_json::Value, map: &Map) -> Result<
     }?;
 
     Ok(image)
+}
+
+pub fn parse_image_trace(
+    image_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_image_data(image_obj, context)?)
 }

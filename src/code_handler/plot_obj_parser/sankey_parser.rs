@@ -1,21 +1,23 @@
-use super::until::{Color, Map};
-use crate::{translate, translate_enum};
+use super::until::Color;
+use crate::code_handler::parse_context::ParseContext;
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::sankey::{Node, Sankey};
+use plotly::{Trace, sankey::{Node, Sankey}};
 
 pub fn parse_sankey_data(
     sankey_obj: &mut serde_json::Value,
-    map: &Map,
+    context: &ParseContext<'_>,
 ) -> Result<Box<Sankey<f64>>> {
     let sankey = Sankey::new();
 
     let sankey = if let Some(node_obj) = sankey_obj.get_mut("node")
         && node_obj.is_object()
     {
-        let node = translate! {
+        let node = translate_with_config! {
             Node::new(),
             node_obj,
-            map,
+            context.map(),
+            context.map_eval(),
             (color, Color),
             (color_array, Vec<Color>),
             (hover_template, String),
@@ -29,10 +31,11 @@ pub fn parse_sankey_data(
         sankey
     };
 
-    let sankey = translate! {
+    let sankey = translate_with_config! {
         sankey,
         sankey_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (name, String),
         (visible, bool),
         (value_format, String),
@@ -41,10 +44,11 @@ pub fn parse_sankey_data(
 
     use plotly::common::Orientation;
     use plotly::sankey::Arrangement;
-    let sankey = translate_enum! {
+    let sankey = translate_enum_with_config! {
         sankey,
         sankey_obj,
-        map,
+        context.map(),
+        context.map_eval(),
         (orientation, {
             "v" => Orientation::Vertical,
             "h" => Orientation::Horizontal,
@@ -58,4 +62,11 @@ pub fn parse_sankey_data(
     }?;
 
     Ok(sankey)
+}
+
+pub fn parse_sankey_trace(
+    sankey_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_sankey_data(sankey_obj, context)?)
 }

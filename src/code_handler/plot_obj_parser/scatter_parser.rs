@@ -3,7 +3,7 @@ use super::until::{Color, must_translate_from_context};
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Scatter;
+use plotly::{Scatter, Trace};
 
 pub fn parse_scatter_data(
     sc_obj: &mut serde_json::Value,
@@ -81,4 +81,11 @@ pub fn parse_scatter_data(
     };
 
     Ok(sc)
+}
+
+pub fn parse_scatter_trace(
+    sc_obj: &mut serde_json::Value,
+    context: &ParseContext<'_>,
+) -> Result<Box<dyn Trace>> {
+    Ok(parse_scatter_data(sc_obj, context)?)
 }
