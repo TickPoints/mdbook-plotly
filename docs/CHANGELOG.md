@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.2.1-beta
+- Refined parser migration toward explicit [`MapEvalConfig`](src/preprocessor/config.rs:61) propagation
+    - Migrated trace parsers to consume [`ParseContext`](src/code_handler/parse_context.rs:4) instead of raw `map` where applicable
+    - Removed implicit default-config translation paths from most trace parsing flows
+    - Reused shared helpers like [`parse_marker()`](src/code_handler/plot_obj_parser/common.rs:7) and [`parse_color_bar()`](src/code_handler/plot_obj_parser/common.rs:59) to reduce duplicated translation logic
+- Slimmed trace registry dispatch in [`trace_registry.rs`](src/code_handler/plot_obj_parser/trace_registry.rs:1)
+    - Removed registry-side `.map(into_trace)` adaptation
+    - Moved trait-object conversion boundaries down into parser modules via `*_trace()` entrypoints
+- Updated tests to validate the migration path remains stable
+
 ## v0.2.1-alpha
 - Refined plot parser structure
 - Refined parser config propagation
