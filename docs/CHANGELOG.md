@@ -6,10 +6,12 @@
     - Removed [`must_translate()`](src/code_handler/until.rs:29) and migrated remaining translation paths to explicit [`ParseContext`](src/code_handler/parse_context.rs:4) / config-driven helpers
     - Threaded active map-eval config through generator parsing paths in [`src/code_handler/until.rs`](src/code_handler/until.rs)
     - Reused shared helpers like [`parse_marker()`](src/code_handler/plot_obj_parser/common.rs:7) and [`parse_color_bar()`](src/code_handler/plot_obj_parser/common.rs:59) to reduce duplicated translation logic
+    - Replaced top-level legacy [`translate!()`](src/macros.rs:29) usage in [`parse_config_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:8) and [`parse_layout_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:59) with explicit [`translate_with_config!()`](src/macros.rs:36) entrypoints
 - Slimmed trace registry dispatch in [`trace_registry.rs`](src/code_handler/plot_obj_parser/trace_registry.rs:1)
     - Removed registry-side `.map(into_trace)` adaptation
     - Moved trait-object conversion boundaries down into parser modules via `*_trace()` entrypoints
 - Updated tests to validate the migration path remains stable
+    - Added a layout/config regression case in [`tests/test_code_handler.rs`](tests/test_code_handler.rs) covering `map.*`-backed title, legend, axis range, and config parsing
 
 ## v0.2.1-alpha
 - Refined plot parser structure
