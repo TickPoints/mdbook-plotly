@@ -3,7 +3,8 @@
 ## v0.2.1-beta
 - Refined parser migration toward explicit [`MapEvalConfig`](src/preprocessor/config.rs:61) propagation
     - Migrated trace parsers to consume [`ParseContext`](src/code_handler/parse_context.rs:4) instead of raw `map` where applicable
-    - Removed implicit default-config translation paths from most trace parsing flows
+    - Removed [`must_translate()`](src/code_handler/until.rs:29) and migrated remaining translation paths to explicit [`ParseContext`](src/code_handler/parse_context.rs:4) / config-driven helpers
+    - Threaded active map-eval config through generator parsing paths in [`src/code_handler/until.rs`](src/code_handler/until.rs)
     - Reused shared helpers like [`parse_marker()`](src/code_handler/plot_obj_parser/common.rs:7) and [`parse_color_bar()`](src/code_handler/plot_obj_parser/common.rs:59) to reduce duplicated translation logic
 - Slimmed trace registry dispatch in [`trace_registry.rs`](src/code_handler/plot_obj_parser/trace_registry.rs:1)
     - Removed registry-side `.map(into_trace)` adaptation
