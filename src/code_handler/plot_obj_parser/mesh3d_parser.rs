@@ -114,7 +114,8 @@ pub fn parse_mesh3d_data(
 
     let mesh = if mesh_obj.get("color_scale").is_some() {
         use plotly::common::{ColorScale, ColorScalePalette};
-        let color_scale_str: String = must_translate_from_context(mesh_obj, context, "color_scale")?;
+        let color_scale_str: String =
+            must_translate_from_context(mesh_obj, context, "color_scale")?;
         let palette = match color_scale_str.to_lowercase().as_str() {
             "greys" => ColorScalePalette::Greys,
             "ylgnbu" => ColorScalePalette::YlGnBu,

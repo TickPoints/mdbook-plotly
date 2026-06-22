@@ -2,7 +2,10 @@ use super::until::Color;
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::{Trace, sankey::{Node, Sankey}};
+use plotly::{
+    Trace,
+    sankey::{Node, Sankey},
+};
 
 pub fn parse_sankey_data(
     sankey_obj: &mut serde_json::Value,

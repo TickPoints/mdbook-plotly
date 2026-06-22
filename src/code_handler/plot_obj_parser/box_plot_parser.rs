@@ -3,8 +3,8 @@ use super::until::{Color, must_translate_from_context};
 use crate::code_handler::parse_context::ParseContext;
 use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::Result;
-use plotly::Trace;
 use plotly::BoxPlot;
+use plotly::Trace;
 
 pub fn parse_box_plot_data(
     box_obj: &mut serde_json::Value,

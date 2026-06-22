@@ -1,6 +1,6 @@
 use super::until::Color;
 use crate::code_handler::parse_context::ParseContext;
-use crate::{translate, translate_enum_with_config, translate_with_config};
+use crate::{translate_enum_with_config, translate_with_config};
 use anyhow::{Result, anyhow};
 use plotly::{Configuration, Layout};
 use serde_json::Value;
@@ -11,7 +11,7 @@ pub fn parse_config_obj(
 ) -> Result<Configuration> {
     use plotly::configuration::{DisplayModeBar, DoubleClick};
 
-    let config = translate! {
+    let config = translate_with_config! {
         Configuration::new(),
         config_obj,
         context.map(),
@@ -62,7 +62,7 @@ pub fn parse_layout_obj(layout_obj: &mut Value, context: &ParseContext<'_>) -> R
         TraceOrder, VAlign,
     };
 
-    let layout = translate! {
+    let layout = translate_with_config! {
         Layout::new(),
         layout_obj,
         context.map(),

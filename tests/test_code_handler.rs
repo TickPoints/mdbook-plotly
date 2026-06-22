@@ -1,7 +1,5 @@
 use mdbook_plotly::code_handler;
-use mdbook_plotly::preprocessor::config::{
-    MapEvalConfig, MapNamespaceScope, PlotlyInputType, PreprocessorConfig,
-};
+use mdbook_plotly::preprocessor::config::MapEvalConfig;
 use plotly::{
     Bar, BoxPlot, Candlestick, Configuration, Contour, DensityMapbox, HeatMap, Histogram, Layout,
     Mesh3D, Ohlc, Pie, Plot, Scatter, Scatter3D, ScatterGeo, ScatterMapbox, ScatterPolar, Surface,
@@ -9,7 +7,7 @@ use plotly::{
 
 #[test]
 fn test_json5() {
-    let raw_code = r#"
+    let raw_code = r##"
     {
         layout: {
             title: "Test",
@@ -64,6 +62,59 @@ fn test_preprocessor_config_default_contract() {
     assert!(config.map_eval.reuse_slab);
     assert!(config.map_eval.compile_expressions);
     assert_eq!(config.map_eval.namespace_scope, MapNamespaceScope::FullMap);
+}
+
+#[test]
+fn test_layout_and_config_with_map_context() {
+    let raw_code = r#"
+    {
+        map: {
+            layout_title: "Mapped Title",
+            legend_x: 0.25,
+            legend_y: 0.75,
+            plot_bg: "#ffffff",
+            axis_range: [0, 10],
+        },
+        layout: {
+            title: "map.layout_title",
+            plot_background_color: "map.plot_bg",
+            legend: {
+                x: "map.legend_x",
+                y: "map.legend_y",
+            },
+            xaxis: {
+                range: "map.axis_range",
+            },
+        },
+        config: {
+            static_plot: true,
+            display_mode_bar: "hover",
+        }
+    }
+    "##;
+
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    let layout = Layout::new()
+        .title("Mapped Title")
+        .plot_background_color("#ffffff")
+        .legend(plotly::layout::Legend::new().x(0.25).y(0.75))
+        .x_axis(plotly::layout::Axis::new().range(vec![Some(0.0), Some(10.0)]));
+    let config = Configuration::new()
+        .static_plot(true)
+        .display_mode_bar(plotly::configuration::DisplayModeBar::Hover);
+
+    reasonable_plot.set_layout(layout);
+    reasonable_plot.set_configuration(config);
+
+    assert!(
+        reasonable_plot == generated_plot,
+        "Layout/config mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
 }
 
 // ── Existing Trace Tests ──

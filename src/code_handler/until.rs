@@ -26,16 +26,6 @@ pub enum DataPack<T> {
 
 #[allow(dead_code)]
 #[inline]
-pub fn must_translate<T, N>(obj: &mut Value, map: &Map, name: N) -> Result<T>
-where
-    T: DeserializeOwned + Serialize + Debug + Clone,
-    N: Index + Display,
-{
-    must_translate_with_config(obj, map, &MapEvalConfig::default(), name)
-}
-
-#[allow(dead_code)]
-#[inline]
 pub fn must_translate_from_context<T, N>(
     obj: &mut Value,
     context: &ParseContext<'_>,
@@ -250,46 +240,56 @@ where
 
         let mut eval = EvalContext::new(map_eval);
         let vars = Vars::new();
+        let context = ParseContext::new(map, map_eval);
 
         match value_type.as_str() {
             "raw" => must_translate_with_config(&mut value, map, map_eval, "data"),
-            "g-number" => parse_g_number(map, &mut value, &mut eval, &vars),
-            "g-number-list" => parse_g_number_list(map, &mut value, &mut eval),
-            "g-range" => parse_g_range(map, &mut value),
-            "g-repeat" => parse_g_repeat(map, &mut value),
-            "g-linear" => parse_g_linear(map, &mut value),
-            "if" => parse_if(map, &mut value, &mut eval, &vars),
+            "g-number" => parse_g_number(&context, &mut value, &mut eval, &vars),
+            "g-number-list" => parse_g_number_list(&context, &mut value, &mut eval),
+            "g-range" => parse_g_range(&context, &mut value),
+            "g-repeat" => parse_g_repeat(&context, &mut value),
+            "g-linear" => parse_g_linear(&context, &mut value),
+            "if" => parse_if(&context, &mut value, &mut eval, &vars),
             #[cfg(feature = "map-parser-extensions")]
-            "time" => parse_time(map, &mut value),
+            "time" => parse_time(&context, &mut value),
             #[cfg(feature = "map-parser-extensions")]
-            "g-random" => parse_g_random(map, &mut value),
+            "g-random" => parse_g_random(&context, &mut value),
             #[cfg(feature = "map-parser-extensions")]
-            "g-choose" => parse_g_choose(map, &mut value),
-            "g-env" => parse_g_env(map, &mut value),
-            "g-join" => parse_g_join(map, &mut value),
+            "g-choose" => parse_g_choose(&context, &mut value),
+            "g-env" => parse_g_env(&context, &mut value),
+            "g-join" => parse_g_join(&context, &mut value),
             _ => Err(anyhow!("unknown type `{}`", value_type)),
         }
     }
 }
 
-fn parse_g_number<T>(map: &Map, value: &mut Value, eval: &mut EvalContext, vars: &Vars) -> Result<T>
+fn parse_g_number<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+    vars: &Vars,
+) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let expr: String = must_translate(value, map, "expr")?;
+    let expr: String = must_translate_from_context(value, context, "expr")?;
     try_deser(
-        json_number(eval.eval(&expr, map, vars)?)?,
+        json_number(eval.eval(&expr, context.map(), vars)?)?,
         "failed to deserialize generated number",
     )
 }
 
-fn parse_g_number_list<T>(map: &Map, value: &mut Value, eval: &mut EvalContext) -> Result<T>
+fn parse_g_number_list<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let index_begin: u64 = must_translate(value, map, "begin")?;
-    let index_end: u64 = must_translate(value, map, "end")?;
-    let expr: String = must_translate(value, map, "expr")?;
+    let index_begin: u64 = must_translate_from_context(value, context, "begin")?;
+    let index_end: u64 = must_translate_from_context(value, context, "end")?;
+    let expr: String = must_translate_from_context(value, context, "expr")?;
 
     let len = index_end.saturating_sub(index_begin);
     let mut result = Vec::with_capacity(usize_count(len, "g-number-list length")?);
@@ -304,11 +304,11 @@ where
 
     for i in index_begin..index_end {
         vars.insert("i".to_owned(), i as f64);
-        let mut namespace = MapNamespace::new(map, &vars, &eval.config.namespace_scope);
+        let mut namespace = MapNamespace::new(context.map(), &vars, &eval.config.namespace_scope);
         let value = if eval.config.enabled && eval.config.compile_expressions {
             fasteval::eval_compiled!(compiled, &eval.slab, &mut namespace)
         } else {
-            eval.eval(&expr, map, &vars)?
+            eval.eval(&expr, context.map(), &vars)?
         };
         result.push(json_number(value)?);
     }
@@ -319,13 +319,14 @@ where
     )
 }
 
-fn parse_g_range<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_range<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let begin: f64 = must_translate(value, map, "begin")?;
-    let end: f64 = must_translate(value, map, "end")?;
-    let step: f64 = take_optional(value, map, &MapEvalConfig::default(), &"step")?.unwrap_or(1.0);
+    let begin: f64 = must_translate_from_context(value, context, "begin")?;
+    let end: f64 = must_translate_from_context(value, context, "end")?;
+    let step: f64 =
+        take_optional(value, context.map(), context.map_eval(), &"step")?.unwrap_or(1.0);
 
     if step <= 0.0 {
         return Err(anyhow!("step must be positive"));
@@ -350,12 +351,12 @@ where
     )
 }
 
-fn parse_g_repeat<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_repeat<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
-    let val: Value = must_translate(value, map, "value")?;
-    let count: u64 = must_translate(value, map, "count")?;
+    let val: Value = must_translate_from_context(value, context, "value")?;
+    let count: u64 = must_translate_from_context(value, context, "count")?;
     let count = usize_count(count, "count")?;
     let result = vec![val; count];
     try_deser(
@@ -364,13 +365,13 @@ where
     )
 }
 
-fn parse_g_linear<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_linear<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let begin: f64 = must_translate(value, map, "begin")?;
-    let end: f64 = must_translate(value, map, "end")?;
-    let count: u64 = must_translate(value, map, "count")?;
+    let begin: f64 = must_translate_from_context(value, context, "begin")?;
+    let end: f64 = must_translate_from_context(value, context, "end")?;
+    let count: u64 = must_translate_from_context(value, context, "count")?;
 
     if count == 0 {
         return Err(anyhow!("count must be positive"));
@@ -394,31 +395,37 @@ where
     )
 }
 
-fn parse_if<T>(map: &Map, value: &mut Value, eval: &mut EvalContext, vars: &Vars) -> Result<T>
+fn parse_if<T>(
+    context: &ParseContext<'_>,
+    value: &mut Value,
+    eval: &mut EvalContext,
+    vars: &Vars,
+) -> Result<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
-    let condition: String = must_translate(value, map, "condition")?;
-    let true_val: Value = must_translate(value, map, "true")?;
-    let false_val: Value = must_translate(value, map, "false")?;
-    let selected = if eval.eval(&condition, map, vars)? != 0.0 {
+    let condition: String = must_translate_from_context(value, context, "condition")?;
+    let true_val: Value = must_translate_from_context(value, context, "true")?;
+    let false_val: Value = must_translate_from_context(value, context, "false")?;
+    let selected = if eval.eval(&condition, context.map(), vars)? != 0.0 {
         true_val
     } else {
         false_val
     };
 
-    DataPack::<T>::parse_value(map, selected, &eval.config)
+    DataPack::<T>::parse_value(context.map(), selected, &eval.config)
 }
 
 #[cfg(feature = "map-parser-extensions")]
-fn parse_time<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_time<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let start: String = must_translate(value, map, "start")?;
-    let end: String = must_translate(value, map, "end")?;
-    let interval: String = must_translate(value, map, "interval")?;
-    let format: Option<String> = take_optional(value, map, &MapEvalConfig::default(), &"format")?;
+    let start: String = must_translate_from_context(value, context, "start")?;
+    let end: String = must_translate_from_context(value, context, "end")?;
+    let interval: String = must_translate_from_context(value, context, "interval")?;
+    let format: Option<String> =
+        take_optional(value, context.map(), context.map_eval(), &"format")?;
 
     let start_dt = parse_time_str(&start)?;
     let end_dt = parse_time_str(&end)?;
@@ -448,12 +455,12 @@ where
 }
 
 #[cfg(feature = "map-parser-extensions")]
-fn parse_g_random<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_random<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let min: f64 = must_translate(value, map, "min")?;
-    let max: f64 = must_translate(value, map, "max")?;
+    let min: f64 = must_translate_from_context(value, context, "min")?;
+    let max: f64 = must_translate_from_context(value, context, "max")?;
 
     if min >= max {
         return Err(anyhow!("min ({}) must be less than max ({})", min, max));
@@ -463,8 +470,8 @@ where
         .get("integer")
         .and_then(Value::as_bool)
         .unwrap_or(false);
-    let seed: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"seed")?;
-    let count: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"count")?;
+    let seed: Option<u64> = take_optional(value, context.map(), context.map_eval(), &"seed")?;
+    let count: Option<u64> = take_optional(value, context.map(), context.map_eval(), &"count")?;
 
     let gen_value = |rng: &mut dyn Rng| -> Result<Value> {
         if integer {
@@ -496,17 +503,17 @@ where
 }
 
 #[cfg(feature = "map-parser-extensions")]
-fn parse_g_choose<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_choose<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
 {
-    let options: Vec<Value> = must_translate(value, map, "options")?;
+    let options: Vec<Value> = must_translate_from_context(value, context, "options")?;
     if options.is_empty() {
         return Err(anyhow!("options must not be empty for g-choose"));
     }
 
-    let seed: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"seed")?;
-    let count: Option<u64> = take_optional(value, map, &MapEvalConfig::default(), &"count")?;
+    let seed: Option<u64> = take_optional(value, context.map(), context.map_eval(), &"seed")?;
+    let count: Option<u64> = take_optional(value, context.map(), context.map_eval(), &"count")?;
 
     match count {
         Some(0) => Err(anyhow!("count must be positive")),
@@ -531,12 +538,13 @@ where
     }
 }
 
-fn parse_g_env<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_env<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let name: String = must_translate(value, map, "name")?;
-    let default: Option<String> = take_optional(value, map, &MapEvalConfig::default(), &"default")?;
+    let name: String = must_translate_from_context(value, context, "name")?;
+    let default: Option<String> =
+        take_optional(value, context.map(), context.map_eval(), &"default")?;
     let env_val = std::env::var(&name).ok().or(default).ok_or_else(|| {
         anyhow!(
             "environment variable '{}' is not set and no default provided",
@@ -547,13 +555,13 @@ where
     try_deser(Value::String(env_val), "failed to deserialize env value")
 }
 
-fn parse_g_join<T>(map: &Map, value: &mut Value) -> Result<T>
+fn parse_g_join<T>(context: &ParseContext<'_>, value: &mut Value) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    let values: Vec<String> = must_translate(value, map, "values")?;
+    let values: Vec<String> = must_translate_from_context(value, context, "values")?;
     let separator: String =
-        take_optional(value, map, &MapEvalConfig::default(), &"separator")?.unwrap_or_default();
+        take_optional(value, context.map(), context.map_eval(), &"separator")?.unwrap_or_default();
     try_deser(
         Value::String(values.join(&separator)),
         "failed to deserialize joined string",
