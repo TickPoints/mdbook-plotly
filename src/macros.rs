@@ -27,9 +27,6 @@ macro_rules! fatal {
 /// This macro avoids writing a lot of duplicate code.
 #[macro_export]
 macro_rules! translate {
-    ($target:expr, $value:expr, $map:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
-        $crate::translate_with_config!($target, $value, $map, &$crate::preprocessor::config::MapEvalConfig::default(), $(($method, $ty)),*)
-    }};
     ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(($method:ident, $ty:ty)),* $(,)?) => {{
         $crate::translate_with_config!($target, $value, $map, $map_eval, $(($method, $ty)),*)
     }};
@@ -61,7 +58,13 @@ macro_rules! translate_enum {
     ($target:expr, $value:expr, $map:expr, $(
         ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
     ),* $(,)?) => {{
-        $crate::translate_enum_with_config!($target, $value, $map, &$crate::preprocessor::config::MapEvalConfig::default(), $(($method, { $($str_val => $variant),* })),*)
+        $crate::translate_enum_with_config!(
+            $target,
+            $value,
+            $map,
+            &$crate::preprocessor::config::MapEvalConfig::default(),
+            $(($method, { $($str_val => $variant),* })),*
+        )
     }};
     ($target:expr, $value:expr, $map:expr, $map_eval:expr, $(
         ($method:ident, { $($str_val:literal => $variant:expr),* $(,)? })
