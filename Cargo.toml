@@ -1,10 +1,10 @@
 [package]
 name = "mdbook-plotly"
-version = "0.2.1-alpha"
+version = "0.2.1-beta"
 authors = ["TickPoints <tickpoints@outlook.com>"]
 edition = "2024"
 keywords = ["markdown", "mdbook"]
-description = "An mdbook preprocessor that renders plot code blocks (e.g., ```plot) into interactive or static charts during book build."
+description = "A mdbook preprocessor that renders plot code blocks (e.g., ```plot) into interactive or static charts during book build."
 license = "MIT"
 repository = "https://github.com/TickPoints/mdbook-plotly"
 readme = "README.md"
