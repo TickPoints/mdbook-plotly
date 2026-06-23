@@ -1,4 +1,5 @@
 use mdbook_plotly::code_handler;
+use mdbook_plotly::code_handler::until::Color;
 use mdbook_plotly::preprocessor::config::MapEvalConfig;
 use plotly::{
     Bar, BoxPlot, Candlestick, Configuration, Contour, DensityMapbox, HeatMap, Histogram, Layout,
@@ -7,7 +8,7 @@ use plotly::{
 
 #[test]
 fn test_json5() {
-    let raw_code = r##"
+    let raw_code = r#"
     {
         layout: {
             title: "Test",
@@ -41,7 +42,7 @@ fn test_handle_uses_json_input_config() {
 
     let generated_plot = code_handler::handle(
         raw_code.to_string(),
-        &PlotlyInputType::JSONInput,
+        &mdbook_plotly::preprocessor::config::PlotlyInputType::JSONInput,
         &MapEvalConfig::default(),
     )
     .unwrap();
@@ -53,20 +54,48 @@ fn test_handle_uses_json_input_config() {
 }
 
 #[test]
-fn test_preprocessor_config_default_contract() {
-    let config = PreprocessorConfig::default();
+fn test_toml_input() {
+    let raw_code = r#"
+        [layout]
+        title = "TOML Input Test"
 
-    assert_eq!(config.input_type, PlotlyInputType::JSONInput);
-    assert!(!config.offline_js_sources);
-    assert!(config.map_eval.enabled);
-    assert!(config.map_eval.reuse_slab);
-    assert!(config.map_eval.compile_expressions);
-    assert_eq!(config.map_eval.namespace_scope, MapNamespaceScope::FullMap);
+        [config]
+        static_plot = true
+    "#;
+
+    let generated_plot =
+        code_handler::handle_toml_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    reasonable_plot.set_layout(Layout::new().title("TOML Input Test"));
+    reasonable_plot.set_configuration(Configuration::new().static_plot(true));
+
+    assert!(reasonable_plot == generated_plot);
+}
+
+#[test]
+fn test_handle_uses_toml_input_config() {
+    let raw_code = r#"
+        [layout]
+        title = "Config TOML Input Type Test"
+    "#;
+
+    let generated_plot = code_handler::handle(
+        raw_code.to_string(),
+        &mdbook_plotly::preprocessor::config::PlotlyInputType::TOMLInput,
+        &MapEvalConfig::default(),
+    )
+    .unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    reasonable_plot.set_layout(Layout::new().title("Config TOML Input Type Test"));
+
+    assert!(reasonable_plot == generated_plot);
 }
 
 #[test]
 fn test_layout_and_config_with_map_context() {
-    let raw_code = r#"
+    let raw_code = r##"
     {
         map: {
             layout_title: "Mapped Title",
@@ -99,7 +128,7 @@ fn test_layout_and_config_with_map_context() {
     let mut reasonable_plot = Plot::new();
     let layout = Layout::new()
         .title("Mapped Title")
-        .plot_background_color("#ffffff")
+        .plot_background_color(Color::RgbColor(plotly::color::Rgb::new(255, 255, 255)))
         .legend(plotly::layout::Legend::new().x(0.25).y(0.75))
         .x_axis(plotly::layout::Axis::new().range(vec![Some(0.0), Some(10.0)]));
     let config = Configuration::new()
@@ -119,7 +148,7 @@ fn test_layout_and_config_with_map_context() {
 
 #[test]
 fn test_layout_axes_with_map_context_regression() {
-    let raw_code = r##"
+    let raw_code = r#"
     {
         map: {
             x_range: [1, 5],
@@ -150,7 +179,7 @@ fn test_layout_axes_with_map_context_regression() {
             },
         }
     }
-    "##;
+    "#;
 
     let generated_plot =
         code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();

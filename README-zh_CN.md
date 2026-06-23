@@ -11,7 +11,7 @@
 
 `mdbook-plotly` 是一个 **mdbook** 预处理器，可在生成 HTML 文档前，将带有特殊标记(`plot`或`plotly`)的代码块转换为图表。
 
-它可以解析以特定格式(现阶段支持JSON5)组织的图表定义，并按照所配置的输出方式输出(例如HTML)。专为技术文档设计，让图表与 Markdown 文本共存、可复现。
+它可以解析以特定格式(现阶段支持JSON5与TOML)组织的图表定义，并按照所配置的输出方式输出(例如HTML)。专为技术文档设计，让图表与 Markdown 文本共存、可复现。
 
 ## 开始使用
 
@@ -32,7 +32,10 @@ cargo binstall mdbook-plotly
 ```toml
 [preprocessor.plotly]
 after = ["links"]
+input-type = "json-input"
 ```
+
+当图表代码块本身采用 TOML 编写时，可将 `input-type` 设为 `"toml-input"`。TOML 输入会先转换为 JSON 值，再复用现有的图表解析流程。
 
 ### 生成图表
 

@@ -213,8 +213,11 @@ where
             Self::Data(data) => Ok(data),
             Self::Index(index) => {
                 let value = map_value(map, &index)?.clone();
-                Self::parse_value(map, value, map_eval)
-                    .with_context(|| format!("failed to resolve map value `{}`", index))
+                match serde_json::from_value::<T>(value.clone()) {
+                    Ok(data) => Ok(data),
+                    Err(_) => Self::parse_value(map, value, map_eval)
+                        .with_context(|| format!("failed to resolve map value `{}`", index)),
+                }
             }
         }
     }
@@ -768,6 +771,12 @@ impl<'de> Deserialize<'de> for Color {
             return Ok(Self::NamedColor(named));
         }
 
+        if let Some(s) = value.as_str()
+            && let Some(rgb) = parse_hex_color(s)
+        {
+            return Ok(Self::RgbColor(rgb));
+        }
+
         if let Ok(rgb) = serde_json::from_value::<color::Rgb>(value.clone()) {
             return Ok(Self::RgbColor(rgb));
         }
@@ -778,4 +787,30 @@ impl<'de> Deserialize<'de> for Color {
 
         Err(serde::de::Error::custom("invalid color format"))
     }
+}
+
+fn parse_hex_color(value: &str) -> Option<color::Rgb> {
+    let hex = value.strip_prefix('#')?;
+
+    let (r, g, b) = match hex.len() {
+        3 => {
+            let mut chars = hex.chars();
+            let r = chars.next()?;
+            let g = chars.next()?;
+            let b = chars.next()?;
+            let rr = u8::from_str_radix(&format!("{r}{r}"), 16).ok()?;
+            let gg = u8::from_str_radix(&format!("{g}{g}"), 16).ok()?;
+            let bb = u8::from_str_radix(&format!("{b}{b}"), 16).ok()?;
+            (rr, gg, bb)
+        }
+        6 => {
+            let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+            let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+            let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+            (r, g, b)
+        }
+        _ => return None,
+    };
+
+    Some(color::Rgb::new(r, g, b))
 }

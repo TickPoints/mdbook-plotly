@@ -77,4 +77,7 @@ pub enum PlotlyInputType {
     /// NOTE: In the `PlotlyOutputType = PlotlySvg` state, this method may cause some performance loss due to multiple packaging.
     #[default]
     JSONInput,
+
+    /// Translates the TOML format into JSON value first, then reuses the existing plot parser.
+    TOMLInput,
 }
