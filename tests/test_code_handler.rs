@@ -117,6 +117,73 @@ fn test_layout_and_config_with_map_context() {
     );
 }
 
+#[test]
+fn test_layout_axes_with_map_context_regression() {
+    let raw_code = r##"
+    {
+        map: {
+            x_range: [1, 5],
+            x_prefix: "$",
+            x_suffix: " USD",
+            y_title: "Mapped Y Axis",
+            y_anchor: "x",
+            y_overlaying: "y",
+            y_show_ticks: false,
+            y_auto_margin: true,
+            y_fixed_range: true,
+        },
+        layout: {
+            xaxis: {
+                range: "map.x_range",
+                tick_prefix: "map.x_prefix",
+                tick_suffix: "map.x_suffix",
+                type: "linear",
+            },
+            yaxis: {
+                title: "map.y_title",
+                anchor: "map.y_anchor",
+                overlaying: "map.y_overlaying",
+                show_tick_labels: "map.y_show_ticks",
+                auto_margin: "map.y_auto_margin",
+                fixed_range: "map.y_fixed_range",
+                type: "category",
+            },
+        }
+    }
+    "##;
+
+    let generated_plot =
+        code_handler::handle_json_input(raw_code.to_string(), &MapEvalConfig::default()).unwrap();
+
+    let mut reasonable_plot = Plot::new();
+    let layout = Layout::new()
+        .x_axis(
+            plotly::layout::Axis::new()
+                .range(vec![Some(1.0), Some(5.0)])
+                .tick_prefix("$")
+                .tick_suffix(" USD")
+                .type_(plotly::layout::AxisType::Linear),
+        )
+        .y_axis(
+            plotly::layout::Axis::new()
+                .title("Mapped Y Axis")
+                .anchor("x")
+                .overlaying("y")
+                .show_tick_labels(false)
+                .auto_margin(true)
+                .fixed_range(true)
+                .type_(plotly::layout::AxisType::Category),
+        );
+    reasonable_plot.set_layout(layout);
+
+    assert!(
+        reasonable_plot == generated_plot,
+        "Axis layout mismatch\nGenerated: {}\nExpected: {}",
+        serde_json::to_string(&generated_plot).unwrap(),
+        serde_json::to_string(&reasonable_plot).unwrap()
+    );
+}
+
 // ── Existing Trace Tests ──
 
 #[test]

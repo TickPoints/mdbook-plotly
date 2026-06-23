@@ -260,6 +260,8 @@ fn parse_axis_obj(
     use crate::code_handler::until::DataPack;
     use plotly::layout::{Axis, AxisType};
 
+    const AXIS_CONTEXT: &str = "layout axis";
+
     let axis = translate_with_config! {
         Axis::new(),
         axis_obj,
@@ -314,17 +316,23 @@ fn parse_axis_obj(
 
     let axis = if let Some(v) = axis_obj.get_mut("type") {
         let data = serde_json::from_value::<DataPack<String>>(v.take())
-            .map_err(|e| anyhow!("Failed to deserialize axis `type`: {}", e))?;
+            .map_err(|e| anyhow!("Failed to deserialize field 'type' in {}: {}", AXIS_CONTEXT, e))?;
         let s = data
             .unwrap_from_context(context)
-            .map_err(|e| anyhow!("Failed to unwrap DataPack for axis `type`: {}", e))?;
+            .map_err(|e| anyhow!("Failed to resolve DataPack for field 'type' in {}: {}", AXIS_CONTEXT, e))?;
         let at = match s.as_str() {
             "-" | "linear" => AxisType::Linear,
             "log" => AxisType::Log,
             "date" => AxisType::Date,
             "category" => AxisType::Category,
             "multicategory" => AxisType::MultiCategory,
-            other => return Err(anyhow!("Invalid axis type: '{}'", other)),
+            other => {
+                return Err(anyhow!(
+                    "\"{}\" is not a valid value for `type` in {}",
+                    other,
+                    AXIS_CONTEXT,
+                ))
+            }
         };
         axis.type_(at)
     } else {

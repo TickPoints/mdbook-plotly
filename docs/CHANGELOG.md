@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.2.2-alpha
+- Refined layout parser release-prep cleanup
+    - Normalized axis `type` error messages in [`parse_axis_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:256) to match the field-oriented style already used by [`translate_with_config!()`](src/macros.rs:36) and [`translate_enum_with_config!()`](src/macros.rs:66)
+    - Kept axis parsing on explicit [`ParseContext`](src/code_handler/parse_context.rs:4) / [`MapEvalConfig`](src/preprocessor/config.rs:61) propagation without reintroducing hidden defaults
+    - Added an axis regression test in [`tests/test_code_handler.rs`](tests/test_code_handler.rs) covering `map.*`-backed `range`, `tick_prefix`, `tick_suffix`, `title`, `anchor`, `overlaying`, `show_tick_labels`, `auto_margin`, `fixed_range`, and axis `type`
+- Updated release documentation
+    - Clarified that parser migration work favors [`translate_with_config!()`](src/macros.rs:36) and [`translate_enum_with_config!()`](src/macros.rs:66) over legacy [`translate!()`](src/macros.rs:29) in active parsing paths
+    - Documented `map-eval` / `map-parser-extensions` behavior more explicitly in user-facing docs
+- Adjusted configs
+    - Removed `offline_js_sources`
+
 ## v0.2.1
 - Refined parser migration toward explicit [`MapEvalConfig`](src/preprocessor/config.rs:61) propagation
     - Replaced top-level legacy [`translate!()`](src/macros.rs:29) usage in [`parse_config_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:8) and [`parse_layout_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:59) with explicit [`translate_with_config!()`](src/macros.rs:36) entrypoints
@@ -195,4 +206,3 @@
     - Added `pie` plot
 - Updated docs
 - Created workflows
-
