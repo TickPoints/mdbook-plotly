@@ -22,11 +22,6 @@ pub struct PreprocessorConfig {
     /// The two forms we consider for adoption are: a general script and a configuration file organized in a specific form. In theory, you can read and operate files directly from the current path by turning on some of the functions that come with MDBook.
     pub input_type: PlotlyInputType,
 
-    /// About the script source control.
-    /// If this is false(default), a JS script source from CDN will be injected;
-    /// otherwise, an HTML script tag containing an embedded JS source will be added for offline use.
-    pub offline_js_sources: bool,
-
     /// Controls map expression evaluation behavior such as namespace visibility
     /// and whether fasteval optimizations should be enabled.
     pub map_eval: MapEvalConfig,
