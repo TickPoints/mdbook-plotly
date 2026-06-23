@@ -46,6 +46,12 @@ Insert a code block where you want the chart to appear, like this:
 
 For more details, refer to the [User Guide](docs/USAGE.md).  
 
+## Parser Notes
+
+- Active parser migration work favors [`translate_with_config!()`](src/macros.rs:36) and [`translate_enum_with_config!()`](src/macros.rs:66) so field resolution stays aligned with the current [`MapEvalConfig`](src/preprocessor/config.rs:61).
+- Legacy [`translate!()`](src/macros.rs:29) remains available for top-level/defaulted entry points, but new parsing paths should prefer explicit config-aware helpers.
+- Chart definitions continue to support `map.*` references, and the exact expression/generator behavior depends on `[preprocessor.plotly.map-eval]` plus the optional `map-parser-extensions` feature set documented in [`docs/USAGE.md`](docs/USAGE.md).
+
 ## License
 
 This project is licensed under the **MIT License**. For full terms, see the [LICENSE](LICENSE) file.

@@ -22,9 +22,7 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig, book_path: &Pa
     let mut code_sequence = 0;
 
     if config.output_type == PlotlyOutputType::PlotlyHtml {
-        new_events.push(plotly_html_handler::inject_header(
-            config.offline_js_sources,
-        ));
+        new_events.push(plotly_html_handler::inject_header());
         new_events.push(Event::HardBreak);
     }
 

@@ -16,12 +16,8 @@ fn trim_leading_spaces(text: &mut String) {
     *text = out;
 }
 
-pub fn inject_header(offline_js_sources: bool) -> Event<'static> {
-    let mut html: String = if offline_js_sources {
-        Plot::offline_js_sources()
-    } else {
-        Plot::online_cdn_js()
-    };
+pub fn inject_header() -> Event<'static> {
+    let mut html: String = Plot::online_cdn_js();
     trim_leading_spaces(&mut html);
     Event::Html(html.into())
 }

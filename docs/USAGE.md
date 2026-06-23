@@ -150,6 +150,9 @@ compile-expressions = true
 namespace-scope = "full-map"
 ```
 
+> [!NOTE]
+> Internally, active parser paths are being standardized around explicit [`ParseContext`](../src/code_handler/parse_context.rs:4) propagation together with [`translate_with_config!()`](../src/macros.rs:36) and [`translate_enum_with_config!()`](../src/macros.rs:66). This keeps `map.*` resolution aligned with the current [`MapEvalConfig`](../src/preprocessor/config.rs:61) and avoids hidden fallback defaults in migrated code.
+
 #### `map-eval` configuration
 
 The optional [`map-eval`](../src/preprocessor/config.rs:30) section controls how expressions inside map generators such as [`g-number`](../src/code_handler/until.rs:253), [`g-number-list`](../src/code_handler/until.rs:264), and [`if`](../src/code_handler/until.rs:403) are evaluated.
@@ -174,6 +177,15 @@ namespace-scope = "exports-only"
 ```
 
 With `exports-only`, expressions can use values exported under `map.exports` as bare names, which helps separate public expression symbols from the rest of the map payload.
+
+#### `map-parser-extensions` feature
+
+The default feature set includes `map-parser-extensions`. When enabled, the `map` section accepts additional generator kinds beyond the baseline set:
+
+- baseline generators: `g-number`, `g-number-list`, `g-range`, `g-repeat`, `g-linear`, `if`, `raw`
+- extension generators: `time`, `g-random`, `g-choose`
+
+If you build without `map-parser-extensions`, only the baseline generator set is available.
 
 ## Input Formats
 
