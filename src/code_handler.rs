@@ -14,6 +14,7 @@ pub fn handle(
 ) -> Result<Plot> {
     let result = match input_type {
         PlotlyInputType::JSONInput => handle_json_input(raw_code, map_eval)?,
+        PlotlyInputType::TOMLInput => handle_toml_input(raw_code, map_eval)?,
     };
     Ok(result)
 }
@@ -28,5 +29,11 @@ pub fn handle(
 pub fn handle_json_input(raw_code: String, map_eval: &MapEvalConfig) -> Result<Plot> {
     // Use Json5 to provide more flexible JSON.
     let mut value: Value = json5::from_str(&raw_code)?;
+    plot_obj_parser::parse(&mut value, map_eval)
+}
+
+pub fn handle_toml_input(raw_code: String, map_eval: &MapEvalConfig) -> Result<Plot> {
+    let toml_value: toml::Value = toml::from_str(&raw_code)?;
+    let mut value = serde_json::to_value(toml_value)?;
     plot_obj_parser::parse(&mut value, map_eval)
 }

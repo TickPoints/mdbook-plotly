@@ -11,7 +11,7 @@
 
 `mdbook-plotly` is a preprocessor for **mdbook**, which converts specially tagged code blocks (`plot` or `plotly`) into interactive charts before generating the final HTML documentation.
 
-It parses chart definitions structured in specific formats (currently supporting JSON5) and renders them according to the configured output format (e.g., HTML). Designed specifically for technical documentation, it enables charts to coexist seamlessly with Markdown text while ensuring reproducibility.
+It parses chart definitions structured in specific formats (currently supporting JSON5 and TOML) and renders them according to the configured output format (e.g., HTML). Designed specifically for technical documentation, it enables charts to coexist seamlessly with Markdown text while ensuring reproducibility.
 
 ## Getting Started
 
@@ -32,7 +32,10 @@ Alternatively, download the latest available release for your system from the [R
 ```toml
 [preprocessor.plotly]
 after = ["links"]
+input-type = "json-input"
 ```
+
+Use `input-type = "toml-input"` when the chart block itself is written in TOML. TOML input is converted into a JSON value first, then parsed through the existing plot pipeline.
 
 ### Generating Charts
 

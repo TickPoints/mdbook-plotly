@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.2.2-beta
+- Added TOML chart input support
+    - Added the [`toml`](Cargo.toml:23) dependency and a new [`PlotlyInputType::TOMLInput`](src/preprocessor/config.rs:82) variant
+    - Added [`handle_toml_input()`](src/code_handler.rs:35) to convert TOML into [`serde_json::Value`](src/code_handler.rs:8) before reusing the existing plot parser
+    - Added regression coverage in [`tests/test_code_handler.rs`](tests/test_code_handler.rs:55) for direct TOML handling and config-driven input dispatch
+
 ## v0.2.2-alpha
 - Refined layout parser release-prep cleanup
     - Normalized axis `type` error messages in [`parse_axis_obj()`](src/code_handler/plot_obj_parser/layout_parser.rs:256) to match the field-oriented style already used by [`translate_with_config!()`](src/macros.rs:36) and [`translate_enum_with_config!()`](src/macros.rs:66)
