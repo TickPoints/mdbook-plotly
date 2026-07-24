@@ -315,11 +315,20 @@ fn parse_axis_obj(
     }?;
 
     let axis = if let Some(v) = axis_obj.get_mut("type") {
-        let data = serde_json::from_value::<DataPack<String>>(v.take())
-            .map_err(|e| anyhow!("Failed to deserialize field 'type' in {}: {}", AXIS_CONTEXT, e))?;
-        let s = data
-            .unwrap_from_context(context)
-            .map_err(|e| anyhow!("Failed to resolve DataPack for field 'type' in {}: {}", AXIS_CONTEXT, e))?;
+        let data = serde_json::from_value::<DataPack<String>>(v.take()).map_err(|e| {
+            anyhow!(
+                "Failed to deserialize field 'type' in {}: {}",
+                AXIS_CONTEXT,
+                e
+            )
+        })?;
+        let s = data.unwrap_from_context(context).map_err(|e| {
+            anyhow!(
+                "Failed to resolve DataPack for field 'type' in {}: {}",
+                AXIS_CONTEXT,
+                e
+            )
+        })?;
         let at = match s.as_str() {
             "-" | "linear" => AxisType::Linear,
             "log" => AxisType::Log,
@@ -331,7 +340,7 @@ fn parse_axis_obj(
                     "\"{}\" is not a valid value for `type` in {}",
                     other,
                     AXIS_CONTEXT,
-                ))
+                ));
             }
         };
         axis.type_(at)
