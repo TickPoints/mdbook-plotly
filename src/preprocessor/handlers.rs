@@ -14,23 +14,25 @@ use std::path::Path;
 const PULLDOWN_CMARK_OPTIONS: pulldown_cmark::Options = pulldown_cmark::Options::all();
 
 pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig, book_path: &Path) {
+    if !chapter.content.contains("plot") {
+        return;
+    }
+
     let events = Parser::new_ext(&chapter.content, PULLDOWN_CMARK_OPTIONS);
 
     let mut code = String::with_capacity(10);
     let mut in_target_code = false;
     let mut new_events = Vec::with_capacity(10);
     let mut code_sequence = 0;
-
-    if config.output_type == PlotlyOutputType::PlotlyHtml {
-        new_events.push(plotly_html_handler::inject_header());
-        new_events.push(Event::HardBreak);
-    }
+    let mut saw_target_code = false;
+    let mut generated_plot = false;
 
     for event in events {
         match event {
             Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(ref lang))) => {
                 if matches!(lang.as_ref(), "plotly" | "plot") {
                     in_target_code = true;
+                    saw_target_code = true;
                     code.clear();
                 } else {
                     new_events.push(event);
@@ -53,6 +55,7 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig, book_path: &Pa
                 let ready_code = std::mem::take(&mut code);
                 match handle_plotly(ready_code, config, book_path) {
                     Ok(event) => {
+                        generated_plot = true;
                         new_events.push(Event::HardBreak);
                         new_events.push(event);
                         new_events.push(Event::HardBreak);
@@ -66,6 +69,15 @@ pub fn handle(chapter: &mut Chapter, config: &PreprocessorConfig, book_path: &Pa
             _ => new_events.push(event),
         }
     }
+    if !saw_target_code {
+        return;
+    }
+
+    if config.output_type == PlotlyOutputType::PlotlyHtml && generated_plot {
+        new_events.insert(0, Event::HardBreak);
+        new_events.insert(0, plotly_html_handler::inject_header());
+    }
+
     let mut new_content = String::with_capacity(chapter.content.len());
     if let Err(e) = pulldown_cmark_to_cmark::cmark_with_options(
         new_events.into_iter(),
