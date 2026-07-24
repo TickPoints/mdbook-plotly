@@ -550,3 +550,56 @@ fn test_time_type() {
     );
     assert!(reasonable_plot == generated_plot);
 }
+
+#[test]
+fn test_reuse_slab_modes_are_equivalent() {
+    let raw_code = r#"
+    {
+        map: {
+            scale: 2,
+            mynum: {
+                type: "g-number",
+                expr: "scale + 3"
+            },
+            mylist: {
+                type: "g-number-list",
+                begin: 0,
+                end: 3,
+                expr: "i * scale"
+            },
+            selected: {
+                type: "if",
+                condition: "scale - 2",
+                true: 9,
+                false: 4
+            }
+        },
+        data: [{
+            type: "scatter",
+            x: "map.mylist",
+            y: [0, 1, 2],
+            opacity: "map.mynum",
+            marker_size: "map.selected"
+        }]
+    }
+    "#;
+
+    let reused = code_handler::handle_json_input(
+        raw_code.to_string(),
+        &MapEvalConfig {
+            reuse_slab: true,
+            ..MapEvalConfig::default()
+        },
+    )
+    .unwrap();
+    let fresh = code_handler::handle_json_input(
+        raw_code.to_string(),
+        &MapEvalConfig {
+            reuse_slab: false,
+            ..MapEvalConfig::default()
+        },
+    )
+    .unwrap();
+
+    assert!(reused == fresh);
+}
