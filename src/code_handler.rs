@@ -1,3 +1,6 @@
+pub mod color;
+pub(crate) mod eval;
+pub(crate) mod map;
 pub mod parse_context;
 pub mod plot_obj_parser;
 pub mod until;

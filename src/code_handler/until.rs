@@ -1,22 +1,23 @@
 // Tmp fix
 #![allow(unexpected_cfgs)]
 
+use crate::code_handler::eval::EvalContext;
+use crate::code_handler::map::{MapNamespace, Vars, map_value};
 use crate::code_handler::parse_context::ParseContext;
-use crate::preprocessor::config::{MapEvalConfig, MapNamespaceScope};
+use crate::preprocessor::config::MapEvalConfig;
 use anyhow::{Context, Result, anyhow};
-use fasteval::{Compiler, EvalNamespace, Evaler, Parser, Slab};
+use fasteval::{Compiler, Evaler};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
-use serde_json::{Map as JsonMap, Value, value::Index};
-use std::{collections::BTreeMap, fmt::Debug, fmt::Display};
+use serde_json::{Value, value::Index};
+use std::fmt::{Debug, Display};
+
+pub use crate::code_handler::color::Color;
+pub use crate::code_handler::map::Map;
 
 #[cfg(feature = "map-parser-extensions")]
 use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeDelta, Utc};
 #[cfg(feature = "map-parser-extensions")]
 use rand::{Rng, RngExt, SeedableRng, rngs::StdRng};
-
-pub type Map = JsonMap<String, Value>;
-
-type Vars = BTreeMap<String, f64>;
 
 #[derive(Clone, Debug)]
 pub enum DataPack<T> {
@@ -91,119 +92,6 @@ fn usize_count(count: u64, field: &str) -> Result<usize> {
     usize::try_from(count).with_context(|| format!("{} is too large for this platform", field))
 }
 
-fn value_to_f64(value: &Value) -> Option<f64> {
-    match value {
-        Value::Number(n) => n.as_f64(),
-        Value::Bool(v) => Some(if *v { 1.0 } else { 0.0 }),
-        Value::String(s) => s.parse::<f64>().ok(),
-        _ => None,
-    }
-}
-
-fn lookup_path<'a>(map: &'a Map, name: &str) -> Option<&'a Value> {
-    let path = name.strip_prefix("map.").unwrap_or(name);
-    let mut parts = path.split('.');
-    let first = parts.next()?;
-    let mut value = map.get(first)?;
-
-    for part in parts {
-        match value {
-            Value::Object(obj) => value = obj.get(part)?,
-            Value::Array(arr) => {
-                let idx = part.parse::<usize>().ok()?;
-                value = arr.get(idx)?;
-            }
-            _ => return None,
-        }
-    }
-
-    Some(value)
-}
-
-fn map_value<'a>(map: &'a Map, index: &str) -> Result<&'a Value> {
-    lookup_path(map, index).ok_or_else(|| anyhow!("missing map value `{}`", index))
-}
-
-struct MapNamespace<'a> {
-    map: &'a Map,
-    vars: &'a Vars,
-    scope: &'a MapNamespaceScope,
-}
-
-impl<'a> MapNamespace<'a> {
-    fn new(map: &'a Map, vars: &'a Vars, scope: &'a MapNamespaceScope) -> Self {
-        Self { map, vars, scope }
-    }
-
-    fn lookup_map_value(&self, name: &str) -> Option<f64> {
-        match self.scope {
-            MapNamespaceScope::FullMap => lookup_path(self.map, name).and_then(value_to_f64),
-            MapNamespaceScope::ExportsOnly => {
-                let path = if name.starts_with("map.exports.") {
-                    name.to_owned()
-                } else {
-                    format!("exports.{name}")
-                };
-                lookup_path(self.map, &path).and_then(value_to_f64)
-            }
-        }
-    }
-}
-
-impl EvalNamespace for MapNamespace<'_> {
-    fn lookup(&mut self, name: &str, _args: Vec<f64>, _keybuf: &mut String) -> Option<f64> {
-        self.vars
-            .get(name)
-            .copied()
-            .or_else(|| self.lookup_map_value(name))
-    }
-}
-
-struct EvalContext {
-    parser: Parser,
-    slab: Slab,
-    config: MapEvalConfig,
-}
-
-impl EvalContext {
-    fn new(config: &MapEvalConfig) -> Self {
-        Self {
-            parser: Parser::new(),
-            slab: Slab::new(),
-            config: config.clone(),
-        }
-    }
-
-    fn eval(&mut self, expr: &str, map: &Map, vars: &Vars) -> Result<f64> {
-        let mut namespace = MapNamespace::new(map, vars, &self.config.namespace_scope);
-
-        if !self.config.enabled || !self.config.compile_expressions {
-            let expr_ref = self
-                .parser
-                .parse(expr, &mut self.slab.ps)
-                .with_context(|| format!("failed to parse expression `{}`", expr))?
-                .from(&self.slab.ps);
-
-            return expr_ref
-                .eval(&self.slab, &mut namespace)
-                .with_context(|| format!("failed to evaluate expression `{}`", expr));
-        }
-
-        let expr_ref = self
-            .parser
-            .parse(expr, &mut self.slab.ps)
-            .with_context(|| format!("failed to parse expression `{}`", expr))?
-            .from(&self.slab.ps);
-
-        let compiled = expr_ref.compile(&self.slab.ps, &mut self.slab.cs);
-        Ok(fasteval::eval_compiled!(
-            compiled,
-            &self.slab,
-            &mut namespace
-        ))
-    }
-}
-
 impl<T> DataPack<T>
 where
     T: DeserializeOwned + Serialize + Debug + Clone,
@@ -212,10 +100,10 @@ where
         match self {
             Self::Data(data) => Ok(data),
             Self::Index(index) => {
-                let value = map_value(map, &index)?.clone();
+                let value = map_value(map, &index)?;
                 match serde_json::from_value::<T>(value.clone()) {
                     Ok(data) => Ok(data),
-                    Err(_) => Self::parse_value(map, value, map_eval)
+                    Err(_) => Self::parse_value(map, value.clone(), map_eval)
                         .with_context(|| format!("failed to resolve map value `{}`", index)),
                 }
             }
@@ -297,23 +185,35 @@ where
     let len = index_end.saturating_sub(index_begin);
     let mut result = Vec::with_capacity(usize_count(len, "g-number-list length")?);
     let mut vars = Vars::new();
+    vars.insert("i".to_owned(), index_begin as f64);
 
-    let compiled = eval
-        .parser
-        .parse(&expr, &mut eval.slab.ps)
-        .with_context(|| format!("failed to parse expression `{}`", expr))?
-        .from(&eval.slab.ps)
-        .compile(&eval.slab.ps, &mut eval.slab.cs);
+    if eval.config.enabled && eval.config.compile_expressions {
+        let compiled = eval
+            .parser
+            .parse(&expr, &mut eval.slab.ps)
+            .with_context(|| format!("failed to parse expression `{}`", expr))?
+            .from(&eval.slab.ps)
+            .compile(&eval.slab.ps, &mut eval.slab.cs);
 
-    for i in index_begin..index_end {
-        vars.insert("i".to_owned(), i as f64);
-        let mut namespace = MapNamespace::new(context.map(), &vars, &eval.config.namespace_scope);
-        let value = if eval.config.enabled && eval.config.compile_expressions {
-            fasteval::eval_compiled!(compiled, &eval.slab, &mut namespace)
-        } else {
-            eval.eval(&expr, context.map(), &vars)?
-        };
-        result.push(json_number(value)?);
+        for i in index_begin..index_end {
+            if let Some(value) = vars.get_mut("i") {
+                *value = i as f64;
+            }
+            let mut namespace =
+                MapNamespace::new(context.map(), &vars, &eval.config.namespace_scope);
+            result.push(json_number(fasteval::eval_compiled!(
+                compiled,
+                &eval.slab,
+                &mut namespace
+            ))?);
+        }
+    } else {
+        for i in index_begin..index_end {
+            if let Some(value) = vars.get_mut("i") {
+                *value = i as f64;
+            }
+            result.push(json_number(eval.eval(&expr, context.map(), &vars)?)?);
+        }
     }
 
     try_deser(
@@ -742,75 +642,4 @@ where
             Self::Index(index) => serializer.serialize_str(&format!("map.{index}")),
         }
     }
-}
-
-use plotly::color;
-
-// This is to make Json look clearer when it is written.
-#[allow(clippy::enum_variant_names)]
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Color {
-    NamedColor(color::NamedColor),
-    RgbColor(color::Rgb),
-    RgbaColor(color::Rgba),
-}
-
-impl color::Color for Color {}
-
-impl<'de> Deserialize<'de> for Color {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = Value::deserialize(deserializer)?;
-
-        if let Some(s) = value.as_str()
-            && let Ok(named) = serde_json::from_str::<color::NamedColor>(&format!("\"{s}\""))
-        {
-            return Ok(Self::NamedColor(named));
-        }
-
-        if let Some(s) = value.as_str()
-            && let Some(rgb) = parse_hex_color(s)
-        {
-            return Ok(Self::RgbColor(rgb));
-        }
-
-        if let Ok(rgb) = serde_json::from_value::<color::Rgb>(value.clone()) {
-            return Ok(Self::RgbColor(rgb));
-        }
-
-        if let Ok(rgba) = serde_json::from_value::<color::Rgba>(value) {
-            return Ok(Self::RgbaColor(rgba));
-        }
-
-        Err(serde::de::Error::custom("invalid color format"))
-    }
-}
-
-fn parse_hex_color(value: &str) -> Option<color::Rgb> {
-    let hex = value.strip_prefix('#')?;
-
-    let (r, g, b) = match hex.len() {
-        3 => {
-            let mut chars = hex.chars();
-            let r = chars.next()?;
-            let g = chars.next()?;
-            let b = chars.next()?;
-            let rr = u8::from_str_radix(&format!("{r}{r}"), 16).ok()?;
-            let gg = u8::from_str_radix(&format!("{g}{g}"), 16).ok()?;
-            let bb = u8::from_str_radix(&format!("{b}{b}"), 16).ok()?;
-            (rr, gg, bb)
-        }
-        6 => {
-            let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
-            let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
-            let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
-            (r, g, b)
-        }
-        _ => return None,
-    };
-
-    Some(color::Rgb::new(r, g, b))
 }
