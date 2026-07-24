@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.2.2
+- Improved mdBook preprocessing performance
+    - Skips Markdown parser/cmark rewriting for chapters that cannot contain `plot` / `plotly` blocks
+    - Injects the Plotly HTML header only when a chart is successfully generated
+    - Added complete Markdown chapter coverage for mixed prose, regular code fences, and plot fences
+- Refined map parser internals
+    - Split map lookup, expression evaluation, and color parsing into focused modules while preserving existing public imports
+    - Implemented `reuse-slab` behavior for expression evaluation modes
+    - Reduced per-item allocation in `g-number-list` generation
+
 ## v0.2.2-beta
 - Added TOML chart input support
     - Added the [`toml`](Cargo.toml:23) dependency and a new [`PlotlyInputType::TOMLInput`](src/preprocessor/config.rs:82) variant
