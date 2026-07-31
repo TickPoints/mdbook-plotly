@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.2.3
+- Improved `book.toml` configuration parsing
+    - Ignored unknown keys at both the top level and inside nested sections such as `map-eval`, while logging a warning for each unknown key path
+    - Preserved type-sensitive validation for known fields, but limited failures to the field or nested section that failed to parse
+    - Kept other configuration fields active when one field falls back to its default value
+
 ## v0.2.2
 - Improved mdBook preprocessing performance
     - Skips Markdown parser/cmark rewriting for chapters that cannot contain `plot` / `plotly` blocks
