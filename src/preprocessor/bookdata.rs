@@ -1,7 +1,6 @@
-use super::config::{PREPROCESSOR_CONFIG_KEY, SUPPORTED_MDBOOK_VERSION};
+use super::config::{PREPROCESSOR_CONFIG_KEY, PreprocessorConfig, SUPPORTED_MDBOOK_VERSION};
 use crate::fatal;
-use crate::preprocessor::config::PreprocessorConfig;
-use log::{error, warn};
+use log::warn;
 use mdbook_preprocessor::{
     PreprocessorContext,
     book::{Book, BookItem, Chapter},
@@ -91,18 +90,15 @@ pub fn get_book_data() -> BookData {
         Err(e) => fatal!("Input parsing failed.\nInterError: {:#?}", e),
     };
 
-    let config = match ctx
-        .config
-        .get::<PreprocessorConfig>(PREPROCESSOR_CONFIG_KEY)
-    {
-        Ok(Some(cfg)) => cfg,
+    let config = match ctx.config.get("preprocessor.plotly") {
+        Ok(Some(value)) => PreprocessorConfig::from_toml(&value),
         Ok(None) => {
             warn!("Custom config not found; using default configuration.");
             PreprocessorConfig::default()
         }
         Err(e) => {
-            error!(
-                "Illegal config format for '{}': {}",
+            warn!(
+                "Illegal config format for '{}': {}; using default configuration.",
                 PREPROCESSOR_CONFIG_KEY,
                 e.root_cause()
             );
