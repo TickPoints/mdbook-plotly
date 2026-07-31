@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.2.3-alpha
+## v0.2.3
 - Improved `book.toml` configuration parsing
     - Ignored unknown keys at both the top level and inside nested sections such as `map-eval`, while logging a warning for each unknown key path
     - Preserved type-sensitive validation for known fields, but limited failures to the field or nested section that failed to parse
