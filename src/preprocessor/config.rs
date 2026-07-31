@@ -1,4 +1,6 @@
-use serde::{Deserialize, Serialize};
+use log::warn;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use toml::{Value, value::Table};
 
 pub const SUPPORTED_MDBOOK_VERSION: &str = "0.5.2";
 pub const PREPROCESSOR_CONFIG_KEY: &str = "preprocessor.plotly";
@@ -27,6 +29,43 @@ pub struct PreprocessorConfig {
     pub map_eval: MapEvalConfig,
 }
 
+impl PreprocessorConfig {
+    pub fn from_toml(value: &Value) -> Self {
+        let Some(table) = value.as_table() else {
+            warn!(
+                "Illegal config format for '{}': expected a table; using default configuration.",
+                PREPROCESSOR_CONFIG_KEY
+            );
+            return Self::default();
+        };
+
+        warn_unknown_keys(
+            PREPROCESSOR_CONFIG_KEY,
+            table,
+            &["output-type", "input-type", "map-eval"],
+        );
+
+        Self {
+            output_type: parse_field(
+                table,
+                "output-type",
+                &format!("{}.output-type", PREPROCESSOR_CONFIG_KEY),
+                Self::default().output_type,
+            ),
+            input_type: parse_field(
+                table,
+                "input-type",
+                &format!("{}.input-type", PREPROCESSOR_CONFIG_KEY),
+                Self::default().input_type,
+            ),
+            map_eval: match table.get("map-eval") {
+                Some(map_eval) => MapEvalConfig::from_toml(map_eval),
+                None => MapEvalConfig::default(),
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct MapEvalConfig {
@@ -34,6 +73,188 @@ pub struct MapEvalConfig {
     pub reuse_slab: bool,
     pub compile_expressions: bool,
     pub namespace_scope: MapNamespaceScope,
+}
+
+impl MapEvalConfig {
+    pub fn from_toml(value: &Value) -> Self {
+        let Some(table) = value.as_table() else {
+            warn!(
+                "Illegal config format for '{}.map-eval': expected a table; using default configuration.",
+                PREPROCESSOR_CONFIG_KEY
+            );
+            return Self::default();
+        };
+
+        warn_unknown_keys(
+            &format!("{}.map-eval", PREPROCESSOR_CONFIG_KEY),
+            table,
+            &[
+                "enabled",
+                "reuse-slab",
+                "compile-expressions",
+                "namespace-scope",
+            ],
+        );
+
+        Self {
+            enabled: parse_field(
+                table,
+                "enabled",
+                &format!("{}.map-eval.enabled", PREPROCESSOR_CONFIG_KEY),
+                Self::default().enabled,
+            ),
+            reuse_slab: parse_field(
+                table,
+                "reuse-slab",
+                &format!("{}.map-eval.reuse-slab", PREPROCESSOR_CONFIG_KEY),
+                Self::default().reuse_slab,
+            ),
+            compile_expressions: parse_field(
+                table,
+                "compile-expressions",
+                &format!("{}.map-eval.compile-expressions", PREPROCESSOR_CONFIG_KEY),
+                Self::default().compile_expressions,
+            ),
+            namespace_scope: parse_field(
+                table,
+                "namespace-scope",
+                &format!("{}.map-eval.namespace-scope", PREPROCESSOR_CONFIG_KEY),
+                Self::default().namespace_scope,
+            ),
+        }
+    }
+}
+
+fn parse_field<T>(table: &Table, key: &str, path: &str, default: T) -> T
+where
+    T: DeserializeOwned,
+{
+    match table.get(key) {
+        Some(value) => deserialize_value(value).unwrap_or_else(|e| {
+            warn!(
+                "Failed to parse config field '{}': {}; using default value.",
+                path, e
+            );
+            default
+        }),
+        None => default,
+    }
+}
+
+fn deserialize_value<T>(value: &Value) -> Result<T, toml::de::Error>
+where
+    T: DeserializeOwned,
+{
+    #[derive(Deserialize)]
+    struct Wrapper<T> {
+        value: T,
+    }
+
+    toml::from_str::<Wrapper<T>>(&format!("value = {}", value)).map(|wrapper| wrapper.value)
+}
+
+fn warn_unknown_keys(path: &str, table: &Table, known_keys: &[&str]) {
+    for key in table.keys() {
+        if !known_keys.contains(&key.as_str()) {
+            warn!("Unknown config key '{}.{}' will be ignored.", path, key);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Once;
+
+    fn init_logger() {
+        static INIT: Once = Once::new();
+        INIT.call_once(|| {
+            let _ = env_logger::builder().is_test(true).try_init();
+        });
+    }
+
+    #[test]
+    fn ignores_unknown_top_level_keys() {
+        init_logger();
+
+        let value = toml::from_str::<Value>(
+            r#"
+            output-type = "plotly-html"
+            input-type = "toml-input"
+            unexpected = 1
+            [map-eval]
+            enabled = false
+            extra = true
+        "#,
+        )
+        .unwrap();
+
+        let config = PreprocessorConfig::from_toml(&value);
+
+        assert_eq!(config.output_type, PlotlyOutputType::PlotlyHtml);
+        assert_eq!(config.input_type, PlotlyInputType::TOMLInput);
+        assert!(!config.map_eval.enabled);
+    }
+
+    #[test]
+    fn falls_back_for_only_the_bad_field() {
+        init_logger();
+
+        let value = toml::from_str::<Value>(
+            r#"
+            output-type = "plotly-html"
+            input-type = 42
+            [map-eval]
+            enabled = false
+            reuse-slab = false
+            compile-expressions = false
+            namespace-scope = "exports-only"
+        "#,
+        )
+        .unwrap();
+
+        let config = PreprocessorConfig::from_toml(&value);
+
+        assert_eq!(config.output_type, PlotlyOutputType::PlotlyHtml);
+        assert_eq!(config.input_type, PlotlyInputType::JSONInput);
+        assert_eq!(
+            config.map_eval.namespace_scope,
+            MapNamespaceScope::ExportsOnly
+        );
+        assert!(!config.map_eval.enabled);
+        assert!(!config.map_eval.reuse_slab);
+        assert!(!config.map_eval.compile_expressions);
+    }
+
+    #[test]
+    fn falls_back_for_only_the_nested_bad_field() {
+        init_logger();
+
+        let value = toml::from_str::<Value>(
+            r#"
+            output-type = "plotly-html"
+            input-type = "toml-input"
+            [map-eval]
+            enabled = "nope"
+            reuse-slab = false
+            compile-expressions = false
+            namespace-scope = "exports-only"
+        "#,
+        )
+        .unwrap();
+
+        let config = PreprocessorConfig::from_toml(&value);
+
+        assert_eq!(config.output_type, PlotlyOutputType::PlotlyHtml);
+        assert_eq!(config.input_type, PlotlyInputType::TOMLInput);
+        assert!(config.map_eval.enabled);
+        assert!(!config.map_eval.reuse_slab);
+        assert!(!config.map_eval.compile_expressions);
+        assert_eq!(
+            config.map_eval.namespace_scope,
+            MapNamespaceScope::ExportsOnly
+        );
+    }
 }
 
 impl Default for MapEvalConfig {
@@ -51,33 +272,37 @@ impl Default for MapEvalConfig {
 #[serde(rename_all = "kebab-case")]
 pub enum MapNamespaceScope {
     #[default]
+    #[serde(rename = "full-map")]
     FullMap,
+    #[serde(rename = "exports-only")]
     ExportsOnly,
 }
 
 /// NOTE: These configurations are printed as kebab-case names. Please pay attention when using.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
 pub enum PlotlyOutputType {
     /// After the code is executed, it is compiled into an `<div>` for display.
     #[default]
     #[cfg(feature = "plotly-html-handler")]
+    #[serde(rename = "plotly-html")]
     PlotlyHtml,
 
     /// After the code is executed, it is compiled into an SVG for display.
     #[cfg(feature = "plotly-svg-handler")]
+    #[serde(rename = "plotly-svg")]
     PlotlySvg,
 }
 
 /// NOTE: These configurations are printed as kebab-case names. Please pay attention when using.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
 pub enum PlotlyInputType {
     /// Translates the Json format into an actual plotly object.
     /// NOTE: In the `PlotlyOutputType = PlotlySvg` state, this method may cause some performance loss due to multiple packaging.
     #[default]
+    #[serde(rename = "json-input")]
     JSONInput,
 
     /// Translates the TOML format into JSON value first, then reuses the existing plot parser.
+    #[serde(rename = "toml-input")]
     TOMLInput,
 }

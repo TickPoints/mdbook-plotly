@@ -115,14 +115,15 @@ Configuration options for mdbook-plotly are specified in the `[preprocessor.plot
 
 All configuration keys use `kebab-case`. The parser follows these rules:
 
-1. **Unknown keys are ignored** – unrecognized configuration keys are silently dropped.
-2. **Type‑sensitive validation** – a key with an invalid type (e.g., a string where a boolean is expected) causes the entire configuration to be rejected. All settings then revert to their defaults, and an error is logged.
-3. **Missing section warning** – if the `[preprocessor.plotly]` section is absent, a warning is issued and default values are used. If the section is present but the warning appears, please file a bug report.
+1. **Unknown keys are ignored with warnings** – unrecognized configuration keys are skipped, and a warning is logged for each unknown key path, including nested keys such as `preprocessor.plotly.map-eval.extra`.
+2. **Type‑sensitive validation** – a key with an invalid type (e.g., a string where a boolean is expected) falls back only that field or nested section to its default value, and a warning is logged.
+3. **Missing section warning** – if the `[preprocessor.plotly]` section is absent, a warning is issued and default values are used.
 
 Example error when an invalid enum variant is supplied:
 
 ```shell
-Illegal config format for 'preprocessor.plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
+[WARN] mdbook_plotly::preprocessor::config: Unknown config key 'preprocessor.plotly.extra' will be ignored.
+[WARN] mdbook_plotly::preprocessor::config: Failed to parse config field 'preprocessor.plotly.input-type': TOML parse error ...; using default value.
 ```
 
 ### Configuration Options
@@ -136,7 +137,7 @@ after = ["links"]
 output-type = "plotly-html"
 
 # Input format – specifies the syntax of chart definitions.
-# Valid values: "json-input"
+# Valid values: "json-input", "toml-input"
 input-type = "json-input"
 
 # Whether to use offline JavaScript sources (true/false).
@@ -149,6 +150,8 @@ reuse-slab = true
 compile-expressions = true
 namespace-scope = "full-map"
 ```
+
+Unknown keys in either section are ignored with a warning.
 
 > [!NOTE]
 > Internally, active parser paths are being standardized around explicit [`ParseContext`](../src/code_handler/parse_context.rs:4) propagation together with [`translate_with_config!()`](../src/macros.rs:36) and [`translate_enum_with_config!()`](../src/macros.rs:66). This keeps `map.*` resolution aligned with the current [`MapEvalConfig`](../src/preprocessor/config.rs:61) and avoids hidden fallback defaults in migrated code.

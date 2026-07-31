@@ -115,14 +115,15 @@ mdbook-plotly 的配置选项在 `book.toml` 的 `[preprocessor.plotly]` 部分�
 
 所有配置键均使用 `kebab-case`。解析器遵循以下规则：
 
-1. **未知键被忽略** – 无法识别的配置键将被静默丢弃。
-2. **类型敏感验证** – 键的类型无效（例如，需要布尔值时提供了字符串）将导致整个配置被拒绝。所有设置将恢复为默认值，并记录错误。
-3. **缺失部分警告** – 如果缺少 `[preprocessor.plotly]` 部分，将发出警告并使用默认值。如果该部分存在但仍出现警告，请提交错误报告。
+1. **未知键会带警告地忽略** – 无法识别的配置键会被跳过，并且每个未知键路径都会记录警告，包括 `preprocessor.plotly.map-eval.extra` 这样的嵌套键。
+2. **类型敏感验证** – 键的类型无效（例如，需要布尔值时提供了字符串）时，只会回退该字段或嵌套部分到默认值，并记录警告。
+3. **缺失部分警告** – 如果缺少 `[preprocessor.plotly]` 部分，将发出警告并使用默认值。
 
 提供无效枚举变体时的错误示例：
 
 ```shell
-Illegal config format for 'preprocessor.plotly': unknown variant `plotlyhtml`, expected `plotly-html`       |  in `output-type`
+[WARN] mdbook_plotly::preprocessor::config: Unknown config key 'preprocessor.plotly.extra' will be ignored.
+[WARN] mdbook_plotly::preprocessor::config: Failed to parse config field 'preprocessor.plotly.input-type': TOML parse error ...; using default value.
 ```
 
 ### 配置选项
@@ -136,7 +137,7 @@ after = ["links"]
 output-type = "plotly-html"
 
 # 输入格式 – 指定图表定义的语法。
-# 有效值："json-input"
+# 有效值："json-input"、"toml-input"
 input-type = "json-input"
 
 # 是否使用离线 JavaScript 源（true/false）。
@@ -149,6 +150,8 @@ reuse-slab = true
 compile-expressions = true
 namespace-scope = "full-map"
 ```
+
+两个部分中的未知键都会被带警告地忽略。
 
 #### `map-eval` 配置
 
