@@ -61,6 +61,8 @@ pub struct PlotGen {
     pub status: Option<GenStatus>,
     /// Read by the caller after the loop exits (clipboard fallback).
     pub print_on_exit: Option<String>,
+    /// When set, edits do not regenerate until an explicit `regen()`.
+    pub no_preview: bool,
 }
 
 impl PlotGen {
@@ -78,6 +80,7 @@ impl PlotGen {
             generated: String::new(),
             status: None,
             print_on_exit: None,
+            no_preview: false,
         };
         form.reset_to_example();
         form
@@ -131,14 +134,14 @@ impl PlotGen {
         if let Some(input) = self.inputs.get_mut(field_idx) {
             input.text = text;
         }
-        self.regen();
+        self.regen_if_preview();
     }
 
     pub fn toggle_bool(&mut self, field_idx: usize) {
         if let Some(input) = self.inputs.get_mut(field_idx) {
             input.bool_value = !input.bool_value;
         }
-        self.regen();
+        self.regen_if_preview();
     }
 
     pub fn cycle_enum(&mut self, field_idx: usize, delta: isize) {
@@ -148,7 +151,18 @@ impl PlotGen {
         {
             input.enum_index = (input.enum_index as isize + delta).rem_euclid(count) as usize;
         }
-        self.regen();
+        self.regen_if_preview();
+    }
+
+    fn regen_if_preview(&mut self) {
+        if !self.no_preview {
+            self.regen();
+        }
+    }
+
+    /// Toggle whether edits regenerate the preview live (`--no-preview`).
+    pub fn set_no_preview(&mut self, on: bool) {
+        self.no_preview = on;
     }
 
     pub fn has_errors(&self) -> bool {

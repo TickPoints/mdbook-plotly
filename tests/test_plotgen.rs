@@ -105,3 +105,19 @@ fn reset_restores_the_example() {
     let value: serde_json::Value = serde_json::from_str(&g.generated).unwrap();
     assert_eq!(value["data"][0]["x"], serde_json::json!([0, 1, 2, 3]));
 }
+
+#[test]
+fn no_preview_defers_generation_until_regen() {
+    let mut g = PlotGen::new(DocLang::English);
+    g.set_no_preview(true);
+    let xi = field_idx(&g, "x");
+    let before = g.generated.clone();
+    g.set_text_field(xi, "9,9".to_string());
+    assert_eq!(
+        g.generated, before,
+        "with --no-preview, editing must not regenerate"
+    );
+    g.regen();
+    let value: serde_json::Value = serde_json::from_str(&g.generated).unwrap();
+    assert_eq!(value["data"][0]["x"], serde_json::json!([9, 9]));
+}

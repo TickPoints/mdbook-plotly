@@ -49,6 +49,49 @@ jobs:
       - name: Format check
         run: cargo fmt --check
 
+  # Validates the plot generator schema (contract C) against the parser:
+  # both language files must parse, stay in sync, and every embedded
+  # example must produce valid chart input.
+  docs-schema-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: docs-schema-${{ hashFiles('Cargo.lock') }}
+          restore-keys: docs-schema-
+
+      - name: Plot schema contract test
+        run: cargo test --locked --test test_plot_schema
+
+  # Renders key views through ratatui::TestBackend and asserts structure,
+  # labels, and the paper palette, plus generator form logic.
+  tui-visual-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: tui-visual-${{ hashFiles('Cargo.lock') }}
+          restore-keys: tui-visual-
+
+      - name: Generator and visual regression tests
+        run: cargo test --locked --features tui --test test_plotgen --test test_tui_visual
+
   # Creates the GitHub Release from docs/CHANGELOG.md when a v* tag is pushed.
   create-release:
     if: startsWith(github.ref, 'refs/tags/v')

@@ -51,7 +51,7 @@ impl App {
         let hosts = GithubHosts::resolve(&settings::github_overrides());
         let repo = RepoSpec::from_pkg_repository();
         let lang = resolve_language();
-        Self {
+        let mut app = Self {
             opts,
             view: View::Home,
             help: false,
@@ -67,7 +67,9 @@ impl App {
             update_rx: None,
             update_confirm_tx: None,
             clipboard,
-        }
+        };
+        app.gen_view.state.set_no_preview(opts.no_preview);
+        app
     }
 
     // -- view switching -----------------------------------------------------
