@@ -21,6 +21,33 @@ pub fn main() {
             }
         }
         CommandKind::ProcessBook => preprocessor::preprocess_book(),
+        #[cfg(feature = "tui")]
+        CommandKind::Tui {
+            dry_run,
+            refresh,
+            no_effects,
+        } => {
+            let opts = mdbook_plotly::tui::TuiOptions {
+                dry_run,
+                refresh,
+                no_effects,
+            };
+            if let Err(e) = mdbook_plotly::tui::run(opts) {
+                fatal!("TUI error.\nInterError: {e:#}");
+            }
+        }
+        #[cfg(not(feature = "tui"))]
+        CommandKind::TuiNotAvailable => {
+            let releases = format!("{}/releases", env!("CARGO_PKG_REPOSITORY"));
+            eprintln!(
+                "This binary is the slim edition of mdbook-plotly and does not include the `tui` command.\n\
+                 To get the full edition with the interactive tools, either:\n\
+                 \x20  •  cargo install mdbook-plotly --features tui\n\
+                 \x20  •  download the release asset whose name ends with `-tui` from\n\
+                 \x20     {releases}"
+            );
+            std::process::exit(1);
+        }
     }
 }
 
