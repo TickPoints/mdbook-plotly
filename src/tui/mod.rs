@@ -7,6 +7,10 @@
 //! short sweep on update completion) come from `tachyonfx` and can be
 //! disabled with `--no-effects`.
 
+pub mod book_toml;
+pub mod book_toml_view;
+pub mod cheatsheet;
+pub mod cheatsheet_view;
 pub mod github;
 pub mod locale;
 pub mod settings;
