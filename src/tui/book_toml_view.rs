@@ -181,7 +181,8 @@ impl ConfigView {
         let list_block = Block::default()
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
-            .border_style(theme::border());
+            .border_style(theme::border())
+            .style(ratatui::style::Style::new().bg(theme::Layer::Raised.bg()));
         let list_inner = list_block.inner(list);
         frame.render_widget(list_block, list);
         let visible = list_inner.height as usize;
@@ -272,7 +273,8 @@ impl ConfigView {
                 .title(" Diff preview ")
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded)
-                .border_style(theme::border_active()),
+                .border_style(theme::border_active())
+                .style(ratatui::style::Style::new().bg(theme::Layer::Floating.bg())),
             popup,
         );
         let inner = popup.inner(Margin {

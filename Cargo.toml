@@ -43,6 +43,7 @@ self-replace = { version = "1.5.0", optional = true }
 tempfile = { version = "3.27.0", optional = true }
 thiserror = { version = "2.0.19", optional = true }
 sys-locale = { version = "0.3.2", optional = true }
+supports-color = { version = "3.0.2", optional = true }
 
 [features]
 default = ["sync", "map-parser-extensions", "default-handlers"]
@@ -66,6 +67,7 @@ tui = [
     "dep:tempfile",
     "dep:thiserror",
     "dep:sys-locale",
+    "dep:supports-color",
 ]
 default-handlers = ["plotly-html-handler"]
 full-handlers = ["plotly-svg-handler", "plotly-html-handler"]

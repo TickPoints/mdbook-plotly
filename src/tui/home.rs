@@ -1,4 +1,5 @@
-//! Welcome view: big title, version/variant info, and the three tools.
+//! Welcome view: big title, subtitle with a density accent line, the three
+//! tools, and the footer hint.
 
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
@@ -24,6 +25,9 @@ pub const MENU_ITEMS: [(&str, &str); 3] = [
     ),
 ];
 
+/// Subtitle shown under the big title.
+const SUBTITLE: &str = "FULL EDITION";
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct HomeView {
     pub selected: usize,
@@ -31,9 +35,10 @@ pub struct HomeView {
 
 impl HomeView {
     pub fn render(&mut self, frame: &mut Frame, area: Rect) {
-        let [title_area, info_area, menu_area, footer_area] = Layout::vertical([
+        let [title_area, subtitle_area, info_area, menu_area, footer_area] = Layout::vertical([
             Constraint::Length(8),
-            Constraint::Length(3),
+            Constraint::Length(1),
+            Constraint::Length(1),
             Constraint::Min(3),
             Constraint::Length(3),
         ])
@@ -46,14 +51,21 @@ impl HomeView {
             .build();
         frame.render_widget(big, title_area);
 
+        let sub = format!("{}  {}", SUBTITLE, theme::density_line(0.6, 8));
+        frame.render_widget(
+            Paragraph::new(Line::from(Span::styled(sub, theme::accent())))
+                .alignment(Alignment::Center),
+            subtitle_area,
+        );
+
         // This module only compiles in the full (tui) build.
         let info = format!(
-            "v{}  ·  full edition  ·  {}",
+            "v{}  ·  {}",
             env!("CARGO_PKG_VERSION"),
             env!("CARGO_PKG_REPOSITORY")
         );
         frame.render_widget(
-            Paragraph::new(Line::from(Span::styled(info, theme::dim())))
+            Paragraph::new(Line::from(Span::styled(info, theme::decor())))
                 .alignment(Alignment::Center),
             info_area,
         );
@@ -62,9 +74,9 @@ impl HomeView {
 
         frame.render_widget(
             Paragraph::new(Line::from(vec![
-                Span::styled("↑↓", theme::accent().add_modifier(Modifier::REVERSED)),
+                Span::styled("↑↓", theme::on_accent()),
                 Span::styled("  select   ", theme::dim()),
-                Span::styled("Enter", theme::accent().add_modifier(Modifier::REVERSED)),
+                Span::styled("Enter", theme::on_accent()),
                 Span::styled("  open", theme::dim()),
             ]))
             .alignment(Alignment::Center),
@@ -83,7 +95,10 @@ impl HomeView {
                 break;
             }
             let (title_style, desc_style) = if i == self.selected {
-                (theme::selected(), theme::selected())
+                (
+                    theme::on_accent().add_modifier(Modifier::BOLD),
+                    theme::on_accent(),
+                )
             } else {
                 (theme::fg(), theme::dim())
             };

@@ -79,7 +79,8 @@ pub fn render(frame: &mut Frame, area: Rect) {
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
-            .border_style(theme::border_active()),
+            .border_style(theme::border_active())
+            .style(ratatui::style::Style::new().bg(theme::Layer::Floating.bg())),
         popup,
     );
 

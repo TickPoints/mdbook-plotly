@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
 use ratatui::layout::Rect;
-use ratatui::style::Color;
+use ratatui::style::{Color, Style};
 use tachyonfx::{Effect, EffectTimer, Interpolation, Motion, fx};
 
 use crate::tui::book_toml;
@@ -19,7 +19,9 @@ use crate::tui::plotgen_view::PlotGenView;
 use crate::tui::settings;
 use crate::tui::update;
 use crate::tui::update_view::{self, UpdateView};
-use crate::tui::{EVENT_POLL_MS, TerminalType, UPDATE_SWEEP_MS, VIEW_FADE_MS, View, help, widget};
+use crate::tui::{
+    EVENT_POLL_MS, TerminalType, UPDATE_SWEEP_MS, VIEW_FADE_MS, View, help, theme, widget,
+};
 
 /// Sweep gradient length / randomness for the update-complete flash.
 const SWEEP_GRADIENT: u16 = 3;
@@ -430,6 +432,10 @@ impl App {
 
     fn render(&mut self, frame: &mut Frame, dt: Duration) {
         let area = frame.area();
+        frame.render_widget(
+            ratatui::widgets::Paragraph::new("").style(Style::new().bg(theme::base_bg())),
+            area,
+        );
 
         match self.view {
             View::Home => self.home.render(frame, area),

@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
-use ratatui::style::Modifier;
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap};
 
@@ -99,20 +99,20 @@ impl Spinner {
     }
 }
 
-/// Render the persistent bottom key-hint bar.
+/// Render the persistent bottom key-hint bar on a dark paper band.
 pub fn key_bar(frame: &mut Frame, area: Rect, hints: &[(&str, &str)]) {
     let mut spans: Vec<Span> = Vec::new();
     for (i, (key, label)) in hints.iter().enumerate() {
         if i > 0 {
-            spans.push(Span::styled(KEY_SPACING, theme::dim()));
+            spans.push(Span::styled(KEY_SPACING, theme::decor()));
         }
-        spans.push(Span::styled(
-            format!(" {key} "),
-            theme::accent().add_modifier(Modifier::REVERSED),
-        ));
+        spans.push(Span::styled(format!(" {key} "), theme::on_accent()));
         spans.push(Span::styled(format!(" {label}"), theme::dim()));
     }
-    frame.render_widget(Paragraph::new(Line::from(spans)), area);
+    frame.render_widget(
+        Paragraph::new(Line::from(spans)).style(Style::new().bg(theme::active().bg_dark)),
+        area,
+    );
 }
 
 /// A centered dialog with a title, message body, and a prompt line.
@@ -136,7 +136,8 @@ pub fn confirm_dialog(frame: &mut Frame, area: Rect, title: &str, message: &str,
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
-            .border_style(theme::border_active()),
+            .border_style(theme::border_active())
+            .style(Style::new().bg(theme::Layer::Floating.bg())),
         popup,
     );
     let lines: Vec<Line> = message
@@ -168,7 +169,8 @@ pub fn text_input(frame: &mut Frame, area: Rect, title: &str, value: &str, curso
         .title(title)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(theme::border_active());
+        .border_style(theme::border_active())
+        .style(Style::new().bg(theme::Layer::Raised.bg()));
     let inner = block.inner(area);
     frame.render_widget(block, area);
     let text = if value.is_empty() {
@@ -194,7 +196,7 @@ pub fn view_header(frame: &mut Frame, area: Rect, title: &str, right: &str) {
     let line = Line::from(vec![
         Span::styled(title.to_string(), theme::accent_bold()),
         Span::raw(" ".repeat(pad as usize)),
-        Span::styled(right.to_string(), theme::dim()),
+        Span::styled(right.to_string(), theme::decor()),
     ]);
     frame.render_widget(Paragraph::new(line).style(theme::fg()), area);
 }

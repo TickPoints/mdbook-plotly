@@ -45,6 +45,7 @@ pub enum GenStatus {
 }
 
 /// The form state for one generator session.
+#[derive(Debug, Clone)]
 pub struct PlotGen {
     pub schema: PlotSchema,
     pub lang: DocLang,

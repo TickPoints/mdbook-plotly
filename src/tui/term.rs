@@ -11,6 +11,7 @@ use ratatui::backend::CrosstermBackend;
 use std::io;
 
 pub fn setup() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
+    crate::tui::theme::init_palette(crate::tui::theme::detect_color_level());
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;

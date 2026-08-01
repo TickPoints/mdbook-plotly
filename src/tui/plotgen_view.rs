@@ -4,7 +4,7 @@
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, BorderType, Borders, Paragraph, Wrap};
+use ratatui::widgets::{Paragraph, Wrap};
 
 use crate::tui::plotgen::{GenStatus, PlotGen};
 use crate::tui::theme;
@@ -17,6 +17,7 @@ const FORM_LABEL_PAD: usize = 20;
 /// Height of the selected-field help footer inside the form.
 const FORM_HELP_LINES: u16 = 2;
 
+#[derive(Debug, Clone)]
 pub struct PlotGenView {
     pub state: PlotGen,
 }
@@ -74,9 +75,9 @@ impl PlotGenView {
                 spans.push(Span::raw("  "));
             }
             let style = if i == self.state.type_index {
-                theme::selected()
+                theme::on_accent().add_modifier(ratatui::style::Modifier::BOLD)
             } else {
-                theme::dim()
+                theme::outlined()
             };
             spans.push(Span::styled(
                 format!(" {} {} ", i + 1, plot_type.label),
@@ -87,11 +88,7 @@ impl PlotGenView {
     }
 
     fn render_form(&mut self, frame: &mut Frame, area: Rect) {
-        let block = Block::default()
-            .title(" form ")
-            .borders(Borders::ALL)
-            .border_type(BorderType::Rounded)
-            .border_style(theme::border());
+        let block = theme::block(" form ", theme::Layer::Raised, true);
         let inner = block.inner(area);
         frame.render_widget(block, area);
 
@@ -120,7 +117,7 @@ impl PlotGenView {
                 break;
             }
             let (label_style, control_style, cursor) = if i == self.state.selected {
-                (theme::accent_bold(), theme::fg(), "›")
+                (theme::on_accent(), theme::on_accent(), "▸")
             } else {
                 (theme::fg(), theme::dim(), " ")
             };
@@ -165,11 +162,11 @@ impl PlotGenView {
     }
 
     fn render_preview(&mut self, frame: &mut Frame, area: Rect) {
-        let block = Block::default()
-            .title(format!(" preview ({}) ", self.state.output.label()))
-            .borders(Borders::ALL)
-            .border_type(BorderType::Rounded)
-            .border_style(theme::border());
+        let block = theme::block(
+            &format!(" preview ({}) ", self.state.output.label()),
+            theme::Layer::Floating,
+            true,
+        );
         let inner = block.inner(area);
         frame.render_widget(block, area);
         let lines: Vec<Line> = self
@@ -188,30 +185,15 @@ impl PlotGenView {
 
     fn render_actions(&mut self, frame: &mut Frame, area: Rect) {
         let mut spans = vec![
-            Span::styled(
-                " p ",
-                theme::accent().add_modifier(ratatui::style::Modifier::REVERSED),
-            ),
+            Span::styled(" p ", theme::on_accent()),
             Span::styled(format!(" {}   ", self.state.output.label()), theme::dim()),
-            Span::styled(
-                " c ",
-                theme::accent().add_modifier(ratatui::style::Modifier::REVERSED),
-            ),
+            Span::styled(" c ", theme::on_accent()),
             Span::styled(" copy   ", theme::dim()),
-            Span::styled(
-                " s ",
-                theme::accent().add_modifier(ratatui::style::Modifier::REVERSED),
-            ),
+            Span::styled(" s ", theme::on_accent()),
             Span::styled(" save   ", theme::dim()),
-            Span::styled(
-                " r ",
-                theme::accent().add_modifier(ratatui::style::Modifier::REVERSED),
-            ),
+            Span::styled(" r ", theme::on_accent()),
             Span::styled(" reset   ", theme::dim()),
-            Span::styled(
-                " 1-8 ",
-                theme::accent().add_modifier(ratatui::style::Modifier::REVERSED),
-            ),
+            Span::styled(" 1-8 ", theme::on_accent()),
             Span::styled(" plot type", theme::dim()),
         ];
         if self.state.has_errors() {

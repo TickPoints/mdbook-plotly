@@ -7,7 +7,7 @@ use std::time::Duration;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Gauge, Paragraph};
+use ratatui::widgets::Paragraph;
 
 use crate::tui::theme;
 use crate::tui::update::{ReleaseInfo, UpdateMsg};
@@ -190,6 +190,31 @@ impl UpdateView {
         );
     }
 
+    /// A density-filled progress bar: `█` fill, `·` remainder, paper-text on
+    /// a darker band.
+    fn render_progress(&self, frame: &mut ratatui::Frame, area: Rect, ratio: f64, label: String) {
+        let block = ratatui::widgets::Block::default()
+            .borders(ratatui::widgets::Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(theme::border())
+            .style(ratatui::style::Style::new().bg(theme::Layer::Raised.bg()));
+        let inner = block.inner(area);
+        frame.render_widget(block, area);
+        let width = inner.width as usize;
+        let filled = ((ratio * width as f64) as usize).min(width);
+        let bar = format!("{}{}", "█".repeat(filled), "·".repeat(width - filled));
+        let bar_style = ratatui::style::Style::new()
+            .fg(theme::active().accent_moss)
+            .bg(theme::active().bg_dark);
+        frame.render_widget(
+            ratatui::widgets::Paragraph::new(ratatui::text::Line::from(vec![
+                ratatui::text::Span::styled(bar, bar_style),
+                ratatui::text::Span::styled(format!("  {label}"), theme::dim()),
+            ])),
+            inner,
+        );
+    }
+
     fn render_body(&self, frame: &mut ratatui::Frame, area: Rect) {
         let spinner = self.spinner.ch();
         let (lines, style): (Vec<Line>, Style) = match &self.phase {
@@ -230,13 +255,12 @@ impl UpdateView {
                     0.0
                 };
                 let pct = (ratio * 100.0) as u16;
-                let gauge = Gauge::default()
-                    .ratio(ratio)
-                    .label(format!(
-                        "{spinner} downloading {downloaded} / {total} bytes ({pct}%)"
-                    ))
-                    .gauge_style(theme::accent());
-                frame.render_widget(gauge, area);
+                self.render_progress(
+                    frame,
+                    area,
+                    ratio,
+                    format!("{spinner} downloading {downloaded} / {total} bytes ({pct}%)"),
+                );
                 return;
             }
             Phase::Downloaded => (
