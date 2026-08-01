@@ -12,6 +12,8 @@ pub mod locale;
 pub mod settings;
 pub mod term;
 pub mod theme;
+pub mod update;
+pub mod update_view;
 pub mod widget;
 
 /// Event poll interval in milliseconds.
