@@ -2,8 +2,20 @@ use clap::{Arg, Command, command, error::ErrorKind};
 
 #[derive(Debug)]
 pub enum CommandKind {
-    Supports { renderer: String },
+    Supports {
+        renderer: String,
+    },
     ProcessBook,
+    #[cfg(feature = "tui")]
+    Tui {
+        dry_run: bool,
+        refresh: bool,
+        no_effects: bool,
+    },
+    /// The binary was built without the `tui` feature; the subcommand is
+    /// recognized but not implemented.
+    #[cfg(not(feature = "tui"))]
+    TuiNotAvailable,
 }
 
 #[derive(Debug)]
@@ -26,6 +38,14 @@ impl ReceivedArgs {
                     .to_string();
                 CommandKind::Supports { renderer }
             }
+            #[cfg(feature = "tui")]
+            Some(("tui", sub_m)) => CommandKind::Tui {
+                dry_run: sub_m.get_flag("dry-run"),
+                refresh: sub_m.get_flag("refresh"),
+                no_effects: sub_m.get_flag("no-effects"),
+            },
+            #[cfg(not(feature = "tui"))]
+            Some(("tui", _)) => CommandKind::TuiNotAvailable,
             None => CommandKind::ProcessBook,
             _ => {
                 return Err(clap::Error::raw(
@@ -40,13 +60,38 @@ impl ReceivedArgs {
 }
 
 fn make_app() -> Command {
-    command!().subcommand(
-        Command::new("supports")
-            .arg(
-                Arg::new("renderer")
-                    .required(true)
-                    .help("The renderer to check support for"),
-            )
-            .about("Check whether a renderer is supported by this preprocessor"),
-    )
+    let tui = Command::new("tui")
+        .about("Interactive tools: self-update, book.toml editor, plot cheat-sheet");
+    #[cfg(feature = "tui")]
+    let tui = tui
+        .arg(
+            Arg::new("dry-run")
+                .long("dry-run")
+                .action(clap::ArgAction::SetTrue)
+                .help("Check for updates without downloading or replacing anything"),
+        )
+        .arg(
+            Arg::new("refresh")
+                .long("refresh")
+                .action(clap::ArgAction::SetTrue)
+                .help("Force a refresh of the cached cheat-sheet document"),
+        )
+        .arg(
+            Arg::new("no-effects")
+                .long("no-effects")
+                .action(clap::ArgAction::SetTrue)
+                .help("Disable transition animations"),
+        );
+
+    command!()
+        .subcommand(
+            Command::new("supports")
+                .arg(
+                    Arg::new("renderer")
+                        .required(true)
+                        .help("The renderer to check support for"),
+                )
+                .about("Check whether a renderer is supported by this preprocessor"),
+        )
+        .subcommand(tui)
 }
