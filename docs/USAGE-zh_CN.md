@@ -1,9 +1,13 @@
+<!-- usage-schema: 1 -->
+
 # mdbook-plotly 用户手册
 
 这是 **mdbook-plotly** 的官方用户手册（中文版），该预处理器可在 mdbook 文档中渲染交互式或静态的 Plotly 图表。本手册提供全面的参考和使用说明。
 
 > [!NOTE]
 > 本用户手册提供多种语言版本；但是，并非所有语言版本都保证反映应用程序的最新更新。如果不同语言版本之间存在差异，应以中文版为准。
+>
+> 本文档中的 plot 区块使用了机器可读的 schema。编辑前请先阅读 [USAGE-SCHEMA.md](USAGE-SCHEMA.md)。
 
 ## 目录
 
@@ -1715,3 +1719,134 @@ config: {
 |--------|--------|--------|--------|
 | **PlotlyHtml** | `plotly-html`  | 输出一个 `<div>` 元素和一个包含 Plotly 逻辑的配套 `<script>` | 可能导致与不支持原始 HTML 的 Markdown 解析器的兼容性问题；不太适合客户端渲染场景 |
 | **PlotlySvg**  | `plotly-svg`   | **TODO** | 尚未实现；旨在本地执行大部分渲染，但可能会增加构建时间 |
+
+## Plot 示例速查
+
+可直接复制的极简示例。`mdbook-plotly tui` 的速查工具会搜索并预览这些区块；区块的 schema 定义见 [USAGE-SCHEMA.md](USAGE-SCHEMA.md)。
+
+<!-- plot:begin id=line-basic title="基础折线图" tags=line,scatter,2d -->
+包含三个数据点的简单折线图。
+```plotly
+{
+    layout: {
+        title: "Basic Line",
+    },
+    data: [{
+        type: "scatter",
+        x: [0, 1, 2, 3],
+        y: [1, 3, 2, 4],
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=bar-basic title="基础柱状图" tags=bar,2d -->
+四个数值的柱状图。
+```plotly
+{
+    data: [{
+        type: "bar",
+        x: [1, 2, 3, 4],
+        y: [4, 7, 3, 9],
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=pie-basic title="基础饼图" tags=pie,2d -->
+四个扇区的饼图。
+```plotly
+{
+    data: [{
+        type: "pie",
+        values: [10, 20, 30, 40],
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=histogram-basic title="基础直方图" tags=histogram,distribution,2d -->
+一组样本的直方图。
+```plotly
+{
+    data: [{
+        type: "histogram",
+        x: [1, 2, 2, 3, 3, 3, 4, 4, 5],
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=scatter-marker title="带标记的散点图" tags=scatter,marker,2d -->
+带标记样式和不透明度的散点图。
+```plotly
+{
+    data: [{
+        type: "scatter",
+        mode: "markers",
+        x: [0, 1, 2, 3, 4],
+        y: [2, 5, 3, 6, 1],
+        marker: {
+            size: 10,
+            opacity: 0.7,
+        },
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=dual-axis title="双 Y 轴" tags=scatter,bar,axis,2d -->
+共享 X 轴但使用独立 Y 轴的柱状图和折线图。
+```plotly
+{
+    data: [
+        {
+            type: "bar",
+            x: [1, 2, 3, 4],
+            y: [10, 15, 13, 17],
+            y_axis: "y",
+        },
+        {
+            type: "scatter",
+            x: [1, 2, 3, 4],
+            y: [0.4, 0.6, 0.55, 0.8],
+            y_axis: "y2",
+        },
+    ],
+    layout: {
+        yaxis2: {
+            overlaying: "y",
+            side: "right",
+        },
+    },
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=box-basic title="基础箱线图" tags=box,distribution,2d -->
+四个类别的箱线图。
+```plotly
+{
+    data: [{
+        type: "box",
+        y: [1, 2, 3, 5, 8, 13, 4, 6, 7, 9],
+    }],
+}
+```
+<!-- plot:end -->
+
+<!-- plot:begin id=heatmap-basic title="基础热力图" tags=heatmap,matrix,2d -->
+带颜色刻度的 3x3 热力图。
+```plotly
+{
+    data: [{
+        type: "heatmap",
+        z: [
+            [1, 20, 30],
+            [20, 1, 60],
+            [30, 60, 1],
+        ],
+    }],
+}
+```
+<!-- plot:end -->
