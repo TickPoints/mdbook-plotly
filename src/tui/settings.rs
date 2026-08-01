@@ -11,7 +11,7 @@
 //!
 //! [github]
 //! proxy = "https://ghproxy.com/"
-//! # api / raw / download overrides are also accepted, e.g.:
+//! # api / download overrides are also accepted, e.g.:
 //! # download = "https://github.example.com"
 //! ```
 
@@ -20,7 +20,7 @@ use std::path::PathBuf;
 /// Config file name inside the XDG config directory.
 pub const CONFIG_FILE_NAME: &str = "config.toml";
 
-/// Environment variable that pins the documentation language
+/// Environment variable that pins the generator schema language
 /// (`zh`, `zh-CN`, `en`, …).
 pub const ENV_LANG: &str = "MDBOOK_PLOTLY_LANG";
 
@@ -29,8 +29,6 @@ pub const ENV_LANG: &str = "MDBOOK_PLOTLY_LANG";
 pub const ENV_GITHUB_PROXY: &str = "MDBOOK_PLOTLY_GITHUB_PROXY";
 /// Environment variable overriding the GitHub API base URL.
 pub const ENV_GITHUB_API: &str = "MDBOOK_PLOTLY_GITHUB_API";
-/// Environment variable overriding the raw-content base URL.
-pub const ENV_GITHUB_RAW: &str = "MDBOOK_PLOTLY_GITHUB_RAW";
 /// Environment variable overriding the release-download base URL.
 pub const ENV_GITHUB_DOWNLOAD: &str = "MDBOOK_PLOTLY_GITHUB_DOWNLOAD";
 
@@ -41,8 +39,6 @@ pub struct GithubOverrides {
     pub proxy: Option<String>,
     /// Replacement for the GitHub API base.
     pub api: Option<String>,
-    /// Replacement for the raw-content base.
-    pub raw: Option<String>,
     /// Replacement for the release-download base.
     pub download: Option<String>,
 }
@@ -67,7 +63,6 @@ struct FileConfig {
 struct FileGithub {
     proxy: Option<String>,
     api: Option<String>,
-    raw: Option<String>,
     download: Option<String>,
 }
 
@@ -92,7 +87,6 @@ pub fn parse_config(text: &str) -> FileSettings {
         github: GithubOverrides {
             proxy: github.proxy,
             api: github.api,
-            raw: github.raw,
             download: github.download,
         },
         language: raw.language.and_then(|l| l.doc),
@@ -104,7 +98,6 @@ pub fn github_overrides() -> GithubOverrides {
     let mut overrides = file_github_overrides();
     env_or(&mut overrides.proxy, ENV_GITHUB_PROXY);
     env_or(&mut overrides.api, ENV_GITHUB_API);
-    env_or(&mut overrides.raw, ENV_GITHUB_RAW);
     env_or(&mut overrides.download, ENV_GITHUB_DOWNLOAD);
     overrides
 }

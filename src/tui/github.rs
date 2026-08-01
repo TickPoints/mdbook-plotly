@@ -9,8 +9,6 @@ use crate::tui::settings::GithubOverrides;
 
 /// Default GitHub API base.
 pub const DEFAULT_API_BASE: &str = "https://api.github.com";
-/// Default raw-content base.
-pub const DEFAULT_RAW_BASE: &str = "https://raw.githubusercontent.com";
 /// Default release-download base.
 pub const DEFAULT_DOWNLOAD_BASE: &str = "https://github.com";
 
@@ -43,7 +41,6 @@ impl RepoSpec {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GithubHosts {
     pub api: String,
-    pub raw: String,
     pub download: String,
     /// Optional prefix prepended to every URL (proxy mode).
     pub proxy: Option<String>,
@@ -53,7 +50,6 @@ impl Default for GithubHosts {
     fn default() -> Self {
         Self {
             api: DEFAULT_API_BASE.to_string(),
-            raw: DEFAULT_RAW_BASE.to_string(),
             download: DEFAULT_DOWNLOAD_BASE.to_string(),
             proxy: None,
         }
@@ -68,10 +64,6 @@ impl GithubHosts {
                 .api
                 .clone()
                 .unwrap_or_else(|| DEFAULT_API_BASE.to_string()),
-            raw: overrides
-                .raw
-                .clone()
-                .unwrap_or_else(|| DEFAULT_RAW_BASE.to_string()),
             download: overrides
                 .download
                 .clone()
@@ -100,21 +92,6 @@ impl GithubHosts {
         self.with_proxy(Self::join(
             &self.api,
             &format!("repos/{}/releases/latest", repo.path()),
-        ))
-    }
-
-    /// Raw file URL for a tag/path, e.g.
-    /// `…/<owner>/<repo>/<tag>/docs/USAGE.md`.
-    pub fn raw_file_url(&self, repo: &RepoSpec, tag: &str, path: &str) -> String {
-        self.with_proxy(Self::join(
-            &self.raw,
-            &format!(
-                "{}/{}/{}/{}",
-                repo.owner,
-                repo.repo,
-                tag,
-                path.trim_start_matches('/')
-            ),
         ))
     }
 

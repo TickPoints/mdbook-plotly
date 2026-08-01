@@ -22,7 +22,7 @@ const SECTIONS: &[(&str, &[(&str, &str)])] = &[
             ("↑/↓", "move selection"),
             (
                 "1 / 2 / 3",
-                "open self-update / book.toml editor / cheat-sheet",
+                "open self-update / book.toml editor / plot generator",
             ),
             ("Enter", "open selected tool"),
         ],
@@ -46,13 +46,18 @@ const SECTIONS: &[(&str, &[(&str, &str)])] = &[
         ],
     ),
     (
-        "Cheat-sheet",
+        "Plot generator",
         &[
-            ("type", "search as you type"),
-            ("↑/↓", "move selection"),
-            ("Enter", "copy example to the clipboard"),
-            ("p", "print example to stdout (clipboard fallback)"),
-            ("Esc", "clear the search box"),
+            ("1-8", "select a plot type"),
+            ("↑/↓", "move between form fields"),
+            ("type", "edit the selected text field"),
+            ("Enter / Space", "toggle a checkbox"),
+            ("←/→", "cycle enum values"),
+            ("p", "switch output format JSON / TOML"),
+            ("c", "copy the generated config to the clipboard"),
+            ("s", "save to plot-<type>.json / .toml"),
+            ("r", "reset the form to the built-in example"),
+            ("Esc", "back to home"),
         ],
     ),
 ];

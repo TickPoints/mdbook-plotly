@@ -1,4 +1,4 @@
-//! Documentation language selection.
+//! Generator schema language selection.
 //!
 //! Resolution order (highest priority first):
 //! 1. `MDBOOK_PLOTLY_LANG` environment variable (`zh`, `zh-CN`, `en`, …)
@@ -6,9 +6,10 @@
 //! 3. The system locale (via `sys-locale`)
 //! 4. English (default)
 
+use crate::plot_schema::{EMBEDDED_EN, EMBEDDED_ZH_CN};
 use crate::tui::settings;
 
-/// Which user manual the cheat-sheet reads.
+/// Which localized schema the plot generator reads.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DocLang {
     English,
@@ -16,29 +17,32 @@ pub enum DocLang {
 }
 
 impl DocLang {
-    /// The file name inside `docs/`.
-    pub fn doc_file_name(self) -> &'static str {
+    /// The schema file name inside `docs/`.
+    pub fn schema_file_name(self) -> &'static str {
         match self {
-            DocLang::English => "USAGE.md",
-            DocLang::Chinese => "USAGE-zh_CN.md",
+            DocLang::English => "PLOT-SCHEMA.json",
+            DocLang::Chinese => "PLOT-SCHEMA-zh_CN.json",
         }
     }
 
-    /// Stable key used in cache file names and messages.
-    pub fn cache_key(self) -> &'static str {
+    /// Embedded schema source for this language.
+    pub fn schema_source(self) -> &'static str {
         match self {
-            DocLang::English => "en",
-            DocLang::Chinese => "zh_CN",
+            DocLang::English => EMBEDDED_EN,
+            DocLang::Chinese => EMBEDDED_ZH_CN,
         }
     }
 
     /// Short human-readable label.
     pub fn label(self) -> &'static str {
-        self.cache_key()
+        match self {
+            DocLang::English => "en",
+            DocLang::Chinese => "zh_CN",
+        }
     }
 }
 
-/// Map a locale/language name to a documentation language.
+/// Map a locale/language name to a schema language.
 /// Anything starting with `zh` selects Chinese.
 pub fn language_from_name(name: &str) -> DocLang {
     let name = name.trim().to_ascii_lowercase();
@@ -49,7 +53,7 @@ pub fn language_from_name(name: &str) -> DocLang {
     }
 }
 
-/// Resolve the documentation language for this run.
+/// Resolve the schema language for this run.
 pub fn resolve_language() -> DocLang {
     if let Some(name) = settings::env_language_override() {
         return language_from_name(&name);

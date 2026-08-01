@@ -9,8 +9,8 @@ pub enum CommandKind {
     #[cfg(feature = "tui")]
     Tui {
         dry_run: bool,
-        refresh: bool,
         no_effects: bool,
+        no_preview: bool,
     },
     /// The binary was built without the `tui` feature; the subcommand is
     /// recognized but not implemented.
@@ -41,8 +41,8 @@ impl ReceivedArgs {
             #[cfg(feature = "tui")]
             Some(("tui", sub_m)) => CommandKind::Tui {
                 dry_run: sub_m.get_flag("dry-run"),
-                refresh: sub_m.get_flag("refresh"),
                 no_effects: sub_m.get_flag("no-effects"),
+                no_preview: sub_m.get_flag("no-preview"),
             },
             #[cfg(not(feature = "tui"))]
             Some(("tui", _)) => CommandKind::TuiNotAvailable,
@@ -61,7 +61,7 @@ impl ReceivedArgs {
 
 fn make_app() -> Command {
     let tui = Command::new("tui")
-        .about("Interactive tools: self-update, book.toml editor, plot cheat-sheet");
+        .about("Interactive tools: self-update, book.toml editor, plot generator");
     #[cfg(feature = "tui")]
     let tui = tui
         .arg(
@@ -71,16 +71,16 @@ fn make_app() -> Command {
                 .help("Check for updates without downloading or replacing anything"),
         )
         .arg(
-            Arg::new("refresh")
-                .long("refresh")
-                .action(clap::ArgAction::SetTrue)
-                .help("Force a refresh of the cached cheat-sheet document"),
-        )
-        .arg(
             Arg::new("no-effects")
                 .long("no-effects")
                 .action(clap::ArgAction::SetTrue)
                 .help("Disable transition animations"),
+        )
+        .arg(
+            Arg::new("no-preview")
+                .long("no-preview")
+                .action(clap::ArgAction::SetTrue)
+                .help("Disable the live preview; generate only on demand"),
         );
 
     command!()

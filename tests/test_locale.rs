@@ -50,9 +50,14 @@ fn language_from_name_selects_chinese_for_zh() {
 }
 
 #[test]
-fn doc_lang_maps_to_files_and_cache_keys() {
-    assert_eq!(DocLang::English.doc_file_name(), "USAGE.md");
-    assert_eq!(DocLang::Chinese.doc_file_name(), "USAGE-zh_CN.md");
-    assert_eq!(DocLang::English.cache_key(), "en");
-    assert_eq!(DocLang::Chinese.cache_key(), "zh_CN");
+fn doc_lang_maps_to_schema_sources() {
+    assert_eq!(DocLang::English.schema_file_name(), "PLOT-SCHEMA.json");
+    assert_eq!(
+        DocLang::Chinese.schema_file_name(),
+        "PLOT-SCHEMA-zh_CN.json"
+    );
+    assert_eq!(DocLang::English.label(), "en");
+    assert_eq!(DocLang::Chinese.label(), "zh_CN");
+    assert!(!DocLang::English.schema_source().is_empty());
+    assert!(!DocLang::Chinese.schema_source().is_empty());
 }

@@ -11,11 +11,11 @@ use tachyonfx::{Effect, EffectTimer, Interpolation, Motion, fx};
 
 use crate::tui::book_toml;
 use crate::tui::book_toml_view::{self, ConfigView};
-use crate::tui::cheatsheet;
-use crate::tui::cheatsheet_view::{self, CheatSheetView};
 use crate::tui::github::{GithubHosts, RepoSpec};
 use crate::tui::home::{HomeView, MENU_ITEMS};
-use crate::tui::locale::{DocLang, resolve_language};
+use crate::tui::locale::resolve_language;
+use crate::tui::plotgen::PlotGen;
+use crate::tui::plotgen_view::PlotGenView;
 use crate::tui::settings;
 use crate::tui::update;
 use crate::tui::update_view::{self, UpdateView};
@@ -33,19 +33,14 @@ pub struct App {
     home: HomeView,
     update: UpdateView,
     config: ConfigView,
-    cheats: CheatSheetView,
+    gen_view: PlotGenView,
     transition: Option<Effect>,
     flash: Option<Effect>,
     hosts: GithubHosts,
     repo: RepoSpec,
-    lang: DocLang,
     update_rx: Option<mpsc::Receiver<update::UpdateMsg>>,
     update_confirm_tx: Option<mpsc::Sender<bool>>,
-    cheat_rx: Option<mpsc::Receiver<cheatsheet::CheatMsg>>,
     clipboard: Option<arboard::Clipboard>,
-    /// Read by the `run` entry point (the parent module) after the loop
-    /// exits to print fallback content to stdout.
-    pub(super) print_on_exit: Option<String>,
 }
 
 impl App {
@@ -54,7 +49,7 @@ impl App {
         let hosts = GithubHosts::resolve(&settings::github_overrides());
         let repo = RepoSpec::from_pkg_repository();
         let lang = resolve_language();
-        let mut app = Self {
+        Self {
             opts,
             view: View::Home,
             help: false,
@@ -62,22 +57,15 @@ impl App {
             home: HomeView::default(),
             update: UpdateView::new(),
             config: ConfigView::new(),
-            cheats: CheatSheetView::new(),
+            gen_view: PlotGenView::new(PlotGen::new(lang)),
             transition: None,
             flash: None,
             hosts,
             repo,
-            lang,
             update_rx: None,
             update_confirm_tx: None,
-            cheat_rx: None,
             clipboard,
-            print_on_exit: None,
-        };
-        // The cheat-sheet load is network + parse; kick it off up front so
-        // the user usually finds it ready.
-        app.start_cheat_load();
-        app
+        }
     }
 
     // -- view switching -----------------------------------------------------
@@ -113,19 +101,6 @@ impl App {
         self.update_confirm_tx = Some(confirm_tx);
     }
 
-    fn start_cheat_load(&mut self) {
-        let (tx, rx) = mpsc::channel();
-        let refresh = self.opts.refresh;
-        let hosts = self.hosts.clone();
-        let repo = self.repo.clone();
-        let lang = self.lang;
-        std::thread::spawn(move || {
-            let result = cheatsheet::load_doc(lang, &hosts, &repo, refresh);
-            let _ = tx.send(cheatsheet::CheatMsg::Loaded(result));
-        });
-        self.cheat_rx = Some(rx);
-    }
-
     fn drain_channels(&mut self) {
         if let Some(rx) = &self.update_rx {
             while let Ok(msg) = rx.try_recv() {
@@ -140,25 +115,6 @@ impl App {
                         Color::Black,
                         EffectTimer::from_ms(UPDATE_SWEEP_MS, Interpolation::QuadOut),
                     ));
-                }
-            }
-        }
-        if let Some(rx) = &self.cheat_rx {
-            while let Ok(msg) = rx.try_recv() {
-                match msg {
-                    cheatsheet::CheatMsg::Loaded(Ok((doc, source))) => {
-                        self.cheats.doc = Some(doc);
-                        self.cheats.source = Some(source);
-                        self.cheats.loading = false;
-                        let len = self.cheats.filtered().len();
-                        self.cheats.clamp_selection(len);
-                    }
-                    cheatsheet::CheatMsg::Loaded(Err(e)) => {
-                        self.cheats.loading = false;
-                        self.cheats.copy_status = Some(cheatsheet_view::CopyStatus::NoSelection);
-                        self.print_on_exit = Some(format!("cheat-sheet failed to load: {e}"));
-                        self.quit = true;
-                    }
                 }
             }
         }
@@ -241,7 +197,7 @@ impl App {
                 _ => {}
             },
             View::Config => self.on_config_key(code),
-            View::CheatSheet => self.on_cheat_key(code),
+            View::PlotGen => self.on_plotgen_key(code),
         }
     }
 
@@ -249,7 +205,7 @@ impl App {
         let view = match idx {
             0 => View::Update,
             1 => View::Config,
-            2 => View::CheatSheet,
+            2 => View::PlotGen,
             _ => return,
         };
         self.change_view(view);
@@ -347,81 +303,104 @@ impl App {
         }
     }
 
-    fn on_cheat_key(&mut self, code: KeyCode) {
+    fn on_plotgen_key(&mut self, code: KeyCode) {
+        if code == KeyCode::Esc {
+            self.change_view(View::Home);
+            return;
+        }
+        let form = &mut self.gen_view.state;
         match code {
-            KeyCode::Esc => {
-                if !self.cheats.search.text.is_empty() {
-                    self.cheats.search.reset();
-                    self.cheats
-                        .clamp_selection(self.cheats.filtered().len().max(1));
-                } else {
-                    self.change_view(View::Home);
-                }
-            }
-            KeyCode::Backspace => {
-                self.cheats.search.backspace();
-                self.cheats
-                    .clamp_selection(self.cheats.filtered().len().max(1));
-            }
-            KeyCode::Delete => self.cheats.search.delete(),
-            KeyCode::Left => self.cheats.search.left(),
-            KeyCode::Right => self.cheats.search.right(),
-            KeyCode::Char(c) => {
-                self.cheats.search.insert(c);
-                self.cheats
-                    .clamp_selection(self.cheats.filtered().len().max(1));
-            }
             KeyCode::Up => {
-                if self.cheats.selected > 0 {
-                    self.cheats.selected -= 1;
+                if form.selected > 0 {
+                    form.selected -= 1;
                 }
             }
             KeyCode::Down => {
-                let len = self.cheats.filtered().len();
+                let len = form.current_type().fields.len();
                 if len > 0 {
-                    self.cheats.selected = (self.cheats.selected + 1).min(len - 1);
+                    form.selected = (form.selected + 1).min(len - 1);
                 }
             }
-            KeyCode::PageUp => {
-                self.cheats.selected = self.cheats.selected.saturating_sub(10);
-            }
-            KeyCode::PageDown => {
-                let len = self.cheats.filtered().len();
-                if len > 0 {
-                    self.cheats.selected = (self.cheats.selected + 10).min(len - 1);
+            KeyCode::Char(c) if c.is_ascii_digit() => {
+                if let Some(idx) = c.to_digit(10) {
+                    form.set_type(idx as usize - 1);
                 }
             }
-            KeyCode::Enter => self.copy_selected(),
+            KeyCode::Char('p' | 'P') => form.cycle_output(),
+            KeyCode::Char('c' | 'C') => form.copy(&mut self.clipboard),
+            KeyCode::Char('s' | 'S') => form.save(),
+            KeyCode::Char('r' | 'R') => form.reset_to_example(),
+            KeyCode::Char('g' | 'G') if self.opts.no_preview => form.regen(),
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                let i = form.selected;
+                if form
+                    .current_type()
+                    .fields
+                    .get(i)
+                    .is_some_and(|f| f.is_bool())
+                {
+                    form.toggle_bool(i);
+                }
+            }
+            KeyCode::Left => {
+                let i = form.selected;
+                if form
+                    .current_type()
+                    .fields
+                    .get(i)
+                    .is_some_and(|f| f.is_enum())
+                {
+                    form.cycle_enum(i, -1);
+                }
+            }
+            KeyCode::Right => {
+                let i = form.selected;
+                if form
+                    .current_type()
+                    .fields
+                    .get(i)
+                    .is_some_and(|f| f.is_enum())
+                {
+                    form.cycle_enum(i, 1);
+                }
+            }
+            KeyCode::Char(c) => {
+                let i = form.selected;
+                if form
+                    .current_type()
+                    .fields
+                    .get(i)
+                    .is_some_and(|f| !f.is_bool() && !f.is_enum())
+                {
+                    let mut text = form.inputs[i].text.clone();
+                    text.push(c);
+                    form.set_text_field(i, text);
+                }
+            }
+            KeyCode::Backspace => {
+                let i = form.selected;
+                if form
+                    .current_type()
+                    .fields
+                    .get(i)
+                    .is_some_and(|f| !f.is_bool() && !f.is_enum())
+                {
+                    let mut text = form.inputs[i].text.clone();
+                    text.pop();
+                    form.set_text_field(i, text);
+                }
+            }
             _ => {}
         }
     }
 
-    fn copy_selected(&mut self) {
-        let Some(entry) = self.cheats.selected_entry() else {
-            self.cheats.copy_status = Some(cheatsheet_view::CopyStatus::NoSelection);
-            return;
-        };
-        match &mut self.clipboard {
-            Some(clipboard) => match clipboard.set_text(entry.code.clone()) {
-                Ok(()) => {
-                    self.cheats.copy_status = Some(cheatsheet_view::CopyStatus::Copied);
-                }
-                Err(_) => {
-                    self.cheats.copy_status =
-                        Some(cheatsheet_view::CopyStatus::ClipboardUnavailable);
-                    self.print_on_exit = Some(entry.code);
-                    self.quit = true;
-                }
-            },
-            None => {
-                self.cheats.copy_status = Some(cheatsheet_view::CopyStatus::ClipboardUnavailable);
-                self.print_on_exit = Some(entry.code);
-                self.quit = true;
-            }
-        }
-    }
-
     // -- main loop ----------------------------------------------------------
+
+    /// Consume the generator's stdout fallback (clipboard unavailable),
+    /// printed by the parent module after the alternate screen is left.
+    pub(super) fn take_gen_output(&mut self) -> Option<String> {
+        self.gen_view.state.print_on_exit.take()
+    }
 
     pub fn run(&mut self, terminal: &mut TerminalType) -> std::io::Result<()> {
         let mut last_frame = Instant::now();
@@ -456,7 +435,7 @@ impl App {
             View::Home => self.home.render(frame, area),
             View::Update => self.update.render(frame, area),
             View::Config => self.config.render(frame, area),
-            View::CheatSheet => self.cheats.render(frame, area),
+            View::PlotGen => self.gen_view.render(frame, area),
         }
 
         // Config diff modal (over the config view).
@@ -518,9 +497,12 @@ impl App {
                 hints.insert(1, ("Enter", "edit"));
                 hints.insert(2, ("a", "apply"));
             }
-            View::CheatSheet => {
-                hints.insert(0, ("type", "search"));
-                hints.insert(1, ("Enter", "copy"));
+            View::PlotGen => {
+                hints.insert(0, ("↑↓", "move"));
+                hints.insert(1, ("1-8", "type"));
+                hints.insert(2, ("p", "fmt"));
+                hints.insert(3, ("c", "copy"));
+                hints.insert(4, ("s", "save"));
             }
         }
         hints

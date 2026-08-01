@@ -2,21 +2,13 @@
 
 #![cfg(feature = "tui")]
 
-use mdbook_plotly::tui::github::{
-    DEFAULT_API_BASE, DEFAULT_DOWNLOAD_BASE, DEFAULT_RAW_BASE, GithubHosts, RepoSpec,
-};
+use mdbook_plotly::tui::github::{DEFAULT_API_BASE, DEFAULT_DOWNLOAD_BASE, GithubHosts, RepoSpec};
 use mdbook_plotly::tui::settings::GithubOverrides;
 
-fn overrides(
-    proxy: Option<&str>,
-    api: Option<&str>,
-    raw: Option<&str>,
-    download: Option<&str>,
-) -> GithubOverrides {
+fn overrides(proxy: Option<&str>, api: Option<&str>, download: Option<&str>) -> GithubOverrides {
     GithubOverrides {
         proxy: proxy.map(String::from),
         api: api.map(String::from),
-        raw: raw.map(String::from),
         download: download.map(String::from),
     }
 }
@@ -25,7 +17,6 @@ fn overrides(
 fn defaults_are_the_public_github_endpoints() {
     let hosts = GithubHosts::resolve(&GithubOverrides::default());
     assert_eq!(hosts.api, DEFAULT_API_BASE);
-    assert_eq!(hosts.raw, DEFAULT_RAW_BASE);
     assert_eq!(hosts.download, DEFAULT_DOWNLOAD_BASE);
     assert_eq!(hosts.proxy, None);
 }
@@ -49,23 +40,8 @@ fn api_latest_url_uses_configured_base_and_repo() {
 }
 
 #[test]
-fn raw_file_url_builds_tagged_path() {
-    let repo = RepoSpec::from_pkg_repository();
-    let hosts = GithubHosts::resolve(&GithubOverrides::default());
-    assert_eq!(
-        hosts.raw_file_url(&repo, "v0.3.0", "docs/USAGE.md"),
-        format!("{DEFAULT_RAW_BASE}/{}/v0.3.0/docs/USAGE.md", repo.path())
-    );
-}
-
-#[test]
 fn download_url_rewrites_github_com_host() {
-    let hosts = GithubHosts::resolve(&overrides(
-        None,
-        None,
-        None,
-        Some("https://mirror.example.com"),
-    ));
+    let hosts = GithubHosts::resolve(&overrides(None, None, Some("https://mirror.example.com")));
     assert_eq!(
         hosts.download_url("https://github.com/owner/repo/releases/download/v1/a.zip"),
         "https://mirror.example.com/owner/repo/releases/download/v1/a.zip"
@@ -74,16 +50,11 @@ fn download_url_rewrites_github_com_host() {
 
 #[test]
 fn proxy_prefix_is_prepended_everywhere() {
-    let hosts = GithubHosts::resolve(&overrides(Some("https://ghproxy.com/"), None, None, None));
+    let hosts = GithubHosts::resolve(&overrides(Some("https://ghproxy.com/"), None, None));
     let repo = RepoSpec::from_pkg_repository();
     assert!(
         hosts
             .api_releases_latest(&repo)
-            .starts_with("https://ghproxy.com/")
-    );
-    assert!(
-        hosts
-            .raw_file_url(&repo, "v1", "docs/USAGE.md")
             .starts_with("https://ghproxy.com/")
     );
     assert!(
@@ -94,23 +65,13 @@ fn proxy_prefix_is_prepended_everywhere() {
 }
 
 #[test]
-fn custom_api_and_raw_bases_replace_hosts() {
-    let hosts = GithubHosts::resolve(&overrides(
-        None,
-        Some("https://api.example.com"),
-        Some("https://raw.example.com"),
-        None,
-    ));
+fn custom_api_base_replaces_host() {
+    let hosts = GithubHosts::resolve(&overrides(None, Some("https://api.example.com"), None));
     let repo = RepoSpec::from_pkg_repository();
     assert!(
         hosts
             .api_releases_latest(&repo)
             .starts_with("https://api.example.com/")
-    );
-    assert!(
-        hosts
-            .raw_file_url(&repo, "v1", "docs/USAGE.md")
-            .starts_with("https://raw.example.com/")
     );
     // Download base untouched.
     assert_eq!(

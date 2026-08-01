@@ -48,7 +48,7 @@ sys-locale = { version = "0.3.2", optional = true }
 default = ["sync", "map-parser-extensions", "default-handlers"]
 sync = ["dep:rayon"]
 # Full (TUI) edition: interactive self-update, book.toml editor, and plot
-# cheat-sheet. Enabled with `--features tui`; see docs/RELEASE.md for how
+# generator. Enabled with `--features tui`; see docs/RELEASE.md for how
 # the two variants are packaged and named.
 tui = [
     "dep:ratatui",

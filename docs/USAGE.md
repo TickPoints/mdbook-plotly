@@ -1,11 +1,6 @@
-<!-- usage-schema: 1 -->
-
 # mdbook-plotly User Manual
 
 This is the official user manual (English edition) for **mdbook-plotly**, a preprocessor that renders interactive or static Plotly charts in mdbook documentation. The manual provides comprehensive reference and usage instructions.
-
-> [!NOTE]
-> The plot blocks in this document use a machine-readable schema. See [USAGE-SCHEMA.md](USAGE-SCHEMA.md) before editing them.
 
 > [!NOTE]
 > This user manual is available in multiple languages; however, not all language versions are guaranteed to reflect the latest application updates. In case of discrepancies among different language versions, the Chinese version shall prevail.
@@ -119,7 +114,7 @@ Starting with **v0.3.0-alpha**, mdbook-plotly ships two binary variants:
 | Variant | Release asset name | Contents |
 |--------|--------------------|----------|
 | **slim** (default) | `mdbook-plotly-<version>-<target>.<ext>` | The preprocessor only. `cargo install mdbook-plotly` gives you this. |
-| **full** (`-tui`) | `mdbook-plotly-<version>-<target>-tui.<ext>` | The preprocessor **plus** an interactive TUI with self-update, a guided `book.toml` editor, and a plot cheat-sheet. |
+| **full** (`-tui`) | `mdbook-plotly-<version>-<target>-tui.<ext>` | The preprocessor **plus** an interactive TUI with self-update, a guided `book.toml` editor, and a plot generator. |
 
 The self-update tool only ever looks for assets of its own variant, so a slim
 binary never updates from a `-tui` asset. See [RELEASE.md](RELEASE.md) for the
@@ -148,8 +143,8 @@ Options:
 | Option | Meaning |
 |--------|---------|
 | `--dry-run` | Self-update: check and report without downloading or replacing anything. |
-| `--refresh` | Cheat-sheet: bypass the cache and refetch the docs from the matching release tag. |
 | `--no-effects` | Disable the view-transition animations. |
+| `--no-preview` | Plot generator: disable the live preview; generate only on demand. |
 
 The TUI has a welcome view and three tools:
 
@@ -163,40 +158,43 @@ The TUI has a welcome view and three tools:
    `book.title`) with a description and valid range for each field. It uses
    `toml_edit` so comments and formatting are preserved, shows a diff before
    writing, and writes atomically.
-3. **Plot cheat-sheet** — searchable, previewable, copyable examples parsed
-   from this manual's [Plot Recipes](#plot-recipes) section. The document
-   comes from a local cache, otherwise from the release tag matching the
-   running binary, otherwise from a stale cache — so after the first fetch
-   it works offline. Press `Enter` to copy an example to the clipboard
-   (falls back to printing it to stdout).
+3. **Plot generator** — a questionnaire-driven way to produce chart configs
+   without writing JSON by hand. Pick one of eight plot types, fill in the
+   fields (title, data, colors, …), and watch a live JSON/TOML preview on the
+   right. Validation flags missing required fields and bad numbers inline.
+   `c` copies the result to the clipboard, `s` saves it to
+   `plot-<type>.json`/`.toml`, and `r` restores the built-in example. The
+   generator is fully offline: the schema is embedded in the binary, so there
+   is nothing to fetch.
 
-### Documentation Language
+### Schema Language
 
-The cheat-sheet picks the user manual language automatically, in this order:
+The plot generator's schema comes in two languages and is picked
+automatically, in this order:
 
 1. `MDBOOK_PLOTLY_LANG` environment variable (`zh`, `zh-CN`, `en`, …)
 2. `[language] doc` in the settings file (`zh_CN` or `en`)
-3. The system locale (anything starting with `zh` selects the Chinese manual)
+3. The system locale (anything starting with `zh` selects the Chinese schema)
 
 ```shell
 MDBOOK_PLOTLY_LANG=zh mdbook-plotly tui
 ```
 
-Both `docs/USAGE.md` (English) and `docs/USAGE-zh_CN.md` (Chinese) carry the
-same machine-readable schema and the same plot recipe ids, so the cheat-sheet
-behaves identically in either language.
+`docs/PLOT-SCHEMA.json` (English) and `docs/PLOT-SCHEMA-zh_CN.json` (Chinese)
+are the single source of truth for the generator: field names, targets, and
+examples stay in sync across languages, so switching locale only changes the
+wording, never the generated configuration.
 
 ### GitHub Proxy / Mirror
 
-All GitHub access (self-update API, asset downloads, and cheat-sheet fetches)
-goes through configurable endpoints. No URL is hardcoded. Configure them with
-the environment, the settings file, or both:
+All GitHub access (self-update API and asset downloads) goes through
+configurable endpoints. No URL is hardcoded. Configure them with the
+environment, the settings file, or both:
 
 | Setting | Environment variable | Config file key | Meaning |
 |---------|---------------------|-----------------|---------|
 | Proxy prefix | `MDBOOK_PLOTLY_GITHUB_PROXY` | `github.proxy` | Prefix prepended to every GitHub URL (e.g. `https://ghproxy.com/`) |
 | API base | `MDBOOK_PLOTLY_GITHUB_API` | `github.api` | Replaces `https://api.github.com` |
-| Raw base | `MDBOOK_PLOTLY_GITHUB_RAW` | `github.raw` | Replaces `https://raw.githubusercontent.com` |
 | Download base | `MDBOOK_PLOTLY_GITHUB_DOWNLOAD` | `github.download` | Replaces `https://github.com` for release assets |
 
 Settings file location (XDG): `$XDG_CONFIG_HOME/mdbook-plotly/config.toml`
@@ -2086,133 +2084,3 @@ Output format must be configured globally; for details, see [Configuration](#con
 | **PlotlyHtml** | `plotly-html`  | Outputs an `<div>` element and a companion `<script>` containing Plotly logic | May cause compatibility issues with Markdown parsers that do not support raw HTML; less suitable for client-side rendering scenarios |
 | **PlotlySvg**  | `plotly-svg`   | **TODO** | Not yet implemented; intended to perform most rendering locally, but may increase build time |
 
-## Plot Recipes
-
-Copy-pasteable minimal examples. The `mdbook-plotly tui` cheat-sheet searches and previews these blocks; the schema for them is defined in [USAGE-SCHEMA.md](USAGE-SCHEMA.md).
-
-<!-- plot:begin id=line-basic title="Basic Line Chart" tags=line,scatter,2d -->
-A simple line chart with three points.
-```plotly
-{
-    layout: {
-        title: "Basic Line",
-    },
-    data: [{
-        type: "scatter",
-        x: [0, 1, 2, 3],
-        y: [1, 3, 2, 4],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=bar-basic title="Basic Bar Chart" tags=bar,2d -->
-A bar chart of four values.
-```plotly
-{
-    data: [{
-        type: "bar",
-        x: [1, 2, 3, 4],
-        y: [4, 7, 3, 9],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=pie-basic title="Basic Pie Chart" tags=pie,2d -->
-A pie chart with four slices.
-```plotly
-{
-    data: [{
-        type: "pie",
-        values: [10, 20, 30, 40],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=histogram-basic title="Basic Histogram" tags=histogram,distribution,2d -->
-A histogram over a sample list.
-```plotly
-{
-    data: [{
-        type: "histogram",
-        x: [1, 2, 2, 3, 3, 3, 4, 4, 5],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=scatter-marker title="Scatter with Markers" tags=scatter,marker,2d -->
-Scatter with marker styling and opacity.
-```plotly
-{
-    data: [{
-        type: "scatter",
-        mode: "markers",
-        x: [0, 1, 2, 3, 4],
-        y: [2, 5, 3, 6, 1],
-        marker: {
-            size: 10,
-            opacity: 0.7,
-        },
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=dual-axis title="Dual Y-Axis" tags=scatter,bar,axis,2d -->
-A bar and a line sharing an x-axis but with independent y-axes.
-```plotly
-{
-    data: [
-        {
-            type: "bar",
-            x: [1, 2, 3, 4],
-            y: [10, 15, 13, 17],
-            y_axis: "y",
-        },
-        {
-            type: "scatter",
-            x: [1, 2, 3, 4],
-            y: [0.4, 0.6, 0.55, 0.8],
-            y_axis: "y2",
-        },
-    ],
-    layout: {
-        yaxis2: {
-            overlaying: "y",
-            side: "right",
-        },
-    },
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=box-basic title="Basic Box Plot" tags=box,distribution,2d -->
-A box plot over four categories.
-```plotly
-{
-    data: [{
-        type: "box",
-        y: [1, 2, 3, 5, 8, 13, 4, 6, 7, 9],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=heatmap-basic title="Basic Heatmap" tags=heatmap,matrix,2d -->
-A 3x3 heatmap with a color scale.
-```plotly
-{
-    data: [{
-        type: "heatmap",
-        z: [
-            [1, 20, 30],
-            [20, 1, 60],
-            [30, 60, 1],
-        ],
-    }],
-}
-```
-<!-- plot:end -->

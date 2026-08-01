@@ -1,5 +1,5 @@
 //! The TUI application: a single `mdbook-plotly tui` entry point hosting
-//! three tools (self-update, book.toml editor, plot cheat-sheet) plus a
+//! three tools (self-update, book.toml editor, plot generator) plus a
 //! welcome view and a help overlay.
 //!
 //! Network work runs on background threads and reports progress over
@@ -10,12 +10,12 @@
 pub mod app;
 pub mod book_toml;
 pub mod book_toml_view;
-pub mod cheatsheet;
-pub mod cheatsheet_view;
 pub mod github;
 pub mod help;
 pub mod home;
 pub mod locale;
+pub mod plotgen;
+pub mod plotgen_view;
 pub mod settings;
 pub mod term;
 pub mod theme;
@@ -39,14 +39,14 @@ pub enum View {
     Home,
     Update,
     Config,
-    CheatSheet,
+    PlotGen,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct TuiOptions {
     pub dry_run: bool,
-    pub refresh: bool,
     pub no_effects: bool,
+    pub no_preview: bool,
 }
 
 /// Run the TUI until the user quits.
@@ -56,7 +56,7 @@ pub fn run(opts: TuiOptions) -> anyhow::Result<()> {
     let mut app = app::App::new(opts);
     let result = app.run(&mut terminal);
     let _ = term::teardown(&mut terminal);
-    if let Some(text) = app.print_on_exit.take() {
+    if let Some(text) = app.take_gen_output() {
         println!("{text}");
     }
     result.map_err(Into::into)

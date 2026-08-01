@@ -1,13 +1,9 @@
-<!-- usage-schema: 1 -->
-
 # mdbook-plotly 用户手册
 
 这是 **mdbook-plotly** 的官方用户手册（中文版），该预处理器可在 mdbook 文档中渲染交互式或静态的 Plotly 图表。本手册提供全面的参考和使用说明。
 
 > [!NOTE]
 > 本用户手册提供多种语言版本；但是，并非所有语言版本都保证反映应用程序的最新更新。如果不同语言版本之间存在差异，应以中文版为准。
->
-> 本文档中的 plot 区块使用了机器可读的 schema。编辑前请先阅读 [USAGE-SCHEMA.md](USAGE-SCHEMA.md)。
 
 ## 目录
 
@@ -118,7 +114,7 @@ after = ["links"]
 | 变体 | Release 产物名称 | 内容 |
 |--------|--------------------|----------|
 | **精简版**（默认） | `mdbook-plotly-<version>-<target>.<ext>` | 仅预处理器。`cargo install mdbook-plotly` 安装的就是它。 |
-| **完整版**（`-tui`） | `mdbook-plotly-<version>-<target>-tui.<ext>` | 预处理器**以及**一个交互式 TUI：自更新、引导式 `book.toml` 编辑器、Plot 速查。 |
+| **完整版**（`-tui`） | `mdbook-plotly-<version>-<target>-tui.<ext>` | 预处理器**以及**一个交互式 TUI：自更新、引导式 `book.toml` 编辑器、Plot 生成器。 |
 
 自更新工具只会查找与自身变体匹配的产物，因此精简版二进制永远不会用 `-tui` 产物来更新自己。完整的产物命名契约见 [RELEASE.md](RELEASE.md)。
 
@@ -143,38 +139,37 @@ mdbook-plotly tui [OPTIONS]
 | 选项 | 含义 |
 |--------|---------|
 | `--dry-run` | 自更新：只检查和报告，不下载、不替换任何内容。 |
-| `--refresh` | 速查：绕过缓存，从匹配的 release tag 重新拉取文档。 |
 | `--no-effects` | 关闭视图切换动画。 |
+| `--no-preview` | Plot 生成器：关闭实时预览，仅在需要时生成。 |
 
 TUI 有一个欢迎视图和三个工具：
 
 1. **自更新** —— 查询 GitHub Releases API，用 semver 将最新 tag 与当前版本比较，确认后下载匹配的 `-tui` 产物，校验其 `.sha256`，并原子替换正在运行的二进制。替换前始终要求确认；`--dry-run` 绝不下载。读取 `GITHUB_TOKEN` 以提高未认证的 API 限流额度。
 2. **book.toml 编辑器** —— 从当前目录向上查找 `book.toml`，带每个字段的说明与取值范围来编辑 `[preprocessor.plotly]` 下的键（以及 `book.title`）。它使用 `toml_edit` 保留注释与格式，写入前展示 diff，并通过临时文件 + rename 原子写入。
-3. **Plot 速查** —— 对本手册 [Plot 示例速查](#plot-示例速查) 章节中的示例进行搜索、预览与复制。文档来源依次为本地缓存、与当前二进制版本匹配的 release tag、过期缓存——因此首次拉取后即可离线使用。按 `Enter` 将示例复制到剪贴板（不可用时回退为打印到 stdout）。
+3. **Plot 生成器** —— 以问卷形式生成图表配置，无需手写 JSON。从八种图表类型中选择一种，填写字段（标题、数据、颜色……），右侧实时预览 JSON/TOML。必填字段缺失或数字不合法时会内联标红。`c` 复制结果到剪贴板，`s` 保存为 `plot-<type>.json`/`.toml`，`r` 恢复内置示例。生成器完全离线可用：schema 内嵌在二进制中，无需任何网络拉取。
 
-### 文档语言
+### Schema 语言
 
-速查工具按以下顺序自动选择用户手册语言：
+Plot 生成器的 schema 提供两种语言，按以下顺序自动选择：
 
 1. `MDBOOK_PLOTLY_LANG` 环境变量（`zh`、`zh-CN`、`en`，……）
 2. 设置文件中的 `[language] doc`（`zh_CN` 或 `en`）
-3. 系统 locale（任何以 `zh` 开头的值都会选择中文手册）
+3. 系统 locale（任何以 `zh` 开头的值都会选择中文 schema）
 
 ```shell
 MDBOOK_PLOTLY_LANG=zh mdbook-plotly tui
 ```
 
-`docs/USAGE.md`（英文）与 `docs/USAGE-zh_CN.md`（中文）携带相同的机器可读 schema 和相同的 plot 示例 id，因此速查工具在两种语言下行为完全一致。
+`docs/PLOT-SCHEMA.json`（英文）与 `docs/PLOT-SCHEMA-zh_CN.json`（中文）是生成器的唯一数据来源：字段名、目标路径与示例在两种语言间保持同步，因此切换语言只改变文案，绝不改变生成的配置。
 
 ### GitHub 代理 / 镜像
 
-所有 GitHub 访问（自更新 API、产物下载、速查拉取）都经过可配置的端点，没有任何 URL 是硬编码的。可以通过环境变量、设置文件或两者同时配置：
+所有 GitHub 访问（自更新 API、产物下载）都经过可配置的端点，没有任何 URL 是硬编码的。可以通过环境变量、设置文件或两者同时配置：
 
 | 设置 | 环境变量 | 配置文件键 | 含义 |
 |---------|---------------------|-----------------|---------|
 | 代理前缀 | `MDBOOK_PLOTLY_GITHUB_PROXY` | `github.proxy` | 在所有 GitHub URL 前添加的前缀（例如 `https://ghproxy.com/`） |
 | API 基址 | `MDBOOK_PLOTLY_GITHUB_API` | `github.api` | 替换 `https://api.github.com` |
-| Raw 基址 | `MDBOOK_PLOTLY_GITHUB_RAW` | `github.raw` | 替换 `https://raw.githubusercontent.com` |
 | 下载基址 | `MDBOOK_PLOTLY_GITHUB_DOWNLOAD` | `github.download` | 替换 release 产物所用的 `https://github.com` |
 
 设置文件位置（XDG）：`$XDG_CONFIG_HOME/mdbook-plotly/config.toml`（macOS 上为 `~/Library/Application Support/mdbook-plotly/config.toml`）。环境变量优先于配置文件，配置文件优先于默认值。未知键会被忽略，因此未来的设置不会破坏旧版本二进制。
@@ -1797,133 +1792,3 @@ config: {
 | **PlotlyHtml** | `plotly-html`  | 输出一个 `<div>` 元素和一个包含 Plotly 逻辑的配套 `<script>` | 可能导致与不支持原始 HTML 的 Markdown 解析器的兼容性问题；不太适合客户端渲染场景 |
 | **PlotlySvg**  | `plotly-svg`   | **TODO** | 尚未实现；旨在本地执行大部分渲染，但可能会增加构建时间 |
 
-## Plot 示例速查
-
-可直接复制的极简示例。`mdbook-plotly tui` 的速查工具会搜索并预览这些区块；区块的 schema 定义见 [USAGE-SCHEMA.md](USAGE-SCHEMA.md)。
-
-<!-- plot:begin id=line-basic title="基础折线图" tags=line,scatter,2d -->
-包含三个数据点的简单折线图。
-```plotly
-{
-    layout: {
-        title: "Basic Line",
-    },
-    data: [{
-        type: "scatter",
-        x: [0, 1, 2, 3],
-        y: [1, 3, 2, 4],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=bar-basic title="基础柱状图" tags=bar,2d -->
-四个数值的柱状图。
-```plotly
-{
-    data: [{
-        type: "bar",
-        x: [1, 2, 3, 4],
-        y: [4, 7, 3, 9],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=pie-basic title="基础饼图" tags=pie,2d -->
-四个扇区的饼图。
-```plotly
-{
-    data: [{
-        type: "pie",
-        values: [10, 20, 30, 40],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=histogram-basic title="基础直方图" tags=histogram,distribution,2d -->
-一组样本的直方图。
-```plotly
-{
-    data: [{
-        type: "histogram",
-        x: [1, 2, 2, 3, 3, 3, 4, 4, 5],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=scatter-marker title="带标记的散点图" tags=scatter,marker,2d -->
-带标记样式和不透明度的散点图。
-```plotly
-{
-    data: [{
-        type: "scatter",
-        mode: "markers",
-        x: [0, 1, 2, 3, 4],
-        y: [2, 5, 3, 6, 1],
-        marker: {
-            size: 10,
-            opacity: 0.7,
-        },
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=dual-axis title="双 Y 轴" tags=scatter,bar,axis,2d -->
-共享 X 轴但使用独立 Y 轴的柱状图和折线图。
-```plotly
-{
-    data: [
-        {
-            type: "bar",
-            x: [1, 2, 3, 4],
-            y: [10, 15, 13, 17],
-            y_axis: "y",
-        },
-        {
-            type: "scatter",
-            x: [1, 2, 3, 4],
-            y: [0.4, 0.6, 0.55, 0.8],
-            y_axis: "y2",
-        },
-    ],
-    layout: {
-        yaxis2: {
-            overlaying: "y",
-            side: "right",
-        },
-    },
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=box-basic title="基础箱线图" tags=box,distribution,2d -->
-四个类别的箱线图。
-```plotly
-{
-    data: [{
-        type: "box",
-        y: [1, 2, 3, 5, 8, 13, 4, 6, 7, 9],
-    }],
-}
-```
-<!-- plot:end -->
-
-<!-- plot:begin id=heatmap-basic title="基础热力图" tags=heatmap,matrix,2d -->
-带颜色刻度的 3x3 热力图。
-```plotly
-{
-    data: [{
-        type: "heatmap",
-        z: [
-            [1, 20, 30],
-            [20, 1, 60],
-            [30, 60, 1],
-        ],
-    }],
-}
-```
-<!-- plot:end -->

@@ -19,8 +19,8 @@ pub const MENU_ITEMS: [(&str, &str); 3] = [
         "Tweak the [preprocessor.plotly] configuration with guided edits",
     ),
     (
-        "3  Plot cheat-sheet",
-        "Search, preview, and copy plot examples from docs/USAGE.md",
+        "3  Plot generator",
+        "Pick a plot type, fill the questionnaire, and export JSON/TOML",
     ),
 ];
 

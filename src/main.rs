@@ -24,13 +24,13 @@ pub fn main() {
         #[cfg(feature = "tui")]
         CommandKind::Tui {
             dry_run,
-            refresh,
             no_effects,
+            no_preview,
         } => {
             let opts = mdbook_plotly::tui::TuiOptions {
                 dry_run,
-                refresh,
                 no_effects,
+                no_preview,
             };
             if let Err(e) = mdbook_plotly::tui::run(opts) {
                 fatal!("TUI error.\nInterError: {e:#}");

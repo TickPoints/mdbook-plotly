@@ -1,21 +1,25 @@
 # CHANGELOG
 
+## v0.3.0-beta
+- 2026-08-01
+- **Changed** — the plot tool was reworked from a doc cheat-sheet into a **questionnaire-driven plot generator**
+    - Pick one of eight plot types (line, scatter, bar, pie, histogram, box, heatmap, dual-axis), fill in the fields (title, data, colors, …), and preview the generated JSON/TOML live; `--no-preview` disables the live refresh.
+    - Validation flags missing required fields and malformed numbers inline; `c` copies to the clipboard, `s` saves to `plot-<type>.json`/`.toml`, and `r` restores the built-in example.
+- **Added** — the plot generator schema (contract C): `docs/PLOT-SCHEMA.json` plus a `-zh_CN` translation, the single source of truth for generator fields, targets, and examples. It is embedded at compile time, so the generator works fully offline.
+- **Removed** — the machine-readable USAGE schema (`docs_parser`, the `<!-- usage-schema -->` / `<!-- plot:begin/end -->` markers, `docs/USAGE-SCHEMA.md`, the `--refresh` flag, and the GitHub `raw` endpoint override). All plot data now comes from the schema file, so nothing is parsed out of the manual and there is no second place to maintain.
+- **Changed** — schema language selection (`MDBOOK_PLOTLY_LANG` → `[language] doc` → system locale) now picks the localized schema instead of the manual.
+- **Fixed** — none (no behavior changes to the preprocessor itself).
+
 ## v0.3.0-alpha
 - 2026-08-01
 - **Added** — the full (TUI) edition as an optional `tui` Cargo feature
     - Two binary variants are now shipped: **slim** (default, preprocessor only) and **full** (`-tui`, preprocessor + interactive TUI). Asset names follow `docs/RELEASE.md`; the self-update tool only ever matches assets of its own variant.
-    - New `mdbook-plotly tui` subcommand hosting three tools:
+    - New `mdbook-plotly tui` subcommand hosting a welcome view, a help overlay, and a tool list:
         - **Self-update**: checks GitHub Releases for the latest tag, compares against the running version with semver, downloads the matching `-tui` asset, verifies its `.sha256`, and atomically replaces the running binary after explicit confirmation. Supports `--dry-run` and reads `GITHUB_TOKEN` for the API rate limit.
         - **book.toml editor**: walks up from the working directory to find `book.toml`, guides edits of the `[preprocessor.plotly]` keys with per-field descriptions and valid ranges, uses `toml_edit` so comments/formatting are preserved, shows a diff before writing, and writes atomically via temp-file + rename.
-        - **Plot cheat-sheet**: searches, previews, and copies the minimal examples from `docs/USAGE.md` (cache → release-tag docs → stale cache, so it works offline after the first fetch). Clipboard failures fall back to printing to stdout.
-        - The cheat-sheet reads the user manual in the language detected from `MDBOOK_PLOTLY_LANG` → `[language] doc` in the settings file → the system locale; both the English and Chinese manuals carry the same machine-readable schema and example ids.
-        - All GitHub traffic (API, asset downloads, cheat-sheet fetches) is routed through configurable endpoints — `MDBOOK_PLOTLY_GITHUB_PROXY` / `MDBOOK_PLOTLY_GITHUB_API` / `MDBOOK_PLOTLY_GITHUB_RAW` / `MDBOOK_PLOTLY_GITHUB_DOWNLOAD` env vars and/or `~/.config/mdbook-plotly/config.toml` — with no hardcoded GitHub URL.
     - The slim edition recognizes the `tui` command and prints install/download instructions instead of an "unknown subcommand" error.
-- **Added** — machine-readable schema for `docs/USAGE.md` plot examples
-    - `<!-- usage-schema: 1 -->` marker plus `<!-- plot:begin/end -->` blocks, specified in `docs/USAGE-SCHEMA.md`. The parser is lenient (unknown fields ignored, malformed blocks skipped with a warning) and degrades gracefully for newer schema versions.
-    - New `docs_parser` module and an integration test that parses the real `docs/USAGE.md` and asserts every block is complete and every example is valid chart input, so future doc edits are validated in CI.
 - **Added** — `docs/RELEASE.md` defining the release-asset naming contract shared by CI and the updater.
-- **Changed** — CI now builds and uploads both variants per target (with `cargo build --locked --release`), generates a `.sha256` per asset, and runs `clippy -D warnings` + `cargo test` for both feature combinations (including the docs-schema tests) on every PR/push.
+- **Changed** — CI now builds and uploads both variants per target (with `cargo build --locked --release`), generates a `.sha256` per asset, and runs `clippy -D warnings` + `cargo test` for both feature combinations on every PR/push.
 - **Changed** — code organization: the TUI sources were split into focused modules (logic vs. views vs. configuration), all unit tests now live under `tests/`, and the GitHub endpoint logic was extracted into a configurable module with `thiserror`-based error types.
 - **Fixed** — none (no behavior changes to the preprocessor itself).
 
