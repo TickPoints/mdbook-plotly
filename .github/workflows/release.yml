@@ -131,12 +131,14 @@ jobs:
           restore-keys: release-${{ matrix.os }}-${{ matrix.target }}-
 
       - name: Build (locked, release)
+        shell: bash
         run: |
           FEAT=""
           if [ -n "${{ matrix.features }}" ]; then FEAT="--features ${{ matrix.features }}"; fi
           cargo build --locked --release --target ${{ matrix.target }} $FEAT
 
       - name: Package + checksum (contract A)
+        shell: bash
         env:
           VERSION: ${{ github.ref_name }}
           TARGET: ${{ matrix.target }}
