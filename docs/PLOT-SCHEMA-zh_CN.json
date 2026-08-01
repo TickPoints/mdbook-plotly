@@ -1,0 +1,561 @@
+{
+  "schema": "1.0",
+  "plot_types": [
+    {
+      "id": "line",
+      "label": "折线图",
+      "tags": ["line", "scatter", "2d"],
+      "traces": [
+        { "index": 0, "type": "scatter", "mode": "lines" }
+      ],
+      "example": {
+        "layout": { "title": "基础折线图", "showlegend": true },
+        "data": [
+          { "type": "scatter", "mode": "lines", "x": [0, 1, 2, 3], "y": [1, 3, 2, 4], "line": { "width": 2, "color": "#1f77b4" } }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的折线图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "x",
+          "label": "X 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "x"],
+          "help": "逗号分隔的数字，例如 0,1,2,3。"
+        },
+        {
+          "name": "y",
+          "label": "Y 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "y"],
+          "help": "逗号分隔的数字，每个 x 值对应一个。"
+        },
+        {
+          "name": "line_width",
+          "label": "线宽",
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "max": 20,
+          "path": ["data", 0, "line", "width"],
+          "help": "线条的像素宽度。"
+        },
+        {
+          "name": "color",
+          "label": "颜色",
+          "type": "enum",
+          "default": "#1f77b4",
+          "path": ["data", 0, "line", "color"],
+          "help": "线条颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    },
+    {
+      "id": "scatter",
+      "label": "散点图",
+      "tags": ["scatter", "marker", "2d"],
+      "traces": [
+        { "index": 0, "type": "scatter", "mode": "markers" }
+      ],
+      "example": {
+        "layout": { "title": "基础散点图", "showlegend": true },
+        "data": [
+          { "type": "scatter", "mode": "markers", "x": [0, 1, 2, 3, 4], "y": [2, 5, 3, 6, 1], "marker": { "size": 10, "opacity": 0.7, "color": "#1f77b4" } }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的散点图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "x",
+          "label": "X 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "x"],
+          "help": "逗号分隔的数字，例如 0,1,2,3。"
+        },
+        {
+          "name": "y",
+          "label": "Y 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "y"],
+          "help": "逗号分隔的数字，每个 x 值对应一个。"
+        },
+        {
+          "name": "marker_size",
+          "label": "标记大小",
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 50,
+          "path": ["data", 0, "marker", "size"],
+          "help": "标记的像素直径。"
+        },
+        {
+          "name": "marker_opacity",
+          "label": "标记不透明度",
+          "type": "number",
+          "default": 0.7,
+          "min": 0,
+          "max": 1,
+          "path": ["data", 0, "marker", "opacity"],
+          "help": "填充不透明度，从 0（透明）到 1（不透明）。"
+        },
+        {
+          "name": "color",
+          "label": "颜色",
+          "type": "enum",
+          "default": "#1f77b4",
+          "path": ["data", 0, "marker", "color"],
+          "help": "标记填充颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    },
+    {
+      "id": "bar",
+      "label": "柱状图",
+      "tags": ["bar", "2d"],
+      "traces": [
+        { "index": 0, "type": "bar" }
+      ],
+      "example": {
+        "layout": { "title": "基础柱状图", "showlegend": true },
+        "data": [
+          { "type": "bar", "x": [1, 2, 3, 4], "y": [4, 7, 3, 9], "marker": { "color": "#1f77b4" } }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的柱状图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "x",
+          "label": "X 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "x"],
+          "help": "逗号分隔的标签或数字。"
+        },
+        {
+          "name": "y",
+          "label": "Y 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "y"],
+          "help": "逗号分隔的柱体高度。"
+        },
+        {
+          "name": "color",
+          "label": "颜色",
+          "type": "enum",
+          "default": "#1f77b4",
+          "path": ["data", 0, "marker", "color"],
+          "help": "柱体填充颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    },
+    {
+      "id": "pie",
+      "label": "饼图",
+      "tags": ["pie", "2d"],
+      "traces": [
+        { "index": 0, "type": "pie" }
+      ],
+      "example": {
+        "layout": { "title": "基础饼图", "showlegend": true },
+        "data": [
+          { "type": "pie", "values": [10, 20, 30, 40], "labels": ["甲", "乙", "丙", "丁"], "hole": 0 }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的饼图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "values",
+          "label": "扇区大小",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "values"],
+          "help": "逗号分隔的扇区大小，例如 10,20,30,40。"
+        },
+        {
+          "name": "labels",
+          "label": "扇区标签",
+          "type": "array",
+          "item_type": "string",
+          "path": ["data", 0, "labels"],
+          "help": "逗号分隔的扇区标签，每个大小对应一个。"
+        },
+        {
+          "name": "hole",
+          "label": "环孔大小",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 0.9,
+          "path": ["data", 0, "hole"],
+          "help": "甜甜圈环孔半径占饼图的比值。"
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示扇区图例。"
+        }
+      ]
+    },
+    {
+      "id": "histogram",
+      "label": "直方图",
+      "tags": ["histogram", "distribution", "2d"],
+      "traces": [
+        { "index": 0, "type": "histogram" }
+      ],
+      "example": {
+        "layout": { "title": "基础直方图", "showlegend": true },
+        "data": [
+          { "type": "histogram", "x": [1, 2, 2, 3, 3, 3, 4, 4, 5], "nbinsx": 10, "marker": { "color": "#1f77b4" } }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的直方图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "x",
+          "label": "样本数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "x"],
+          "help": "逗号分隔的待分箱样本。"
+        },
+        {
+          "name": "nbinsx",
+          "label": "分箱数量",
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "max": 100,
+          "path": ["data", 0, "nbinsx"],
+          "help": "将取值范围划分为多少个箱。"
+        },
+        {
+          "name": "color",
+          "label": "颜色",
+          "type": "enum",
+          "default": "#1f77b4",
+          "path": ["data", 0, "marker", "color"],
+          "help": "柱体填充颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    },
+    {
+      "id": "box",
+      "label": "箱线图",
+      "tags": ["box", "distribution", "2d"],
+      "traces": [
+        { "index": 0, "type": "box" }
+      ],
+      "example": {
+        "layout": { "title": "基础箱线图", "showlegend": true },
+        "data": [
+          { "type": "box", "y": [1, 2, 3, 5, 8, 13, 4, 6, 7, 9], "notched": false }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的箱线图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "y",
+          "label": "样本值",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "y"],
+          "help": "逗号分隔的待汇总样本。"
+        },
+        {
+          "name": "notched",
+          "label": "缺口",
+          "type": "bool",
+          "default": false,
+          "path": ["data", 0, "notched"],
+          "help": "在中位数上绘制置信区间缺口。"
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    },
+    {
+      "id": "heatmap",
+      "label": "热力图",
+      "tags": ["heatmap", "matrix", "2d"],
+      "traces": [
+        { "index": 0, "type": "heatmap" }
+      ],
+      "example": {
+        "layout": { "title": "基础热力图" },
+        "data": [
+          { "type": "heatmap", "z": [[1, 20, 30], [20, 1, 60], [30, 60, 1]], "colorscale": "Greens" }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "我的热力图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "z",
+          "label": "Z 矩阵",
+          "type": "array2d",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "z"],
+          "help": "行用 ';' 分隔、单元格用 ',' 分隔，例如 1,20,30;20,1,60;30,60,1。"
+        },
+        {
+          "name": "colorscale",
+          "label": "色标",
+          "type": "enum",
+          "default": "Greens",
+          "path": ["data", 0, "colorscale"],
+          "help": "用于表示单元格强度的颜色渐变。",
+          "options": [
+            { "value": "Greens", "label": "绿色系" },
+            { "value": "Blues", "label": "蓝色系" },
+            { "value": "Viridis", "label": "Viridis" },
+            { "value": "RdBu", "label": "红蓝" },
+            { "value": "YlGnBu", "label": "黄绿蓝" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dual_axis",
+      "label": "双轴图",
+      "tags": ["scatter", "bar", "axis", "2d"],
+      "traces": [
+        { "index": 0, "type": "bar" },
+        { "index": 1, "type": "scatter", "mode": "lines", "yaxis": "y2" }
+      ],
+      "example": {
+        "layout": { "title": "双轴图", "showlegend": true, "yaxis2": { "side": "right" } },
+        "data": [
+          { "type": "bar", "x": [1, 2, 3, 4], "y": [10, 15, 13, 17], "marker": { "color": "#1f77b4" } },
+          { "type": "scatter", "mode": "lines", "x": [1, 2, 3, 4], "y": [0.4, 0.6, 0.55, 0.8], "yaxis": "y2", "line": { "color": "#d62728" } }
+        ]
+      },
+      "fields": [
+        {
+          "name": "title",
+          "label": "图表标题",
+          "type": "string",
+          "default": "双轴图",
+          "path": ["layout", "title"],
+          "help": "显示在图表顶部的标题。"
+        },
+        {
+          "name": "x",
+          "label": "共享 X 轴数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "paths": [["data", 0, "x"], ["data", 1, "x"]],
+          "help": "两条轨迹共享的逗号分隔数字。"
+        },
+        {
+          "name": "y_bar",
+          "label": "柱状 Y 数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 0, "y"],
+          "help": "逗号分隔的柱体高度。"
+        },
+        {
+          "name": "y_line",
+          "label": "折线 Y 数据",
+          "type": "array",
+          "item_type": "number",
+          "required": true,
+          "path": ["data", 1, "y"],
+          "help": "第二条轴上逗号分隔的折线数值。"
+        },
+        {
+          "name": "bar_color",
+          "label": "柱体颜色",
+          "type": "enum",
+          "default": "#1f77b4",
+          "path": ["data", 0, "marker", "color"],
+          "help": "柱体填充颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "line_color",
+          "label": "折线颜色",
+          "type": "enum",
+          "default": "#d62728",
+          "path": ["data", 1, "line", "color"],
+          "help": "第二条轴上折线的颜色。",
+          "options": [
+            { "value": "#1f77b4", "label": "蓝色" },
+            { "value": "#3D5230", "label": "苔藓绿" },
+            { "value": "#d62728", "label": "红色" },
+            { "value": "#ff7f0e", "label": "橙色" },
+            { "value": "#9467bd", "label": "紫色" },
+            { "value": "#2ca02c", "label": "绿色" }
+          ]
+        },
+        {
+          "name": "y2_side",
+          "label": "第二轴位置",
+          "type": "enum",
+          "default": "right",
+          "path": ["layout", "yaxis2", "side"],
+          "help": "第二条 y 轴位于图表的哪一侧。",
+          "options": [
+            { "value": "right", "label": "右侧" },
+            { "value": "left", "label": "左侧" }
+          ]
+        },
+        {
+          "name": "show_legend",
+          "label": "显示图例",
+          "type": "bool",
+          "default": true,
+          "path": ["layout", "showlegend"],
+          "help": "是否显示轨迹图例。"
+        }
+      ]
+    }
+  ]
+}
