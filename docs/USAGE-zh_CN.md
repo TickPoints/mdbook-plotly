@@ -111,6 +111,83 @@ after = ["links"]
 
 有关可用图表类型、配置选项和高级功能的详细信息，请参阅以下部分。
 
+## TUI 版本
+
+从 **v0.3.0-alpha** 开始，mdbook-plotly 提供两种二进制变体：
+
+| 变体 | Release 产物名称 | 内容 |
+|--------|--------------------|----------|
+| **精简版**（默认） | `mdbook-plotly-<version>-<target>.<ext>` | 仅预处理器。`cargo install mdbook-plotly` 安装的就是它。 |
+| **完整版**（`-tui`） | `mdbook-plotly-<version>-<target>-tui.<ext>` | 预处理器**以及**一个交互式 TUI：自更新、引导式 `book.toml` 编辑器、Plot 速查。 |
+
+自更新工具只会查找与自身变体匹配的产物，因此精简版二进制永远不会用 `-tui` 产物来更新自己。完整的产物命名契约见 [RELEASE.md](RELEASE.md)。
+
+### 安装完整版
+
+```shell
+cargo install mdbook-plotly --features tui
+```
+
+或者从 [Releases](https://github.com/TickPoints/mdbook-plotly/releases) 页面下载以 `-tui` 结尾、与你平台匹配的产物。
+
+### `tui` 命令
+
+完整版注册了一个 `tui` 子命令。精简版也会识别该命令，并打印安装指引，而不是报 "unknown subcommand" 错误。
+
+```
+mdbook-plotly tui [OPTIONS]
+```
+
+选项：
+
+| 选项 | 含义 |
+|--------|---------|
+| `--dry-run` | 自更新：只检查和报告，不下载、不替换任何内容。 |
+| `--refresh` | 速查：绕过缓存，从匹配的 release tag 重新拉取文档。 |
+| `--no-effects` | 关闭视图切换动画。 |
+
+TUI 有一个欢迎视图和三个工具：
+
+1. **自更新** —— 查询 GitHub Releases API，用 semver 将最新 tag 与当前版本比较，确认后下载匹配的 `-tui` 产物，校验其 `.sha256`，并原子替换正在运行的二进制。替换前始终要求确认；`--dry-run` 绝不下载。读取 `GITHUB_TOKEN` 以提高未认证的 API 限流额度。
+2. **book.toml 编辑器** —— 从当前目录向上查找 `book.toml`，带每个字段的说明与取值范围来编辑 `[preprocessor.plotly]` 下的键（以及 `book.title`）。它使用 `toml_edit` 保留注释与格式，写入前展示 diff，并通过临时文件 + rename 原子写入。
+3. **Plot 速查** —— 对本手册 [Plot 示例速查](#plot-示例速查) 章节中的示例进行搜索、预览与复制。文档来源依次为本地缓存、与当前二进制版本匹配的 release tag、过期缓存——因此首次拉取后即可离线使用。按 `Enter` 将示例复制到剪贴板（不可用时回退为打印到 stdout）。
+
+### 文档语言
+
+速查工具按以下顺序自动选择用户手册语言：
+
+1. `MDBOOK_PLOTLY_LANG` 环境变量（`zh`、`zh-CN`、`en`，……）
+2. 设置文件中的 `[language] doc`（`zh_CN` 或 `en`）
+3. 系统 locale（任何以 `zh` 开头的值都会选择中文手册）
+
+```shell
+MDBOOK_PLOTLY_LANG=zh mdbook-plotly tui
+```
+
+`docs/USAGE.md`（英文）与 `docs/USAGE-zh_CN.md`（中文）携带相同的机器可读 schema 和相同的 plot 示例 id，因此速查工具在两种语言下行为完全一致。
+
+### GitHub 代理 / 镜像
+
+所有 GitHub 访问（自更新 API、产物下载、速查拉取）都经过可配置的端点，没有任何 URL 是硬编码的。可以通过环境变量、设置文件或两者同时配置：
+
+| 设置 | 环境变量 | 配置文件键 | 含义 |
+|---------|---------------------|-----------------|---------|
+| 代理前缀 | `MDBOOK_PLOTLY_GITHUB_PROXY` | `github.proxy` | 在所有 GitHub URL 前添加的前缀（例如 `https://ghproxy.com/`） |
+| API 基址 | `MDBOOK_PLOTLY_GITHUB_API` | `github.api` | 替换 `https://api.github.com` |
+| Raw 基址 | `MDBOOK_PLOTLY_GITHUB_RAW` | `github.raw` | 替换 `https://raw.githubusercontent.com` |
+| 下载基址 | `MDBOOK_PLOTLY_GITHUB_DOWNLOAD` | `github.download` | 替换 release 产物所用的 `https://github.com` |
+
+设置文件位置（XDG）：`$XDG_CONFIG_HOME/mdbook-plotly/config.toml`（macOS 上为 `~/Library/Application Support/mdbook-plotly/config.toml`）。环境变量优先于配置文件，配置文件优先于默认值。未知键会被忽略，因此未来的设置不会破坏旧版本二进制。
+
+```toml
+# ~/.config/mdbook-plotly/config.toml
+[language]
+doc = "zh_CN"
+
+[github]
+proxy = "https://ghproxy.com/"
+```
+
 ## 配置参考
 
 mdbook-plotly 的配置选项在 `book.toml` 的 `[preprocessor.plotly]` 部分中指定。
