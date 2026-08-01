@@ -23,8 +23,8 @@ pub mod update;
 pub mod update_view;
 pub mod widget;
 
-use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
+use ratatui::backend::CrosstermBackend;
 
 /// Event poll interval in milliseconds.
 pub const EVENT_POLL_MS: u64 = 50;
