@@ -7,11 +7,14 @@
 //! short sweep on update completion) come from `tachyonfx` and can be
 //! disabled with `--no-effects`.
 
+pub mod app;
 pub mod book_toml;
 pub mod book_toml_view;
 pub mod cheatsheet;
 pub mod cheatsheet_view;
 pub mod github;
+pub mod help;
+pub mod home;
 pub mod locale;
 pub mod settings;
 pub mod term;
@@ -19,6 +22,9 @@ pub mod theme;
 pub mod update;
 pub mod update_view;
 pub mod widget;
+
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
 
 /// Event poll interval in milliseconds.
 pub const EVENT_POLL_MS: u64 = 50;
@@ -42,3 +48,20 @@ pub struct TuiOptions {
     pub refresh: bool,
     pub no_effects: bool,
 }
+
+/// Run the TUI until the user quits.
+pub fn run(opts: TuiOptions) -> anyhow::Result<()> {
+    term::install_panic_hook();
+    let mut terminal = term::setup()?;
+    let mut app = app::App::new(opts);
+    let result = app.run(&mut terminal);
+    let _ = term::teardown(&mut terminal);
+    if let Some(text) = app.print_on_exit.take() {
+        println!("{text}");
+    }
+    result.map_err(Into::into)
+}
+
+/// Helper type alias for the terminal used across the app.
+pub type TerminalBackend = CrosstermBackend<std::io::Stdout>;
+pub type TerminalType = Terminal<TerminalBackend>;
