@@ -109,7 +109,7 @@ For detailed information on available chart types, configuration options, and ad
 
 ## TUI Edition
 
-Starting with **v0.3.0-alpha**, mdbook-plotly ships two binary variants:
+Starting with **v0.3.0-beta**, mdbook-plotly ships two binary variants:
 
 | Variant | Release asset name | Contents |
 |--------|--------------------|----------|

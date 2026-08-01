@@ -5,7 +5,9 @@
 - **Changed** — the plot tool was reworked from a doc cheat-sheet into a **questionnaire-driven plot generator**
     - Pick one of eight plot types (line, scatter, bar, pie, histogram, box, heatmap, dual-axis), fill in the fields (title, data, colors, …), and preview the generated JSON/TOML live; `--no-preview` disables the live refresh.
     - Validation flags missing required fields and malformed numbers inline; `c` copies to the clipboard, `s` saves to `plot-<type>.json`/`.toml`, and `r` restores the built-in example.
+- **Changed** — TUI visuals reworked to the "biomorphic organic" paper palette: `Layer` / `density_char` / rounded-panel `Block` helpers, a solid-accent status band, and TrueColor → 256 → 16 → none colour adaptation via `supports-color`, so the paper background never garbles an older terminal.
 - **Added** — the plot generator schema (contract C): `docs/PLOT-SCHEMA.json` plus a `-zh_CN` translation, the single source of truth for generator fields, targets, and examples. It is embedded at compile time, so the generator works fully offline.
+- **Added** — programmatic visual regression tests (`tests/test_tui_visual.rs`, ratatui `TestBackend`) and dedicated `docs-schema-test` / `tui-visual-test` CI jobs.
 - **Removed** — the machine-readable USAGE schema (`docs_parser`, the `<!-- usage-schema -->` / `<!-- plot:begin/end -->` markers, `docs/USAGE-SCHEMA.md`, the `--refresh` flag, and the GitHub `raw` endpoint override). All plot data now comes from the schema file, so nothing is parsed out of the manual and there is no second place to maintain.
 - **Changed** — schema language selection (`MDBOOK_PLOTLY_LANG` → `[language] doc` → system locale) now picks the localized schema instead of the manual.
 - **Fixed** — none (no behavior changes to the preprocessor itself).
