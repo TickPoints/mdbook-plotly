@@ -49,9 +49,9 @@ jobs:
       - name: Format check
         run: cargo fmt --check
 
-  # Validates the plot generator schema (contract C) against the parser:
-  # both language files must parse, stay in sync, and every embedded
-  # example must produce valid chart input.
+  # Validates the plot generator schema against the parser: both language
+  # files must parse, stay in sync, and every embedded example must produce
+  # valid chart input.
   docs-schema-test:
     runs-on: ubuntu-latest
     steps:
@@ -68,8 +68,8 @@ jobs:
           key: docs-schema-${{ hashFiles('Cargo.lock') }}
           restore-keys: docs-schema-
 
-      - name: Plot schema contract test
-        run: cargo test --locked --test test_plot_schema
+      - name: Plot schema test
+        run: cargo test --locked --features tui --test test_plot_schema
 
   # Renders key views through ratatui::TestBackend and asserts structure,
   # labels, and the paper palette, plus generator form logic.

@@ -1,4 +1,4 @@
-# Release Contract
+# Release Assets
 
 This document is the single source of truth shared by the release CI
 (`.github/workflows/release.yml`), the self-update logic in the `tui`

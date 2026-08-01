@@ -6,7 +6,7 @@
     - Pick one of eight plot types (line, scatter, bar, pie, histogram, box, heatmap, dual-axis), fill in the fields (title, data, colors, …), and preview the generated JSON/TOML live; `--no-preview` disables the live refresh.
     - Validation flags missing required fields and malformed numbers inline; `c` copies to the clipboard, `s` saves to `plot-<type>.json`/`.toml`, and `r` restores the built-in example.
 - **Changed** — TUI visuals reworked to the "biomorphic organic" paper palette: `Layer` / `density_char` / rounded-panel `Block` helpers, a solid-accent status band, and TrueColor → 256 → 16 → none colour adaptation via `supports-color`, so the paper background never garbles an older terminal.
-- **Added** — the plot generator schema (contract C): `docs/PLOT-SCHEMA.json` plus a `-zh_CN` translation, the single source of truth for generator fields, targets, and examples. It is embedded at compile time, so the generator works fully offline.
+- **Added** — the plot generator schema: `docs/PLOT-SCHEMA.json` plus a `-zh_CN` translation, the single source of truth for generator fields, targets, and examples. It is embedded at compile time, so the generator works fully offline.
 - **Added** — programmatic visual regression tests (`tests/test_tui_visual.rs`, ratatui `TestBackend`) and dedicated `docs-schema-test` / `tui-visual-test` CI jobs.
 - **Removed** — the machine-readable USAGE schema (`docs_parser`, the `<!-- usage-schema -->` / `<!-- plot:begin/end -->` markers, `docs/USAGE-SCHEMA.md`, the `--refresh` flag, and the GitHub `raw` endpoint override). All plot data now comes from the schema file, so nothing is parsed out of the manual and there is no second place to maintain.
 - **Changed** — schema language selection (`MDBOOK_PLOTLY_LANG` → `[language] doc` → system locale) now picks the localized schema instead of the manual.
@@ -20,7 +20,7 @@
         - **Self-update**: checks GitHub Releases for the latest tag, compares against the running version with semver, downloads the matching `-tui` asset, verifies its `.sha256`, and atomically replaces the running binary after explicit confirmation. Supports `--dry-run` and reads `GITHUB_TOKEN` for the API rate limit.
         - **book.toml editor**: walks up from the working directory to find `book.toml`, guides edits of the `[preprocessor.plotly]` keys with per-field descriptions and valid ranges, uses `toml_edit` so comments/formatting are preserved, shows a diff before writing, and writes atomically via temp-file + rename.
     - The slim edition recognizes the `tui` command and prints install/download instructions instead of an "unknown subcommand" error.
-- **Added** — `docs/RELEASE.md` defining the release-asset naming contract shared by CI and the updater.
+- **Added** — `docs/RELEASE.md` defining the release-asset naming scheme shared by CI and the updater.
 - **Changed** — CI now builds and uploads both variants per target (with `cargo build --locked --release`), generates a `.sha256` per asset, and runs `clippy -D warnings` + `cargo test` for both feature combinations on every PR/push.
 - **Changed** — code organization: the TUI sources were split into focused modules (logic vs. views vs. configuration), all unit tests now live under `tests/`, and the GitHub endpoint logic was extracted into a configurable module with `thiserror`-based error types.
 - **Fixed** — none (no behavior changes to the preprocessor itself).

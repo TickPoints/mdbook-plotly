@@ -1,12 +1,11 @@
-//! Contract C: the plot generator input schema.
+//! The plot generator input schema.
 //!
 //! `docs/PLOT-SCHEMA.json` (and its `-zh_CN` translation) defines, for
 //! each plot type, the fields a user fills in a questionnaire-style form,
 //! plus a ready-made example. This module parses that schema, turns form
 //! inputs into a `serde_json::Value` plot configuration, and turns an
-//! example configuration back into prefilled form inputs. It is
-//! dependency-light (serde + serde_json + toml only) so it compiles and is
-//! tested in every feature combination.
+//! example configuration back into prefilled form inputs. It is compiled
+//! only with the `tui` feature (the preprocessor never needs it).
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

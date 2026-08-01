@@ -10,7 +10,7 @@ use mdbook_plotly::tui::update::{
 use semver::Version;
 
 #[test]
-fn asset_names_follow_contract_a() {
+fn asset_names_match_the_release_scheme() {
     let v = Version::parse("0.3.0").unwrap();
     assert_eq!(
         expected_asset_name(&v, "x86_64-unknown-linux-gnu"),

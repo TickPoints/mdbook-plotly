@@ -118,7 +118,7 @@ Starting with **v0.3.0-beta**, mdbook-plotly ships two binary variants:
 
 The self-update tool only ever looks for assets of its own variant, so a slim
 binary never updates from a `-tui` asset. See [RELEASE.md](RELEASE.md) for the
-full asset naming contract.
+full asset naming rules.
 
 ### Installing the Full Edition
 

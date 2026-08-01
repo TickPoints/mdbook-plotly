@@ -116,7 +116,7 @@ after = ["links"]
 | **精简版**（默认） | `mdbook-plotly-<version>-<target>.<ext>` | 仅预处理器。`cargo install mdbook-plotly` 安装的就是它。 |
 | **完整版**（`-tui`） | `mdbook-plotly-<version>-<target>-tui.<ext>` | 预处理器**以及**一个交互式 TUI：自更新、引导式 `book.toml` 编辑器、Plot 生成器。 |
 
-自更新工具只会查找与自身变体匹配的产物，因此精简版二进制永远不会用 `-tui` 产物来更新自己。完整的产物命名契约见 [RELEASE.md](RELEASE.md)。
+自更新工具只会查找与自身变体匹配的产物，因此精简版二进制永远不会用 `-tui` 产物来更新自己。完整的产物命名规则见 [RELEASE.md](RELEASE.md)。
 
 ### 安装完整版
 

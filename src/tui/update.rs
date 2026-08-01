@@ -1,4 +1,5 @@
-//! Self-update logic: GitHub Releases API, asset selection per contract A
+//! Self-update logic: GitHub Releases API, asset selection matching the
+//! running binary's variant.
 //! (`docs/RELEASE.md`), SHA-256 verification, and atomic binary
 //! replacement via `self_replace`.
 //!

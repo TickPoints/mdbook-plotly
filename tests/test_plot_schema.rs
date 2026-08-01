@@ -1,7 +1,9 @@
-//! Enforces the contract C schema (`docs/PLOT-SCHEMA.json` and its
+//! Enforces the plot generator schema (`docs/PLOT-SCHEMA.json` and its
 //! `-zh_CN` translation) against the parser: both languages must stay in
 //! sync, every example must generate a valid plot configuration, and the
 //! form validation must catch bad input.
+
+#![cfg(feature = "tui")]
 
 use mdbook_plotly::plot_schema::{
     EMBEDDED_EN, EMBEDDED_ZH_CN, PlotSchema, PlotTypeSchema, build_config, config_to_json,
