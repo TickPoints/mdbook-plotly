@@ -7,6 +7,9 @@
 //! short sweep on update completion) come from `tachyonfx` and can be
 //! disabled with `--no-effects`.
 
+pub mod github;
+pub mod locale;
+pub mod settings;
 pub mod term;
 pub mod theme;
 pub mod widget;
