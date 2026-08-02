@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.3.0
+- 2026-08-02
+- **Changed** — the plot generator now builds a **multi-trace `data` array**: the questionnaire is a per-trace form repeated for every trace (`[` / `]` switch the active trace, `a` adds one, `d` removes it, never below one), and the schema was reworked to a shared `trace_fields` list plus per-type `trace_defaults` / `required_data`.
+- **Added** — two raw-JSON5 global fields, **`config`** and **`map`**, let the generated plot block use the full preprocessor feature set (`data[]` + `layout` + `config` + `map`); blank fields are omitted, malformed JSON or non-object input is flagged inline.
+- **Changed** — text/number/array/JSON fields now use **Enter-to-edit inline editing** (Enter commits, Esc cancels, cursor via ←/→/Home/End), which resolves the conflict where typing digits switched the plot type; while editing, digit keys and the `q`/`?` globals are inert (`Ctrl+C` still quits). Bool fields still toggle on Enter, enums still cycle with ←/→.
+- **Changed** — the generator's form + preview are now rendered as a **centered card at about 3/4 of the screen**, leaving the paper page background visible around the panels.
+- **Fixed** — typing `q` in an inline editor no longer quits the TUI (editing captures printable keys before the global handlers).
+- **Changed** — schema format `2.0` (`docs/PLOT-SCHEMA.json` and `-zh_CN` updated in lockstep); the Chinese manual's plot-generator section and key bindings were synced.
+
 ## v0.3.0-beta
 - 2026-08-01
 - **Changed** — the plot tool was reworked from a doc cheat-sheet into a **questionnaire-driven plot generator**

@@ -1425,7 +1425,7 @@ dependencies = [
 
 [[package]]
 name = "mdbook-plotly"
-version = "0.3.0-beta"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "arboard",
