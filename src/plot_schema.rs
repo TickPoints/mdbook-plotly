@@ -6,12 +6,20 @@
 //! inputs into a `serde_json::Value` plot configuration, and turns an
 //! example configuration back into prefilled form inputs. It is compiled
 //! only with the `tui` feature (the preprocessor never needs it).
+//!
+//! The schema describes two kinds of fields:
+//! - **trace fields** (shared, top-level `trace_fields`): relative paths
+//!   that repeat for every entry in `data`. A plot may have any number of
+//!   traces, each filled from the same questionnaire.
+//! - **global fields** (per-type `fields` plus the shared `global_fields`
+//!   `config` / `map`): absolute paths applied once to the generated plot
+//!   object.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Schema format version. Bump when the schema grammar changes.
-pub const PLOT_SCHEMA_VERSION: &str = "1.0";
+pub const PLOT_SCHEMA_VERSION: &str = "2.0";
 
 /// Embedded English schema.
 pub const EMBEDDED_EN: &str = include_str!("../docs/PLOT-SCHEMA.json");
@@ -22,6 +30,12 @@ pub const EMBEDDED_ZH_CN: &str = include_str!("../docs/PLOT-SCHEMA-zh_CN.json");
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlotSchema {
     pub schema: String,
+    /// Shared per-trace questionnaire, repeated for every entry in `data`.
+    #[serde(default)]
+    pub trace_fields: Vec<FieldSchema>,
+    /// Shared global fields (`config`, `map`) appended to every plot type.
+    #[serde(default)]
+    pub global_fields: Vec<FieldSchema>,
     pub plot_types: Vec<PlotTypeSchema>,
 }
 
@@ -45,16 +59,22 @@ pub struct PlotTypeSchema {
     pub label: String,
     #[serde(default)]
     pub tags: Vec<String>,
-    /// Fixed traces (type / mode / yaxis) emitted before any field values.
+    /// Base trace header (type / mode / yaxis) applied to every `data`
+    /// entry; per-trace fields may override it.
     #[serde(default)]
-    pub traces: Vec<TraceSpec>,
+    pub trace_defaults: Option<TraceSpec>,
+    /// Names of [`PlotSchema::trace_fields`] that must be filled for each
+    /// trace (e.g. `["x", "y"]` for a line chart).
+    #[serde(default)]
+    pub required_data: Vec<String>,
+    /// Global (absolute-path) fields specific to this plot type.
+    pub fields: Vec<FieldSchema>,
     /// A complete example configuration used to prefill the form.
     #[serde(default)]
     pub example: Option<Value>,
-    pub fields: Vec<FieldSchema>,
 }
 
-/// A trace header injected into the generated `data` array.
+/// A trace header injected into every generated `data` entry.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TraceSpec {
     pub index: usize,
@@ -125,6 +145,8 @@ pub enum FieldType {
     Enum,
     Array,
     Array2d,
+    /// Free-form JSON5 (used for `config` and `map`).
+    Json,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -151,13 +173,18 @@ pub enum PathSeg {
 /// The current value of one form field, keyed by what the field accepts.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FieldInput {
-    /// Raw text for `String` / `Number` / `Array` / `Array2d`.
+    /// Raw text for `String` / `Number` / `Array` / `Array2d` / `Json`.
     pub text: String,
     /// Current value for `Bool`.
     pub bool_value: bool,
     /// Selected option index for `Enum`.
     pub enum_index: usize,
 }
+
+/// Per-field validation errors, index-parallel to a list of fields.
+pub type FieldErrors = Vec<Option<String>>;
+/// Validation errors for every trace, `[trace][field]`.
+pub type TraceErrors = Vec<FieldErrors>;
 
 /// The value a fresh form shows for a field.
 pub fn default_input(field: &FieldSchema) -> FieldInput {
@@ -186,19 +213,15 @@ pub fn default_input(field: &FieldSchema) -> FieldInput {
     }
 }
 
-/// Prefill the form for a plot type from its embedded example.
-pub fn prefill_inputs(plot_type: &PlotTypeSchema) -> Vec<FieldInput> {
-    let Some(example) = &plot_type.example else {
-        return plot_type.fields.iter().map(default_input).collect();
-    };
-    plot_type
-        .fields
+/// Prefill one trace from a `data[i]` object, falling back to defaults.
+pub fn prefill_trace(trace_fields: &[FieldSchema], trace_obj: &Value) -> Vec<FieldInput> {
+    trace_fields
         .iter()
         .map(|field| {
             let found = field
                 .targets()
                 .into_iter()
-                .find_map(|target| read_path(example, target));
+                .find_map(|target| read_path(trace_obj, target));
             match found {
                 Some(value) => value_to_input(field, value),
                 None => default_input(field),
@@ -207,26 +230,147 @@ pub fn prefill_inputs(plot_type: &PlotTypeSchema) -> Vec<FieldInput> {
         .collect()
 }
 
-/// Build the plot configuration from form inputs. Returns the generated
-/// JSON value and a per-field error list (index-parallel to `fields`).
-pub fn build_config(
+/// Prefill the global fields (per-type + shared `config`/`map`) from an
+/// example plot object, falling back to defaults.
+pub fn prefill_globals(globals: &[FieldSchema], example: Option<&Value>) -> Vec<FieldInput> {
+    globals
+        .iter()
+        .map(|field| {
+            let found = example.and_then(|root| {
+                field
+                    .targets()
+                    .into_iter()
+                    .find_map(|target| read_path(root, target))
+            });
+            match found {
+                Some(value) => value_to_input(field, value),
+                None => default_input(field),
+            }
+        })
+        .collect()
+}
+
+/// Prefill all traces and the global fields from a plot type's example.
+/// Returns `(traces, globals)`, where `traces` has one entry per `data`
+/// element in the example (at least one) and `globals` is index-parallel to
+/// [`composite_globals`].
+pub fn prefill(
+    schema: &PlotSchema,
     plot_type: &PlotTypeSchema,
-    inputs: &[FieldInput],
-) -> (Value, Vec<Option<String>>) {
+) -> (Vec<Vec<FieldInput>>, Vec<FieldInput>) {
+    let example = plot_type.example.as_ref();
+    let data = example
+        .and_then(|e| e.get("data"))
+        .and_then(Value::as_array);
+    let trace_count = data.map(|a| a.len().max(1)).unwrap_or(1);
+    let traces = (0..trace_count)
+        .map(|i| {
+            let trace_obj = data.and_then(|a| a.get(i)).cloned().unwrap_or(Value::Null);
+            prefill_trace(&schema.trace_fields, &trace_obj)
+        })
+        .collect();
+    let globals = prefill_globals(&composite_globals(schema, plot_type), example);
+    (traces, globals)
+}
+
+/// The shared global fields (`config`, `map`) appended to a plot type's own
+/// global fields, in display/build order.
+pub fn composite_globals(schema: &PlotSchema, plot_type: &PlotTypeSchema) -> Vec<FieldSchema> {
+    let mut fields = plot_type.fields.clone();
+    fields.extend(schema.global_fields.iter().cloned());
+    fields
+}
+
+/// Build the plot configuration from form inputs. `traces` is index-parallel
+/// to the shared [`PlotSchema::trace_fields`] and has one entry per `data`
+/// element; `globals` is index-parallel to [`composite_globals`]. Returns the
+/// generated JSON value and parallel error lists (trace errors are
+/// `[trace][field]`, global errors are `[field]`).
+pub fn build_config(
+    schema: &PlotSchema,
+    plot_type: &PlotTypeSchema,
+    traces: &[Vec<FieldInput>],
+    globals: &[FieldInput],
+) -> (Value, TraceErrors, FieldErrors) {
     let mut root = Value::Object(serde_json::Map::new());
-    apply_traces(&mut root, &plot_type.traces);
-    let mut errors = Vec::with_capacity(plot_type.fields.len());
-    for (i, field) in plot_type.fields.iter().enumerate() {
-        let input = inputs.get(i).cloned().unwrap_or_default();
+    let trace_fields = &schema.trace_fields;
+
+    let mut trace_errors = Vec::with_capacity(traces.len());
+    let mut data = Vec::with_capacity(traces.len());
+    for trace_inputs in traces {
+        let mut trace_obj = Value::Object(trace_defaults_object(plot_type.trace_defaults.as_ref()));
+        let mut errors = Vec::with_capacity(trace_fields.len());
+        for (i, field) in trace_fields.iter().enumerate() {
+            let input = trace_inputs.get(i).cloned().unwrap_or_default();
+            let (value, mut error) = field_value(field, &input);
+            if plot_type.required_data.iter().any(|r| r == &field.name)
+                && input.text.trim().is_empty()
+                && value.is_none()
+            {
+                error = Some("required".to_string());
+            }
+            errors.push(error);
+            if let Some(value) = value {
+                if is_default_sentinel(field, &input) {
+                    continue;
+                }
+                for target in field.targets() {
+                    set_path(&mut trace_obj, target, value.clone());
+                }
+            }
+        }
+        trace_errors.push(errors);
+        data.push(trace_obj);
+    }
+    if !data.is_empty() {
+        set_path(
+            &mut root,
+            &[PathSeg::Key("data".into())],
+            Value::Array(data),
+        );
+    }
+
+    let global_fields = composite_globals(schema, plot_type);
+    let mut global_errors = Vec::with_capacity(global_fields.len());
+    for (i, field) in global_fields.iter().enumerate() {
+        let input = globals.get(i).cloned().unwrap_or_default();
         let (value, error) = field_value(field, &input);
-        errors.push(error);
+        global_errors.push(error);
         if let Some(value) = value {
             for target in field.targets() {
                 set_path(&mut root, target, value.clone());
             }
         }
     }
-    (root, errors)
+
+    (root, trace_errors, global_errors)
+}
+
+fn trace_defaults_object(trace_defaults: Option<&TraceSpec>) -> serde_json::Map<String, Value> {
+    let mut obj = serde_json::Map::new();
+    if let Some(defaults) = trace_defaults {
+        if !defaults.r#type.is_empty() {
+            obj.insert("type".into(), Value::String(defaults.r#type.clone()));
+        }
+        if let Some(mode) = &defaults.mode {
+            obj.insert("mode".into(), Value::String(mode.clone()));
+        }
+        if let Some(yaxis) = &defaults.yaxis {
+            obj.insert("yaxis".into(), Value::String(yaxis.clone()));
+        }
+    }
+    obj
+}
+
+/// A trace field whose enum picked the `default` sentinel inherits the
+/// plot type's `trace_defaults` instead of writing an override.
+fn is_default_sentinel(field: &FieldSchema, input: &FieldInput) -> bool {
+    field.kind == FieldType::Enum
+        && field
+            .options
+            .get(input.enum_index)
+            .map(|o| o.value == "default")
+            .unwrap_or(false)
 }
 
 /// Whether any of the per-field errors is present.
@@ -255,21 +399,6 @@ pub fn read_path<'a>(mut cur: &'a Value, path: &[PathSeg]) -> Option<&'a Value> 
         };
     }
     Some(cur)
-}
-
-fn apply_traces(root: &mut Value, traces: &[TraceSpec]) {
-    for trace in traces {
-        let mut obj = serde_json::Map::new();
-        obj.insert("type".into(), Value::String(trace.r#type.clone()));
-        if let Some(mode) = &trace.mode {
-            obj.insert("mode".into(), Value::String(mode.clone()));
-        }
-        if let Some(yaxis) = &trace.yaxis {
-            obj.insert("yaxis".into(), Value::String(yaxis.clone()));
-        }
-        let path = vec![PathSeg::Key("data".into()), PathSeg::Index(trace.index)];
-        set_path(root, &path, Value::Object(obj));
-    }
 }
 
 fn field_value(field: &FieldSchema, input: &FieldInput) -> (Option<Value>, Option<String>) {
@@ -361,6 +490,21 @@ fn field_value(field: &FieldSchema, input: &FieldInput) -> (Option<Value>, Optio
                 out.push(Value::Array(row_values));
             }
             (Some(Value::Array(out)), None)
+        }
+        FieldType::Json => {
+            let text = input.text.trim();
+            if text.is_empty() {
+                return if field.required {
+                    (None, Some("required".to_string()))
+                } else {
+                    (None, None)
+                };
+            }
+            match json5::from_str::<Value>(text) {
+                Ok(value) if value.is_object() => (Some(value), None),
+                Ok(_) => (None, Some("must be a JSON object".to_string())),
+                Err(e) => (None, Some(format!("invalid JSON: {e}"))),
+            }
         }
     }
 }
@@ -483,6 +627,10 @@ fn value_to_input(field: &FieldSchema, value: &Value) -> FieldInput {
         },
         FieldType::Array2d => FieldInput {
             text: array2d_to_text(value),
+            ..FieldInput::default()
+        },
+        FieldType::Json => FieldInput {
+            text: serde_json::to_string_pretty(value).unwrap_or_default(),
             ..FieldInput::default()
         },
         _ => FieldInput {

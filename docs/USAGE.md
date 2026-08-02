@@ -109,7 +109,7 @@ For detailed information on available chart types, configuration options, and ad
 
 ## TUI Edition
 
-Starting with **v0.3.0-beta**, mdbook-plotly ships two binary variants:
+Starting with **v0.3.0**, mdbook-plotly ships two binary variants:
 
 | Variant | Release asset name | Contents |
 |--------|--------------------|----------|
@@ -160,12 +160,14 @@ The TUI has a welcome view and three tools:
    writing, and writes atomically.
 3. **Plot generator** — a questionnaire-driven way to produce chart configs
    without writing JSON by hand. Pick one of eight plot types, fill in the
-   fields (title, data, colors, …), and watch a live JSON/TOML preview on the
-   right. Validation flags missing required fields and bad numbers inline.
-   `c` copies the result to the clipboard, `s` saves it to
-   `plot-<type>.json`/`.toml`, and `r` restores the built-in example. The
-   generator is fully offline: the schema is embedded in the binary, so there
-   is nothing to fetch.
+   per-trace fields (name, data, type, mode, color, …), and watch a live
+   JSON/TOML preview. A chart can hold **any number of traces** (`[` / `]`
+   switch trace, `a` adds, `d` removes) and two extra raw-JSON5 fields let you
+   write the **`config`** and **`map`** sections of the plot block directly.
+   Validation flags missing required fields and bad numbers inline. `c` copies
+   the result to the clipboard, `s` saves it to `plot-<type>.json`/`.toml`,
+   and `r` restores the built-in example. The generator is fully offline: the
+   schema is embedded in the binary, so there is nothing to fetch.
 
 ### Schema Language
 

@@ -129,6 +129,17 @@ impl App {
     fn on_key(&mut self, key: KeyEvent) {
         let code = key.code;
 
+        // While editing a generator field, printable keys belong to the
+        // buffer: skip every global key except Ctrl+C.
+        if self.view == View::PlotGen && self.gen_view.state.is_editing() {
+            if key.modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
+                self.quit = true;
+            } else {
+                self.on_plotgen_edit_key(code);
+            }
+            return;
+        }
+
         // Global keys.
         if code == KeyCode::Char('?') {
             self.help = !self.help;
@@ -307,6 +318,22 @@ impl App {
         }
     }
 
+    fn on_plotgen_edit_key(&mut self, code: KeyCode) {
+        let form = &mut self.gen_view.state;
+        match code {
+            KeyCode::Esc => form.cancel_edit(),
+            KeyCode::Enter => form.commit_edit(),
+            KeyCode::Char(c) => form.insert_char(c),
+            KeyCode::Backspace => form.backspace(),
+            KeyCode::Delete => form.delete(),
+            KeyCode::Left => form.cursor_left(),
+            KeyCode::Right => form.cursor_right(),
+            KeyCode::Home => form.cursor_home(),
+            KeyCode::End => form.cursor_end(),
+            _ => {}
+        }
+    }
+
     fn on_plotgen_key(&mut self, code: KeyCode) {
         if code == KeyCode::Esc {
             self.change_view(View::Home);
@@ -320,7 +347,7 @@ impl App {
                 }
             }
             KeyCode::Down => {
-                let len = form.current_type().fields.len();
+                let len = form.display_len();
                 if len > 0 {
                     form.selected = (form.selected + 1).min(len - 1);
                 }
@@ -335,63 +362,29 @@ impl App {
             KeyCode::Char('s' | 'S') => form.save(),
             KeyCode::Char('r' | 'R') => form.reset_to_example(),
             KeyCode::Char('g' | 'G') if self.opts.no_preview => form.regen(),
+            KeyCode::Char('[') => form.switch_trace(-1),
+            KeyCode::Char(']') => form.switch_trace(1),
+            KeyCode::Char('a' | 'A') => form.add_trace(),
+            KeyCode::Char('d' | 'D') => form.remove_trace(),
             KeyCode::Enter | KeyCode::Char(' ') => {
                 let i = form.selected;
-                if form
-                    .current_type()
-                    .fields
-                    .get(i)
-                    .is_some_and(|f| f.is_bool())
-                {
-                    form.toggle_bool(i);
+                match form.current_field() {
+                    Some(field) if field.is_bool() => form.toggle_bool(i),
+                    Some(field) if field.is_enum() => {}
+                    Some(_) => form.start_edit(i),
+                    None => {}
                 }
             }
             KeyCode::Left => {
                 let i = form.selected;
-                if form
-                    .current_type()
-                    .fields
-                    .get(i)
-                    .is_some_and(|f| f.is_enum())
-                {
+                if form.field_at(i).is_some_and(|f| f.is_enum()) {
                     form.cycle_enum(i, -1);
                 }
             }
             KeyCode::Right => {
                 let i = form.selected;
-                if form
-                    .current_type()
-                    .fields
-                    .get(i)
-                    .is_some_and(|f| f.is_enum())
-                {
+                if form.field_at(i).is_some_and(|f| f.is_enum()) {
                     form.cycle_enum(i, 1);
-                }
-            }
-            KeyCode::Char(c) => {
-                let i = form.selected;
-                if form
-                    .current_type()
-                    .fields
-                    .get(i)
-                    .is_some_and(|f| !f.is_bool() && !f.is_enum())
-                {
-                    let mut text = form.inputs[i].text.clone();
-                    text.push(c);
-                    form.set_text_field(i, text);
-                }
-            }
-            KeyCode::Backspace => {
-                let i = form.selected;
-                if form
-                    .current_type()
-                    .fields
-                    .get(i)
-                    .is_some_and(|f| !f.is_bool() && !f.is_enum())
-                {
-                    let mut text = form.inputs[i].text.clone();
-                    text.pop();
-                    form.set_text_field(i, text);
                 }
             }
             _ => {}
@@ -507,10 +500,11 @@ impl App {
             }
             View::PlotGen => {
                 hints.insert(0, ("↑↓", "move"));
-                hints.insert(1, ("1-8", "type"));
-                hints.insert(2, ("p", "fmt"));
-                hints.insert(3, ("c", "copy"));
-                hints.insert(4, ("s", "save"));
+                hints.insert(1, ("Enter", "edit"));
+                hints.insert(2, ("[ ]", "trace"));
+                hints.insert(3, ("a/d", "add/del"));
+                hints.insert(4, ("c", "copy"));
+                hints.insert(5, ("s", "save"));
             }
         }
         hints

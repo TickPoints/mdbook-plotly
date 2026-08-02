@@ -82,18 +82,55 @@ fn home_renders_subtitle_and_tools() {
 fn plotgen_renders_form_preview_and_actions() {
     let view = PlotGenView::new(PlotGen::new(DocLang::English));
     let buffer = render(140, 40, |frame, area| {
+        frame.render_widget(
+            ratatui::widgets::Paragraph::new("")
+                .style(ratatui::style::Style::new().bg(theme::base_bg())),
+            area,
+        );
         let mut view = view.clone();
         view.render(frame, area);
     });
     assert!(has_text(&buffer, "Plot generator"), "header missing");
     assert!(has_text(&buffer, " Line "), "selected type tab missing");
+    assert!(has_text(&buffer, "X data"), "trace field label missing");
     assert!(has_text(&buffer, "Chart title"), "field label missing");
     assert!(has_text(&buffer, "preview (JSON)"), "preview block missing");
     assert!(
-        has_text(&buffer, "\"title\": \"Basic Line\""),
+        has_text(&buffer, "\"data\": ["),
         "live preview content missing"
     );
     assert!(has_text(&buffer, "copy"), "action bar missing");
+}
+
+#[test]
+fn plotgen_shows_trace_tabs_and_insets_the_card() {
+    let view = PlotGenView::new(PlotGen::new(DocLang::English));
+    let buffer = render(140, 40, |frame, area| {
+        frame.render_widget(
+            ratatui::widgets::Paragraph::new("")
+                .style(ratatui::style::Style::new().bg(theme::base_bg())),
+            area,
+        );
+        let mut view = view.clone();
+        view.render(frame, area);
+    });
+    assert!(has_text(&buffer, " trace "), "trace tab row missing");
+    assert!(has_text(&buffer, " add "), "add-trace action missing");
+    assert!(has_text(&buffer, " remove"), "remove-trace action missing");
+
+    // The form/preview card is centered at ~3/4 of the body, so the page
+    // background stays visible on the left and top edges.
+    let p = theme::active();
+    assert_eq!(
+        buffer[(0, 20)].style().bg,
+        Some(p.bg_base),
+        "left margin must show the page background"
+    );
+    assert_eq!(
+        buffer[(10, 6)].style().bg,
+        Some(p.bg_base),
+        "top margin must show the page background"
+    );
 }
 
 #[test]

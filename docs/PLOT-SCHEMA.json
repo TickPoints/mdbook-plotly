@@ -1,17 +1,335 @@
 {
-  "schema": "1.0",
+  "schema": "2.0",
+  "trace_fields": [
+    {
+      "name": "name",
+      "label": "Trace name",
+      "type": "string",
+      "path": [
+        "name"
+      ],
+      "help": "Optional trace name shown in the legend."
+    },
+    {
+      "name": "type",
+      "label": "Trace type",
+      "type": "enum",
+      "path": [
+        "type"
+      ],
+      "help": "Overrides the plot type's base trace type; Auto inherits it.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Auto"
+        },
+        {
+          "value": "scatter",
+          "label": "Scatter"
+        },
+        {
+          "value": "bar",
+          "label": "Bar"
+        },
+        {
+          "value": "pie",
+          "label": "Pie"
+        },
+        {
+          "value": "histogram",
+          "label": "Histogram"
+        },
+        {
+          "value": "box",
+          "label": "Box"
+        },
+        {
+          "value": "heatmap",
+          "label": "Heatmap"
+        }
+      ]
+    },
+    {
+      "name": "mode",
+      "label": "Trace mode",
+      "type": "enum",
+      "path": [
+        "mode"
+      ],
+      "help": "How the trace is drawn; Auto inherits the plot type's mode.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Auto"
+        },
+        {
+          "value": "lines",
+          "label": "Lines"
+        },
+        {
+          "value": "markers",
+          "label": "Markers"
+        },
+        {
+          "value": "lines+markers",
+          "label": "Lines + markers"
+        }
+      ]
+    },
+    {
+      "name": "x",
+      "label": "X data",
+      "type": "array",
+      "item_type": "number",
+      "path": [
+        "x"
+      ],
+      "help": "Comma-separated numbers, e.g. 0,1,2,3."
+    },
+    {
+      "name": "y",
+      "label": "Y data",
+      "type": "array",
+      "item_type": "number",
+      "path": [
+        "y"
+      ],
+      "help": "Comma-separated numbers, one per x value."
+    },
+    {
+      "name": "z",
+      "label": "Z matrix",
+      "type": "array2d",
+      "item_type": "number",
+      "path": [
+        "z"
+      ],
+      "help": "Rows separated by ';', cells by ',', e.g. 1,20,30;20,1,60;30,60,1."
+    },
+    {
+      "name": "labels",
+      "label": "Labels",
+      "type": "array",
+      "item_type": "string",
+      "path": [
+        "labels"
+      ],
+      "help": "Comma-separated labels, one per slice or category."
+    },
+    {
+      "name": "values",
+      "label": "Sizes",
+      "type": "array",
+      "item_type": "number",
+      "path": [
+        "values"
+      ],
+      "help": "Comma-separated sizes, one per label."
+    },
+    {
+      "name": "yaxis",
+      "label": "Y axis",
+      "type": "enum",
+      "path": [
+        "yaxis"
+      ],
+      "help": "Which vertical axis the trace uses; Auto picks the first.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Auto"
+        },
+        {
+          "value": "y",
+          "label": "Left (y)"
+        },
+        {
+          "value": "y2",
+          "label": "Right (y2)"
+        }
+      ]
+    },
+    {
+      "name": "color",
+      "label": "Color",
+      "type": "enum",
+      "paths": [
+        [
+          "line",
+          "color"
+        ],
+        [
+          "marker",
+          "color"
+        ]
+      ],
+      "help": "Trace color.",
+      "options": [
+        {
+          "value": "#1f77b4",
+          "label": "Blue"
+        },
+        {
+          "value": "#3D5230",
+          "label": "Moss green"
+        },
+        {
+          "value": "#d62728",
+          "label": "Red"
+        },
+        {
+          "value": "#ff7f0e",
+          "label": "Orange"
+        },
+        {
+          "value": "#9467bd",
+          "label": "Purple"
+        },
+        {
+          "value": "#2ca02c",
+          "label": "Green"
+        }
+      ]
+    },
+    {
+      "name": "colorscale",
+      "label": "Color scale",
+      "type": "enum",
+      "path": [
+        "colorscale"
+      ],
+      "help": "The colour ramp used for cell intensity.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Auto"
+        },
+        {
+          "value": "Greens",
+          "label": "Greens"
+        },
+        {
+          "value": "Blues",
+          "label": "Blues"
+        },
+        {
+          "value": "Viridis",
+          "label": "Viridis"
+        },
+        {
+          "value": "RdBu",
+          "label": "Red-Blue"
+        },
+        {
+          "value": "YlGnBu",
+          "label": "Yellow-Green-Blue"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "name": "opacity",
+      "label": "Opacity",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "path": [
+        "opacity"
+      ],
+      "help": "Trace opacity from 0 (invisible) to 1 (solid)."
+    },
+    {
+      "name": "line_width",
+      "label": "Line width",
+      "type": "number",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "path": [
+        "line",
+        "width"
+      ],
+      "help": "Stroke width in pixels."
+    },
+    {
+      "name": "marker_size",
+      "label": "Marker size",
+      "type": "number",
+      "default": 10,
+      "min": 0,
+      "max": 50,
+      "path": [
+        "marker",
+        "size"
+      ],
+      "help": "Marker diameter in pixels."
+    }
+  ],
+  "global_fields": [
+    {
+      "name": "config",
+      "label": "Config (JSON5)",
+      "type": "json",
+      "path": [
+        "config"
+      ],
+      "help": "Plotly config object as JSON5, e.g. { responsive: true, scrollZoom: false }."
+    },
+    {
+      "name": "map",
+      "label": "Map expressions (JSON5)",
+      "type": "json",
+      "path": [
+        "map"
+      ],
+      "help": "Map of names to values or generators, e.g. { n: { type: 'g-choose', options: [1, 2, 3] } }."
+    }
+  ],
   "plot_types": [
     {
       "id": "line",
       "label": "Line",
-      "tags": ["line", "scatter", "2d"],
-      "traces": [
-        { "index": 0, "type": "scatter", "mode": "lines" }
+      "tags": [
+        "line",
+        "scatter",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "scatter",
+        "mode": "lines"
+      },
+      "required_data": [
+        "x",
+        "y"
       ],
       "example": {
-        "layout": { "title": "Basic Line", "showlegend": true },
+        "layout": {
+          "title": "Basic Line",
+          "showlegend": true
+        },
         "data": [
-          { "type": "scatter", "mode": "lines", "x": [0, 1, 2, 3], "y": [1, 3, 2, 4], "line": { "width": 2, "color": "#1f77b4" } }
+          {
+            "type": "scatter",
+            "mode": "lines",
+            "x": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "y": [
+              1,
+              3,
+              2,
+              4
+            ],
+            "line": {
+              "width": 2,
+              "color": "#1f77b4"
+            }
+          }
         ]
       },
       "fields": [
@@ -20,59 +338,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Line Chart",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "x",
-          "label": "X data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "x"],
-          "help": "Comma-separated numbers, e.g. 0,1,2,3."
-        },
-        {
-          "name": "y",
-          "label": "Y data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "y"],
-          "help": "Comma-separated numbers, one per x value."
-        },
-        {
-          "name": "line_width",
-          "label": "Line width",
-          "type": "number",
-          "default": 2,
-          "min": 0,
-          "max": 20,
-          "path": ["data", 0, "line", "width"],
-          "help": "Stroke width in pixels."
-        },
-        {
-          "name": "color",
-          "label": "Color",
-          "type": "enum",
-          "default": "#1f77b4",
-          "path": ["data", 0, "line", "color"],
-          "help": "Line color.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
@@ -80,14 +360,49 @@
     {
       "id": "scatter",
       "label": "Scatter",
-      "tags": ["scatter", "marker", "2d"],
-      "traces": [
-        { "index": 0, "type": "scatter", "mode": "markers" }
+      "tags": [
+        "scatter",
+        "marker",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "scatter",
+        "mode": "markers"
+      },
+      "required_data": [
+        "x",
+        "y"
       ],
       "example": {
-        "layout": { "title": "Basic Scatter", "showlegend": true },
+        "layout": {
+          "title": "Basic Scatter",
+          "showlegend": true
+        },
         "data": [
-          { "type": "scatter", "mode": "markers", "x": [0, 1, 2, 3, 4], "y": [2, 5, 3, 6, 1], "marker": { "size": 10, "opacity": 0.7, "color": "#1f77b4" } }
+          {
+            "type": "scatter",
+            "mode": "markers",
+            "x": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "y": [
+              2,
+              5,
+              3,
+              6,
+              1
+            ],
+            "opacity": 0.7,
+            "marker": {
+              "size": 10,
+              "color": "#1f77b4"
+            }
+          }
         ]
       },
       "fields": [
@@ -96,69 +411,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Scatter Plot",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "x",
-          "label": "X data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "x"],
-          "help": "Comma-separated numbers, e.g. 0,1,2,3."
-        },
-        {
-          "name": "y",
-          "label": "Y data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "y"],
-          "help": "Comma-separated numbers, one per x value."
-        },
-        {
-          "name": "marker_size",
-          "label": "Marker size",
-          "type": "number",
-          "default": 10,
-          "min": 0,
-          "max": 50,
-          "path": ["data", 0, "marker", "size"],
-          "help": "Marker diameter in pixels."
-        },
-        {
-          "name": "marker_opacity",
-          "label": "Marker opacity",
-          "type": "number",
-          "default": 0.7,
-          "min": 0,
-          "max": 1,
-          "path": ["data", 0, "marker", "opacity"],
-          "help": "Fill opacity from 0 (invisible) to 1 (solid)."
-        },
-        {
-          "name": "color",
-          "label": "Color",
-          "type": "enum",
-          "default": "#1f77b4",
-          "path": ["data", 0, "marker", "color"],
-          "help": "Marker fill color.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
@@ -166,14 +433,42 @@
     {
       "id": "bar",
       "label": "Bar",
-      "tags": ["bar", "2d"],
-      "traces": [
-        { "index": 0, "type": "bar" }
+      "tags": [
+        "bar",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "bar"
+      },
+      "required_data": [
+        "x",
+        "y"
       ],
       "example": {
-        "layout": { "title": "Basic Bar", "showlegend": true },
+        "layout": {
+          "title": "Basic Bar",
+          "showlegend": true
+        },
         "data": [
-          { "type": "bar", "x": [1, 2, 3, 4], "y": [4, 7, 3, 9], "marker": { "color": "#1f77b4" } }
+          {
+            "type": "bar",
+            "x": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "y": [
+              4,
+              7,
+              3,
+              9
+            ],
+            "marker": {
+              "color": "#1f77b4"
+            }
+          }
         ]
       },
       "fields": [
@@ -182,49 +477,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Bar Chart",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "x",
-          "label": "X data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "x"],
-          "help": "Comma-separated labels or numbers."
-        },
-        {
-          "name": "y",
-          "label": "Y data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "y"],
-          "help": "Comma-separated bar heights."
-        },
-        {
-          "name": "color",
-          "label": "Color",
-          "type": "enum",
-          "default": "#1f77b4",
-          "path": ["data", 0, "marker", "color"],
-          "help": "Bar fill color.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
@@ -232,14 +499,39 @@
     {
       "id": "pie",
       "label": "Pie",
-      "tags": ["pie", "2d"],
-      "traces": [
-        { "index": 0, "type": "pie" }
+      "tags": [
+        "pie",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "pie"
+      },
+      "required_data": [
+        "labels",
+        "values"
       ],
       "example": {
-        "layout": { "title": "Basic Pie", "showlegend": true },
+        "layout": {
+          "title": "Basic Pie",
+          "showlegend": true
+        },
         "data": [
-          { "type": "pie", "values": [10, 20, 30, 40], "labels": ["A", "B", "C", "D"], "hole": 0 }
+          {
+            "type": "pie",
+            "values": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "labels": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          }
         ]
       },
       "fields": [
@@ -248,42 +540,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Pie Chart",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "values",
-          "label": "Sizes",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "values"],
-          "help": "Comma-separated slice sizes, e.g. 10,20,30,40."
-        },
-        {
-          "name": "labels",
-          "label": "Labels",
-          "type": "array",
-          "item_type": "string",
-          "path": ["data", 0, "labels"],
-          "help": "Comma-separated slice labels, one per size."
-        },
-        {
-          "name": "hole",
-          "label": "Hole size",
-          "type": "number",
-          "default": 0,
-          "min": 0,
-          "max": 0.9,
-          "path": ["data", 0, "hole"],
-          "help": "Donut hole radius as a fraction of the pie."
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the slice legend."
         }
       ]
@@ -291,14 +562,41 @@
     {
       "id": "histogram",
       "label": "Histogram",
-      "tags": ["histogram", "distribution", "2d"],
-      "traces": [
-        { "index": 0, "type": "histogram" }
+      "tags": [
+        "histogram",
+        "distribution",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "histogram"
+      },
+      "required_data": [
+        "x"
       ],
       "example": {
-        "layout": { "title": "Basic Histogram", "showlegend": true },
+        "layout": {
+          "title": "Basic Histogram",
+          "showlegend": true
+        },
         "data": [
-          { "type": "histogram", "x": [1, 2, 2, 3, 3, 3, 4, 4, 5], "nbinsx": 10, "marker": { "color": "#1f77b4" } }
+          {
+            "type": "histogram",
+            "x": [
+              1,
+              2,
+              2,
+              3,
+              3,
+              3,
+              4,
+              4,
+              5
+            ],
+            "marker": {
+              "color": "#1f77b4"
+            }
+          }
         ]
       },
       "fields": [
@@ -307,50 +605,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Histogram",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "x",
-          "label": "Sample data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "x"],
-          "help": "Comma-separated samples to bin."
-        },
-        {
-          "name": "nbinsx",
-          "label": "Number of bins",
-          "type": "number",
-          "default": 10,
-          "min": 1,
-          "max": 100,
-          "path": ["data", 0, "nbinsx"],
-          "help": "How many buckets to divide the range into."
-        },
-        {
-          "name": "color",
-          "label": "Color",
-          "type": "enum",
-          "default": "#1f77b4",
-          "path": ["data", 0, "marker", "color"],
-          "help": "Bar fill color.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
@@ -358,14 +627,42 @@
     {
       "id": "box",
       "label": "Box",
-      "tags": ["box", "distribution", "2d"],
-      "traces": [
-        { "index": 0, "type": "box" }
+      "tags": [
+        "box",
+        "distribution",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "box"
+      },
+      "required_data": [
+        "y"
       ],
       "example": {
-        "layout": { "title": "Basic Box", "showlegend": true },
+        "layout": {
+          "title": "Basic Box",
+          "showlegend": true
+        },
         "data": [
-          { "type": "box", "y": [1, 2, 3, 5, 8, 13, 4, 6, 7, 9], "notched": false }
+          {
+            "type": "box",
+            "y": [
+              1,
+              2,
+              3,
+              5,
+              8,
+              13,
+              4,
+              6,
+              7,
+              9
+            ],
+            "marker": {
+              "color": "#1f77b4"
+            }
+          }
         ]
       },
       "fields": [
@@ -374,32 +671,21 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Box Plot",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "y",
-          "label": "Values",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "y"],
-          "help": "Comma-separated samples to summarise."
-        },
-        {
-          "name": "notched",
-          "label": "Notched",
-          "type": "bool",
-          "default": false,
-          "path": ["data", 0, "notched"],
-          "help": "Draw a confidence-interval notch on the median."
         },
         {
           "name": "show_legend",
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
@@ -407,14 +693,44 @@
     {
       "id": "heatmap",
       "label": "Heatmap",
-      "tags": ["heatmap", "matrix", "2d"],
-      "traces": [
-        { "index": 0, "type": "heatmap" }
+      "tags": [
+        "heatmap",
+        "matrix",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "heatmap"
+      },
+      "required_data": [
+        "z"
       ],
       "example": {
-        "layout": { "title": "Basic Heatmap" },
+        "layout": {
+          "title": "Basic Heatmap"
+        },
         "data": [
-          { "type": "heatmap", "z": [[1, 20, 30], [20, 1, 60], [30, 60, 1]], "colorscale": "Greens" }
+          {
+            "type": "heatmap",
+            "z": [
+              [
+                1,
+                20,
+                30
+              ],
+              [
+                20,
+                1,
+                60
+              ],
+              [
+                30,
+                60,
+                1
+              ]
+            ],
+            "colorscale": "Greens"
+          }
         ]
       },
       "fields": [
@@ -423,48 +739,89 @@
           "label": "Chart title",
           "type": "string",
           "default": "My Heatmap",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
         },
         {
-          "name": "z",
-          "label": "Z matrix",
-          "type": "array2d",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "z"],
-          "help": "Rows separated by ';', cells by ',', e.g. 1,20,30;20,1,60;30,60,1."
-        },
-        {
-          "name": "colorscale",
-          "label": "Color scale",
-          "type": "enum",
-          "default": "Greens",
-          "path": ["data", 0, "colorscale"],
-          "help": "The colour ramp used for cell intensity.",
-          "options": [
-            { "value": "Greens", "label": "Greens" },
-            { "value": "Blues", "label": "Blues" },
-            { "value": "Viridis", "label": "Viridis" },
-            { "value": "RdBu", "label": "Red-Blue" },
-            { "value": "YlGnBu", "label": "Yellow-Green-Blue" }
-          ]
+          "name": "show_legend",
+          "label": "Show legend",
+          "type": "bool",
+          "default": false,
+          "path": [
+            "layout",
+            "showlegend"
+          ],
+          "help": "Whether to display the trace legend."
         }
       ]
     },
     {
       "id": "dual_axis",
       "label": "Dual axis",
-      "tags": ["scatter", "bar", "axis", "2d"],
-      "traces": [
-        { "index": 0, "type": "bar" },
-        { "index": 1, "type": "scatter", "mode": "lines", "yaxis": "y2" }
+      "tags": [
+        "scatter",
+        "bar",
+        "axis",
+        "2d"
+      ],
+      "trace_defaults": {
+        "index": 0,
+        "type": "bar"
+      },
+      "required_data": [
+        "x",
+        "y"
       ],
       "example": {
-        "layout": { "title": "Dual Axis", "showlegend": true, "yaxis2": { "side": "right" } },
+        "layout": {
+          "title": "Dual Axis",
+          "showlegend": true,
+          "yaxis2": {
+            "side": "right"
+          }
+        },
         "data": [
-          { "type": "bar", "x": [1, 2, 3, 4], "y": [10, 15, 13, 17], "marker": { "color": "#1f77b4" } },
-          { "type": "scatter", "mode": "lines", "x": [1, 2, 3, 4], "y": [0.4, 0.6, 0.55, 0.8], "yaxis": "y2", "line": { "color": "#d62728" } }
+          {
+            "type": "bar",
+            "x": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "y": [
+              10,
+              15,
+              13,
+              17
+            ],
+            "marker": {
+              "color": "#1f77b4"
+            }
+          },
+          {
+            "type": "scatter",
+            "mode": "lines",
+            "x": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "y": [
+              0.4,
+              0.6,
+              0.55,
+              0.8
+            ],
+            "yaxis": "y2",
+            "line": {
+              "color": "#d62728"
+            }
+          }
         ]
       },
       "fields": [
@@ -473,78 +830,32 @@
           "label": "Chart title",
           "type": "string",
           "default": "Dual Axis Chart",
-          "path": ["layout", "title"],
+          "path": [
+            "layout",
+            "title"
+          ],
           "help": "Title shown at the top of the chart."
-        },
-        {
-          "name": "x",
-          "label": "Shared X data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "paths": [["data", 0, "x"], ["data", 1, "x"]],
-          "help": "Comma-separated numbers shared by both traces."
-        },
-        {
-          "name": "y_bar",
-          "label": "Bar Y data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 0, "y"],
-          "help": "Comma-separated bar heights."
-        },
-        {
-          "name": "y_line",
-          "label": "Line Y data",
-          "type": "array",
-          "item_type": "number",
-          "required": true,
-          "path": ["data", 1, "y"],
-          "help": "Comma-separated line values on the second axis."
-        },
-        {
-          "name": "bar_color",
-          "label": "Bar color",
-          "type": "enum",
-          "default": "#1f77b4",
-          "path": ["data", 0, "marker", "color"],
-          "help": "Bar fill color.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
-        },
-        {
-          "name": "line_color",
-          "label": "Line color",
-          "type": "enum",
-          "default": "#d62728",
-          "path": ["data", 1, "line", "color"],
-          "help": "Line color on the second axis.",
-          "options": [
-            { "value": "#1f77b4", "label": "Blue" },
-            { "value": "#3D5230", "label": "Moss green" },
-            { "value": "#d62728", "label": "Red" },
-            { "value": "#ff7f0e", "label": "Orange" },
-            { "value": "#9467bd", "label": "Purple" },
-            { "value": "#2ca02c", "label": "Green" }
-          ]
         },
         {
           "name": "y2_side",
           "label": "Second axis side",
           "type": "enum",
           "default": "right",
-          "path": ["layout", "yaxis2", "side"],
+          "path": [
+            "layout",
+            "yaxis2",
+            "side"
+          ],
           "help": "Which side of the plot the second y-axis sits on.",
           "options": [
-            { "value": "right", "label": "Right" },
-            { "value": "left", "label": "Left" }
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            }
           ]
         },
         {
@@ -552,7 +863,10 @@
           "label": "Show legend",
           "type": "bool",
           "default": true,
-          "path": ["layout", "showlegend"],
+          "path": [
+            "layout",
+            "showlegend"
+          ],
           "help": "Whether to display the trace legend."
         }
       ]
